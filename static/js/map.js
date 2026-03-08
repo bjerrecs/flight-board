@@ -470,7 +470,7 @@
 
     /* ── Breadcrumb trails ───────────────────────────────── */
     var trails = {};       // callsign → { positions: [[lat,lng], ...], dots: [L.circleMarker, ...] }
-    var TRAIL_MAX = 80;    // max position points stored per aircraft
+    var TRAIL_MAX = 20;    // max position points stored per aircraft (~80 km at cruise speed)
     var TRAIL_MIN_DIST = 0.002; // ~200m — skip if barely moved
 
     // Catmull-Rom spline: smooth curve through control points.
