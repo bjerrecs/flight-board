@@ -2327,6 +2327,32 @@ body.map-page .leaflet-control-attribution {
 }
 body.map-page .leaflet-control-attribution a { color: #888; }
 
+/* ── Flight locator / auto-follow controls ───────────────── */
+body.map-page .leaflet-control-flight a {
+    background: #1a1a1a;
+    color: #ccc;
+    border-color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+body.map-page .leaflet-control-flight a:hover {
+    background: #333;
+    color: #fff;
+}
+body.map-page .leaflet-control-flight a .material-icons {
+    font-size: 16px;
+    line-height: 1;
+}
+body.map-page .leaflet-control-flight a.follow-active {
+    color: #22c55e;
+}
+/* Hide both buttons when no flight is being tracked */
+#map:not(.has-tracked) .leaflet-control-flight {
+    display: none;
+}
+
 /* ── Map button in main board header ────────────────────── */
 .map-link-btn {
     text-decoration: none;

@@ -15,6 +15,61 @@
 
     L.control.zoom({ position: 'topright' }).addTo(map);
 
+    /* ── Flight locator + auto-follow controls ────────────── */
+    var autoFollow = localStorage.getItem('flightboard.map_autofollow') === 'true';
+
+    function locateTrackedFlight() {
+        var tc = localStorage.getItem('flightboard.tracked_callsign');
+        if (!tc || !markers[tc]) return;
+        map.setView(markers[tc].getLatLng(), 10, { animate: true, duration: 0.5 });
+    }
+
+    function toggleAutoFollow() {
+        autoFollow = !autoFollow;
+        localStorage.setItem('flightboard.map_autofollow', autoFollow);
+        var btn = document.getElementById('mapFollowBtn');
+        if (btn) {
+            btn.classList.toggle('follow-active', autoFollow);
+            btn.title = autoFollow ? 'Auto-follow ON — click to disable' : 'Auto-follow OFF — click to enable';
+            btn.querySelector('.material-icons').textContent = autoFollow ? 'gps_fixed' : 'gps_not_fixed';
+        }
+        if (autoFollow) locateTrackedFlight();
+    }
+
+    var FlightLocatorControl = L.Control.extend({
+        options: { position: 'topright' },
+        onAdd: function () {
+            var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-flight');
+
+            var locateBtn = L.DomUtil.create('a', 'leaflet-control-locate', container);
+            locateBtn.id = 'mapLocateBtn';
+            locateBtn.href = '#';
+            locateBtn.title = 'Locate tracked flight';
+            locateBtn.innerHTML = '<span class="material-icons">my_location</span>';
+            locateBtn.setAttribute('role', 'button');
+            L.DomEvent.on(locateBtn, 'click', function (e) {
+                L.DomEvent.preventDefault(e);
+                L.DomEvent.stopPropagation(e);
+                locateTrackedFlight();
+            });
+
+            var followBtn = L.DomUtil.create('a', 'leaflet-control-follow' + (autoFollow ? ' follow-active' : ''), container);
+            followBtn.id = 'mapFollowBtn';
+            followBtn.href = '#';
+            followBtn.title = autoFollow ? 'Auto-follow ON — click to disable' : 'Auto-follow OFF — click to enable';
+            followBtn.innerHTML = '<span class="material-icons">' + (autoFollow ? 'gps_fixed' : 'gps_not_fixed') + '</span>';
+            followBtn.setAttribute('role', 'button');
+            L.DomEvent.on(followBtn, 'click', function (e) {
+                L.DomEvent.preventDefault(e);
+                L.DomEvent.stopPropagation(e);
+                toggleAutoFollow();
+            });
+
+            return container;
+        }
+    });
+    new FlightLocatorControl().addTo(map);
+
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
         subdomains: 'abcd',
@@ -808,10 +863,12 @@
 
         updateConflicts(flights.concat(nearbyFlights), trackedCallsign);
 
-        // Remove stale — but preserve the tracked flight if it's being tracked en route
+        // Remove stale — but always preserve the tracked flight's marker regardless of
+        // en-route state, to avoid closing the panel during a DEP→ARR status transition
+        // (one cycle where the flight briefly disappears from local data before trackedEnRoute is set)
         Object.keys(markers).forEach(function (cs) {
             if (!seen[cs]) {
-                if (trackedEnRoute && cs === trackedCallsign) return;
+                if (cs === trackedCallsign) return;
                 map.removeLayer(markers[cs]);
                 delete markers[cs];
                 delete userOffsets[cs];
@@ -1421,8 +1478,10 @@
             attachLabelDrag(m, cs);
         }
         updateTrail(f, false);
-        // Auto-pan if flight has moved outside current view
-        if (!map.getBounds().contains(pos)) {
+        // Auto-follow centres the map on every update; fallback pans only when out of view
+        if (autoFollow) {
+            map.panTo(pos, { animate: true, duration: 1.0 });
+        } else if (!map.getBounds().contains(pos)) {
             map.panTo(pos, { animate: true, duration: 1.0 });
         }
         // Auto-open panel on first en-route detection
@@ -1588,6 +1647,11 @@
         // Refresh selected panel if still open
         if (selectedCallsign && markers[selectedCallsign]) {
             showFlightPanel(markers[selectedCallsign]._flightData);
+        }
+
+        // Auto-follow: keep the tracked flight centred on every socket update
+        if (autoFollow && tc && markers[tc]) {
+            map.panTo(markers[tc].getLatLng(), { animate: true, duration: 1.0 });
         }
     }
 
