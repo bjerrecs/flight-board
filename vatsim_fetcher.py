@@ -3,7 +3,14 @@ import math
 import traceback
 import json
 import os
+import time
 from datetime import datetime, timedelta
+
+_session = requests.Session()
+_session.headers.update({'User-Agent': 'FlightBoard/1.1.4 (flightboard.simfixr.com; tazmattar@gmail.com)'})
+
+_metar_cache = {}       # icao -> {'text': str, 'fetched_at': float}
+METAR_CACHE_TTL = 5 * 60  # 5 minutes
 from checkin_assignments import CheckinAssignments
 
 CUSTOM_AIRPORTS_PATH = os.path.join('data', 'custom_airports.json')
@@ -136,7 +143,7 @@ class VatsimFetcher:
 
     def load_airport_database(self):
         try:
-            response = requests.get('https://raw.githubusercontent.com/mwgg/Airports/master/airports.json', timeout=10)
+            response = _session.get('https://raw.githubusercontent.com/mwgg/Airports/master/airports.json', timeout=10)
             if response.ok: return response.json()
         except: return {}
         return {}
@@ -335,7 +342,7 @@ class VatsimFetcher:
                 }
 
         try:
-            response = requests.get(self.vatsim_url, timeout=10)
+            response = _session.get(self.vatsim_url, timeout=10)
             response.raise_for_status()
             data = response.json()
             
@@ -437,7 +444,7 @@ class VatsimFetcher:
         }
 
         try:
-            response = requests.get(self.vatsim_url, timeout=10)
+            response = _session.get(self.vatsim_url, timeout=10)
             response.raise_for_status()
             data = response.json()
             
@@ -758,8 +765,16 @@ class VatsimFetcher:
             else: return 'En Route'
 
     def get_metar(self, code):
-        try: return requests.get(f'https://metar.vatsim.net/{code}', timeout=2).text.strip()
-        except: return 'Unavailable'
+        now = time.time()
+        cached = _metar_cache.get(code)
+        if cached and now - cached['fetched_at'] < METAR_CACHE_TTL:
+            return cached['text']
+        try:
+            text = _session.get(f'https://metar.vatsim.net/{code}', timeout=2).text.strip()
+        except:
+            text = 'Unavailable'
+        _metar_cache[code] = {'text': text, 'fetched_at': now}
+        return text
 
     def _callsign_prefix(self, callsign):
         """Strip position suffix (last _XXX) to get the VATSpy callsign prefix."""

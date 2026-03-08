@@ -46,7 +46,8 @@ def fetch_vatsim_events():
     if now - _events_cache['fetched_at'] < EVENTS_CACHE_TTL:
         return _events_cache['data']
     try:
-        resp = requests.get('https://vatsim.net/api/events', timeout=8)
+        resp = requests.get('https://vatsim.net/api/events', timeout=8,
+                            headers={'User-Agent': 'FlightBoard/1.1.4 (flightboard.simfixr.com; tazmattar@gmail.com)'})
         resp.raise_for_status()
         _events_cache['data'] = resp.json()
         _events_cache['fetched_at'] = now
@@ -814,7 +815,8 @@ def logo_proxy(code):
     if not code:
         return '', 400
     try:
-        r = requests.get(f'https://images.kiwi.com/airlines/128/{code}.png', timeout=5)
+        r = requests.get(f'https://images.kiwi.com/airlines/128/{code}.png', timeout=5,
+                         headers={'User-Agent': 'FlightBoard/1.1.4 (flightboard.simfixr.com; tazmattar@gmail.com)'})
         if r.status_code != 200:
             return '', 404
         resp = make_response(r.content)

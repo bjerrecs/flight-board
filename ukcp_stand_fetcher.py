@@ -41,7 +41,7 @@ class UKCPStandFetcher:
                 self.api_url,
                 timeout=5,
                 headers={
-                    'User-Agent': 'VATSIM-FlightBoard/1.0',
+                    'User-Agent': 'FlightBoard/1.1.4 (flightboard.simfixr.com; tazmattar@gmail.com)',
                     'Accept': 'application/json'
                 }
             )
