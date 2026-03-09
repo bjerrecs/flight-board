@@ -636,6 +636,72 @@
       .catch(e => setStatus(e.message, 'error'))
   );
 
+  // ── Nav Data ──────────────────────────────────────────────────────────────
+  function loadNavdataInfo() {
+    fetch('/api/admin/navdata_info')
+      .then(function(r) { return r.json(); })
+      .then(renderNavdataInfo)
+      .catch(function() {});
+  }
+
+  function renderNavdataInfo(info) {
+    document.getElementById('navdataCycle').textContent     = info.cycle      || 'Unknown';
+    document.getElementById('navdataEffective').textContent = info.effective   || '—';
+    document.getElementById('navdataExpires').textContent   = info.expires     || '—';
+    document.getElementById('navdataCifpCount').textContent = info.cifp_count != null
+      ? info.cifp_count + ' airports' : '—';
+    var warn = document.getElementById('navdataWarning');
+    if (info.cycle && !info.is_current) {
+      warn.textContent = 'AIRAC data is ' + info.cycles_behind
+        + (info.cycles_behind === 1 ? ' cycle' : ' cycles')
+        + ' out of date — update recommended.';
+      warn.hidden = false;
+    } else {
+      warn.hidden = true;
+    }
+  }
+
+  (function () {
+    var fileInput = document.getElementById('navdataFileInput');
+    var uploadBtn = document.getElementById('navdataUploadBtn');
+    var fileLabel = document.getElementById('navdataFileName');
+
+    fileInput.addEventListener('change', function () {
+      if (this.files.length) {
+        fileLabel.textContent = this.files[0].name;
+        uploadBtn.disabled = false;
+      } else {
+        fileLabel.textContent = '';
+        uploadBtn.disabled = true;
+      }
+    });
+
+    uploadBtn.addEventListener('click', function () {
+      if (!fileInput.files.length) return;
+      var fd = new FormData();
+      fd.append('file', fileInput.files[0]);
+      uploadBtn.disabled = true;
+      setStatus('Uploading navdata — this may take a moment…');
+      fetch('/api/admin/upload_navdata', { method: 'POST', body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.error) {
+            setStatus('Error: ' + data.error, 'error');
+            uploadBtn.disabled = false;
+            return;
+          }
+          renderNavdataInfo(data);
+          setStatus('Navdata updated — now on AIRAC cycle ' + data.cycle + '.', 'ok');
+          fileInput.value = '';
+          fileLabel.textContent = '';
+        })
+        .catch(function() {
+          setStatus('Upload failed.', 'error');
+          uploadBtn.disabled = false;
+        });
+    });
+  })();
+
   // ── Init ──────────────────────────────────────────────────────────────────
   (async function init() {
     try {
@@ -643,6 +709,7 @@
       await loadThemeMap();
       await loadTrafficStats();
       await loadCustomAirports();
+      loadNavdataInfo();
       setStatus('Admin ready.', 'ok');
     } catch (e) {
       setStatus(e.message, 'error');
