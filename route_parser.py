@@ -419,8 +419,10 @@ def resolve_route(route_str: str, origin_icao: str, dest_icao: str) -> list:
             continue
         if _SPEED_ALT_RE.match(token):
             continue
-        if _AIRWAY_RE.match(token):
-            continue
+
+        # SID/STAR checks must come before the airway regex so that procedure
+        # names matching the airway pattern (e.g. BIG1X, L8B, UN4C) are not
+        # silently discarded before they can be expanded.
 
         # SID — only expand the first matching token
         if token == sid_token and not sid_done:
@@ -446,6 +448,11 @@ def resolve_route(route_str: str, origin_icao: str, dest_icao: str) -> list:
                 if expanded:
                     last_coords = (expanded[-1]['lat'], expanded[-1]['lon'])
                 continue
+
+        # Skip airways — but only after SID/STAR/airport checks above have had
+        # a chance to claim the token first.
+        if _AIRWAY_RE.match(token):
+            continue
 
         # 4-letter ICAO airport?
         if len(token) == 4 and token.isalpha():
