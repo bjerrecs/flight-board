@@ -25,6 +25,7 @@
       <button class="tab-btn" data-tab="themes">Theme Mapping</button>
       <button class="tab-btn" data-tab="traffic">Traffic Stats</button>
       <button class="tab-btn" data-tab="custom-airports">Custom Airports</button>
+      <button class="tab-btn" data-tab="navdata">Nav Data</button>
     </nav>
 
     <!-- STANDS PANEL -->
@@ -188,6 +189,39 @@
           <tbody id="customAirportsTableBody"></tbody>
         </table>
       </div>
+    </section>
+
+    <!-- NAV DATA PANEL -->
+    <section class="panel tab-panel" id="tab-navdata">
+      <p class="panel-desc">AIRAC navigation data used for SID/STAR route resolution. X-Plane 12 data updates every 28 days; upload a new zip to keep routes accurate.</p>
+      <div class="navdata-card" id="navdataCycleCard">
+        <div class="navdata-info">
+          <span class="navdata-label">Installed Cycle</span>
+          <span id="navdataCycle" class="navdata-value">—</span>
+        </div>
+        <div class="navdata-info">
+          <span class="navdata-label">Effective</span>
+          <span id="navdataEffective" class="navdata-value">—</span>
+        </div>
+        <div class="navdata-info">
+          <span class="navdata-label">Expires</span>
+          <span id="navdataExpires" class="navdata-value">—</span>
+        </div>
+        <div class="navdata-info">
+          <span class="navdata-label">CIFP Airports</span>
+          <span id="navdataCifpCount" class="navdata-value">—</span>
+        </div>
+      </div>
+      <div id="navdataWarning" class="navdata-warning" hidden></div>
+      <div class="toolbar" style="margin-top:1rem">
+        <label class="btn" style="cursor:pointer">
+          Choose Zip File
+          <input id="navdataFileInput" type="file" accept=".zip" style="display:none">
+        </label>
+        <span id="navdataFileName" style="margin-left:.5rem;opacity:.7"></span>
+        <button id="navdataUploadBtn" type="button" class="btn-primary" disabled>Upload &amp; Apply</button>
+      </div>
+      <p class="import-hint">Zip the <code>earth_nav.dat</code>, <code>earth_fix.dat</code> and <code>CIFP/</code> folder from your X-Plane 12 <code>Custom Data/</code> directory.</p>
     </section>
 
     <div id="statusBar" class="status">Ready.</div>

@@ -364,3 +364,37 @@ td select {
 }
 
 .traffic-list li { margin: 4px 0; }
+
+.navdata-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--panel-alt, #1e2330);
+  border-radius: 6px;
+  margin-top: .5rem;
+}
+.navdata-info {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+.navdata-label {
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  opacity: .6;
+}
+.navdata-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.navdata-warning {
+  margin-top: .75rem;
+  padding: .6rem 1rem;
+  background: #7c5a00;
+  color: #ffe082;
+  border-radius: 4px;
+  font-size: .9rem;
+}
+

@@ -13,9 +13,64 @@ import atexit
 import time
 import uuid
 from contextlib import contextmanager
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, date as _date
 import requests
 import psycopg2
+import zipfile
+import tempfile
+import shutil as _shutil
+
+_AIRAC_YEAR_STARTS = {
+    2023: _date(2023, 1, 26),
+    2024: _date(2024, 1, 25),
+    2025: _date(2025, 1, 23),
+    2026: _date(2026, 1, 22),
+    2027: _date(2027, 1, 21),
+}
+_NAVDATA_DIR = os.path.join(os.path.dirname(__file__), 'data', 'navdata')
+
+def _get_navdata_info():
+    cycle = None
+    for filename in ('earth_nav.dat', 'earth_fix.dat'):
+        try:
+            with open(os.path.join(_NAVDATA_DIR, filename), 'r', errors='ignore') as f:
+                for line in f:
+                    m = re.search(r'data cycle (\d{4})', line)
+                    if m:
+                        cycle = m.group(1)
+                        break
+        except OSError:
+            pass
+        if cycle:
+            break
+
+    cifp_count = 0
+    try:
+        cifp_count = len(os.listdir(os.path.join(_NAVDATA_DIR, 'CIFP')))
+    except OSError:
+        pass
+
+    result = {'cycle': cycle, 'cifp_count': cifp_count,
+              'effective': None, 'expires': None,
+              'cycles_behind': 0, 'is_current': True}
+    if not cycle:
+        return result
+
+    year = 2000 + int(cycle[:2])
+    cycle_num = int(cycle[2:])
+    base = _AIRAC_YEAR_STARTS.get(year)
+    if not base:
+        ref = _AIRAC_YEAR_STARTS.get(2024, _date(2024, 1, 25))
+        base = ref + timedelta(days=(year - 2024) * 364)
+    effective = base + timedelta(days=(cycle_num - 1) * 28)
+    expires   = effective + timedelta(days=28)
+    today = _date.today()
+    days_behind = (today - expires).days
+    result['effective']     = effective.isoformat()
+    result['expires']       = expires.isoformat()
+    result['is_current']    = days_behind <= 0
+    result['cycles_behind'] = max(0, (days_behind + 28) // 28) if days_behind > 0 else 0
+    return result
 
 def _haversine_km(lat1, lon1, lat2, lon2):
     R = 6371.0
@@ -24,7 +79,7 @@ def _haversine_km(lat1, lon1, lat2, lon2):
     a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
     return R * 2 * math.asin(math.sqrt(a))
 
-APP_VERSION = '1.1.9'
+APP_VERSION = '1.2.0'
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -962,6 +1017,52 @@ def admin_custom_airports():
         return jsonify({'success': True, 'count': len(validated)})
     except ValueError as exc:
         return jsonify({'error': str(exc)}), 400
+
+@app.route('/api/admin/navdata_info')
+def api_admin_navdata_info():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': 'Unauthorised'}), 401
+    return jsonify(_get_navdata_info())
+
+@app.route('/api/admin/upload_navdata', methods=['POST'])
+def api_admin_upload_navdata():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': 'Unauthorised'}), 401
+    f = request.files.get('file')
+    if not f or not f.filename.lower().endswith('.zip'):
+        return jsonify({'error': 'Please upload a .zip file'}), 400
+
+    with tempfile.TemporaryDirectory() as tmp:
+        zip_path = os.path.join(tmp, 'upload.zip')
+        f.save(zip_path)
+        try:
+            with zipfile.ZipFile(zip_path) as zf:
+                names = zf.namelist()
+                nav_names = [n for n in names
+                             if os.path.basename(n) in ('earth_nav.dat', 'earth_fix.dat')]
+                if not nav_names:
+                    return jsonify({'error': 'Zip must contain earth_nav.dat or earth_fix.dat'}), 400
+                parts = nav_names[0].split('/')
+                prefix = '/'.join(parts[:-1]) if len(parts) > 1 else ''
+                zf.extractall(tmp)
+        except zipfile.BadZipFile:
+            return jsonify({'error': 'Invalid zip file'}), 400
+
+        src = os.path.join(tmp, prefix) if prefix else tmp
+        for item in os.listdir(src):
+            if item == 'VATSpy.dat':
+                continue
+            s = os.path.join(src, item)
+            d = os.path.join(_NAVDATA_DIR, item)
+            if os.path.isdir(s):
+                if os.path.exists(d):
+                    _shutil.rmtree(d)
+                _shutil.copytree(s, d)
+            else:
+                _shutil.copy2(s, d)
+
+    route_parser.reload_navdata()
+    return jsonify({'ok': True, **_get_navdata_info()})
 
 @app.route('/api/search_airport', methods=['POST'])
 def search_airport():

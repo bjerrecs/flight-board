@@ -434,6 +434,16 @@ def _load_navdata():
     _loaded = True
 
 
+def reload_navdata():
+    global _loaded, airports, fixes, navaids, _cifp_cache
+    airports = {}
+    fixes = {}
+    navaids = {}
+    _cifp_cache.clear()
+    _loaded = False
+    _load_navdata()
+
+
 # ── Great-circle helpers ────────────────────────────────────────────────────
 
 def _haversine(lat1, lon1, lat2, lon2) -> float:
