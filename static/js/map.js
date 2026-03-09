@@ -408,9 +408,12 @@
     var showConflicts = localStorage.getItem('flightboard.show_conflicts') !== 'false'; // default on
 
     function flightColor(f) {
+        const status = f.status || '';
+        if (['Landed', 'At Gate', 'Taxiing', 'Check-in', 'Boarding', 'Pushback'].includes(status))
+            return '#4caf50'; // green — ground (status-based)
         const gs = f.groundspeed || 0;
-        const onGround = gs < 50 && (f.altitude || 0) < 500;
-        if (onGround) return '#4caf50'; // green — ground
+        const onGround = gs < 50 && (f.altitude || 0) < 2000;
+        if (onGround) return '#4caf50'; // green — ground (elevated airports: alt < 2000 ft)
         return f.direction === 'ARR' ? '#42a5f5' : '#ffa726'; // blue arrivals, orange departures
     }
 
@@ -1460,11 +1463,23 @@
             .catch(function (e) { console.warn('Global ATC fetch failed:', e); });
     }
 
+    function updateMapTitle(f) {
+        var titleEl = document.querySelector('.map-airport-name');
+        if (!titleEl) return;
+        var dest = (f && f.destination || '').trim().toUpperCase();
+        if (!dest || dest === AIRPORT) { titleEl.textContent = APT_NAME; return; }
+        var status = (f && f.status) || '';
+        var hasLanded = status === 'Landed' || status === 'At Gate' ||
+                        ((f.groundspeed || 0) < 10 && (f.altitude || 0) < 3000);
+        titleEl.textContent = hasLanded ? dest + ' \u2013 Arrived' : AIRPORT + ' \u2192 ' + dest;
+    }
+
     function updateEnRouteMarker(f) {
         if (!f || f.latitude == null) return;
         var cs = f.callsign;
         var pos = [f.latitude, f.longitude];
         var off = userOffsets[cs] || { dx: 20, dy: -44 }; // longer stalk for airborne en-route
+        updateMapTitle(f);
         if (markers[cs]) {
             markers[cs].setLatLng(pos);
             markers[cs].setIcon(makeIcon(f, off.dx, off.dy, true));
@@ -1588,9 +1603,13 @@
     function stopTrackPoller() {
         if (trackPoller) { clearInterval(trackPoller); trackPoller = null; }
         trackedEnRoute = false;
+        var titleEl = document.querySelector('.map-airport-name');
+        if (titleEl) titleEl.textContent = APT_NAME;
     }
 
     function onTrackingStart(callsign) {
+        var titleEl = document.querySelector('.map-airport-name');
+        if (titleEl) titleEl.textContent = APT_NAME; // reset until we know destination
         refreshGlobalATC();
         if (globalAtcPoller) clearInterval(globalAtcPoller);
         globalAtcPoller = setInterval(refreshGlobalATC, 30000);
