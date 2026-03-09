@@ -24,7 +24,7 @@ def _haversine_km(lat1, lon1, lat2, lon2):
     a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
     return R * 2 * math.asin(math.sqrt(a))
 
-APP_VERSION = '1.1.7'
+APP_VERSION = '1.1.8'
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -788,10 +788,19 @@ def api_route(callsign):
             break
     if not flight:
         return jsonify({'callsign': callsign, 'waypoints': [], 'error': 'flight not found'})
+    origin = flight.get('origin', '')
+    wind_dir = None
+    if origin:
+        try:
+            metar = flight_fetcher.get_metar(origin)
+            wind_dir = route_parser.parse_metar_wind(metar)
+        except Exception:
+            pass
     waypoints = route_parser.resolve_route(
         flight.get('route', ''),
-        flight.get('origin', ''),
+        origin,
         flight.get('destination', ''),
+        wind_dir=wind_dir,
     )
     return jsonify({'callsign': callsign, 'waypoints': waypoints})
 

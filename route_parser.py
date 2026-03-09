@@ -175,6 +175,142 @@ def _resolve_fix(ident: str, ref: tuple, max_km: float = 500) -> tuple | None:
     return _pick_closest(candidates, ref, max_km=max_km)
 
 
+# ── Runway / wind helpers ────────────────────────────────────────────────────
+
+def _runway_heading(transition_name: str):
+    """RW27L → 270, RW09R → 90. Returns None for non-runway transitions."""
+    m = re.match(r'^RW(\d{2})[LRC]?$', transition_name, re.IGNORECASE)
+    return int(m.group(1)) * 10 if m else None
+
+
+def _heading_diff(a: int, b: int) -> int:
+    """Smallest angular difference between two headings, 0–180."""
+    d = abs(a - b) % 360
+    return min(d, 360 - d)
+
+
+def parse_metar_wind(metar_text: str):
+    """
+    Extract wind direction (degrees, FROM) from a METAR string.
+    Returns None for calm, variable, or unparseable wind.
+    """
+    if not metar_text:
+        return None
+    m = re.search(r'\b(VRB|\d{3})(\d{2,3})(?:G\d{2,3})?KT\b', metar_text)
+    if not m:
+        return None
+    dir_str = m.group(1)
+    if dir_str == 'VRB':
+        return None
+    val = int(dir_str)
+    return None if val == 0 else val
+
+
+def _into_wind_score(transitions: dict, wind_dir: int) -> float:
+    """
+    Score a set of procedure transitions against wind direction.
+    Returns the lowest heading difference across all runway transitions
+    (0 = perfectly into wind, 180 = direct tailwind).
+    Non-runway transitions (ALL, fix-named) are ignored; if none found, returns 180.
+    """
+    best = 180
+    for trans in transitions:
+        rh = _runway_heading(trans)
+        if rh is not None:
+            best = min(best, _heading_diff(rh, wind_dir))
+    return best
+
+
+def _pick_into_wind(candidates: list, cifp_procs: dict, wind_dir, dist_fn) -> str:
+    """
+    From a list of procedure name candidates, return the best one ranked by:
+      1. Into-wind score (lower = better) — only used when wind_dir is not None
+      2. dist_fn(name) → float proximity score (lower = better)
+    """
+    def sort_key(name):
+        ws = _into_wind_score(cifp_procs[name], wind_dir) if wind_dir is not None else 180
+        return (ws, dist_fn(name))
+    return min(candidates, key=sort_key)
+
+
+# ── Procedure inference from route waypoints ────────────────────────────────
+
+def _infer_sid(origin_cifp: dict, first_fix: str, airport_ref: tuple,
+               next_fix_ref, wind_dir) -> tuple:
+    """
+    Infer a SID when no procedure name is filed in the route.
+    Uses first_fix (the first named en-route waypoint) as the SID exit fix.
+    Prefers SIDs where first_fix is the last ident of some transition.
+    Wind direction (FROM, degrees) is used to prefer into-wind runways.
+    Returns (sid_name, idents_list) or (None, []).
+    """
+    sids = origin_cifp.get('SID', {})
+    if not sids:
+        return None, []
+
+    # Candidates where first_fix is the true exit (last ident of any transition)
+    exit_cands = [n for n, tr in sids.items()
+                  if any(ids and ids[-1] == first_fix for ids in tr.values())]
+    # Fallback: first_fix appears anywhere in the procedure
+    any_cands  = [n for n, tr in sids.items()
+                  if any(first_fix in ids for ids in tr.values())]
+    candidates = exit_cands if exit_cands else any_cands
+    if not candidates:
+        return None, []
+
+    if len(candidates) > 1:
+        ref = next_fix_ref or airport_ref
+        def dist_fn(name):
+            for ids in sids[name].values():
+                for ident in reversed(ids):
+                    pos = _resolve_fix(ident, airport_ref)
+                    if pos:
+                        return _haversine(ref[0], ref[1], pos[0], pos[1])
+            return float('inf')
+        name = _pick_into_wind(candidates, sids, wind_dir, dist_fn)
+    else:
+        name = candidates[0]
+
+    return name, _best_sid_transition(sids[name], airport_ref, next_fix_ref)
+
+
+def _infer_star(dest_cifp: dict, last_fix: str, airport_ref: tuple,
+                prev_fix_ref, wind_dir) -> tuple:
+    """
+    Infer a STAR when no procedure name is filed in the route.
+    Uses last_fix (the last named en-route waypoint) as the STAR entry fix.
+    Prefers STARs where last_fix is the first ident of some transition.
+    Wind direction (FROM, degrees) is used to prefer into-wind runways.
+    Returns (star_name, idents_list) or (None, []).
+    """
+    stars = dest_cifp.get('STAR', {})
+    if not stars:
+        return None, []
+
+    entry_cands = [n for n, tr in stars.items()
+                   if any(ids and ids[0] == last_fix for ids in tr.values())]
+    any_cands   = [n for n, tr in stars.items()
+                   if any(last_fix in ids for ids in tr.values())]
+    candidates = entry_cands if entry_cands else any_cands
+    if not candidates:
+        return None, []
+
+    if len(candidates) > 1:
+        ref = prev_fix_ref or airport_ref
+        def dist_fn(name):
+            for ids in stars[name].values():
+                for ident in ids:
+                    pos = _resolve_fix(ident, airport_ref)
+                    if pos:
+                        return _haversine(ref[0], ref[1], pos[0], pos[1])
+            return float('inf')
+        name = _pick_into_wind(candidates, stars, wind_dir, dist_fn)
+    else:
+        name = candidates[0]
+
+    return name, _best_star_transition(stars[name], airport_ref, prev_fix_ref)
+
+
 def _best_sid_transition(transitions: dict, airport_ref: tuple, next_fix_ref: tuple | None) -> list:
     """
     Pick the SID transition whose EXIT (last) fix is closest to next_fix_ref
@@ -337,12 +473,16 @@ def _strip_runway_suffix(token: str) -> str:
 
 # ── Public API ──────────────────────────────────────────────────────────────
 
-def resolve_route(route_str: str, origin_icao: str, dest_icao: str) -> list:
+def resolve_route(route_str: str, origin_icao: str, dest_icao: str,
+                  wind_dir: int = None) -> list:
     """
     Parse a VATSIM flight plan route string into an ordered list of waypoints.
 
     Returns a list of dicts: [{name, lat, lon, type}, ...]
     where type is one of: 'airport', 'fix', 'navaid'
+
+    wind_dir: wind direction in degrees (FROM), used to prefer into-wind runway
+    transitions when inferring SID/STAR from route waypoints.
 
     Returns [] if navdata is unavailable or route cannot be resolved.
     """
@@ -401,6 +541,68 @@ def resolve_route(route_str: str, origin_icao: str, dest_icao: str) -> list:
     sid_next_ref  = _first_enroute_fix_after_sid()
     star_prev_ref = _last_enroute_fix_before_star()
 
+    # ── Infer SID from first route fix when no SID name was filed ───────────
+    # Common in UK/Europe: pilots file the exit fix (e.g. "CPT") not the
+    # procedure name (e.g. "CPT5J").  Wind direction (if available) is used to
+    # prefer the into-wind runway transition.
+    _inferred_sid_fix   = None   # the route token that triggered SID inference
+    _inferred_sid_idents = []
+    if sid_token is None and origin_cifp['SID'] and origin_coords:
+        ref = origin_coords
+        _found_first = _found_second = False
+        _first_fix_pos = _second_fix_pos = None
+        for t in tokens:
+            if t in _SKIP_WORDS or _SPEED_ALT_RE.match(t) or _AIRWAY_RE.match(t):
+                continue
+            if len(t) == 4 and t.isalpha():   # ICAO code — skip
+                continue
+            pos = _resolve_fix(t, ref, max_km=8000)
+            if pos is None:
+                continue
+            if not _found_first:
+                _inferred_sid_fix = t
+                _first_fix_pos    = pos
+                _found_first      = True
+            else:
+                _second_fix_pos = pos
+                break
+        if _inferred_sid_fix:
+            _, _inferred_sid_idents = _infer_sid(
+                origin_cifp, _inferred_sid_fix, origin_coords,
+                _second_fix_pos, wind_dir
+            )
+
+    # ── Infer STAR from last route fix when no STAR name was filed ───────────
+    _inferred_star_fix    = None
+    _inferred_star_idents = []
+    if star_token is None and dest_cifp['STAR'] and dest_coords:
+        ref = dest_coords
+        _found_last = _found_prev = False
+        _last_fix_pos = _prev_fix_pos = None
+        for t in reversed(tokens):
+            if t in _SKIP_WORDS or _SPEED_ALT_RE.match(t) or _AIRWAY_RE.match(t):
+                continue
+            if len(t) == 4 and t.isalpha():
+                continue
+            pos = _resolve_fix(t, ref, max_km=8000)
+            if pos is None:
+                continue
+            if not _found_last:
+                _inferred_star_fix = t
+                _last_fix_pos      = pos
+                _found_last        = True
+            else:
+                _prev_fix_pos = pos
+                break
+        if _inferred_star_fix:
+            _, _inferred_star_idents = _infer_star(
+                dest_cifp, _inferred_star_fix, dest_coords,
+                _prev_fix_pos, wind_dir
+            )
+
+    _inferred_sid_done  = False
+    _inferred_star_done = False
+
     waypoints = []
 
     if origin_coords:
@@ -448,6 +650,26 @@ def resolve_route(route_str: str, origin_icao: str, dest_icao: str) -> list:
                 if expanded:
                     last_coords = (expanded[-1]['lat'], expanded[-1]['lon'])
                 continue
+
+        # Inferred SID — inject when we reach the exit fix token
+        if (_inferred_sid_idents and not _inferred_sid_done
+                and token == _inferred_sid_fix):
+            _inferred_sid_done = True
+            expanded = _expand_procedure(_inferred_sid_idents, origin_coords or last_coords, 'sid')
+            waypoints.extend(expanded)
+            if expanded:
+                last_coords = (expanded[-1]['lat'], expanded[-1]['lon'])
+            continue  # exit fix is already the last waypoint of the expanded SID
+
+        # Inferred STAR — inject when we reach the entry fix token
+        if (_inferred_star_idents and not _inferred_star_done
+                and token == _inferred_star_fix):
+            _inferred_star_done = True
+            expanded = _expand_procedure(_inferred_star_idents, dest_coords or last_coords, 'star')
+            waypoints.extend(expanded)
+            if expanded:
+                last_coords = (expanded[-1]['lat'], expanded[-1]['lon'])
+            continue  # entry fix is already the first waypoint of the expanded STAR
 
         # Skip airways — but only after SID/STAR/airport checks above have had
         # a chance to claim the token first.
