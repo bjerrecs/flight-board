@@ -740,18 +740,53 @@
                 // Colour segments and dots by waypoint type
                 var TYPE_COLOR = { sid: '#69f0ae', star: '#64b5f6', fix: '#f0b429', navaid: '#f0b429', airport: '#f0b429' };
 
-                // Draw segments between consecutive waypoints, coloured by the segment's type
+                // Group consecutive segments by type, then draw:
+                //   SID/STAR groups → single Catmull-Rom smooth curve (solid)
+                //   Everything else → straight dashed segments
+                //
+                // A segment i connects wps[i]→wps[i+1] and takes its type/colour
+                // from the destination waypoint (wps[i+1].type), same as before.
+                var segRuns = [];
+                var runStart = 0;
                 for (var i = 0; i < wps.length - 1; i++) {
-                    var segColor = TYPE_COLOR[wps[i + 1].type] || '#f0b429';
-                    var seg = L.polyline([[wps[i].lat, wps[i].lon], [wps[i + 1].lat, wps[i + 1].lon]], {
-                        color: segColor,
-                        weight: 2,
-                        dashArray: '6 4',
-                        opacity: 0.8,
-                        interactive: false,
-                    }).addTo(map);
-                    routeLayer.push(seg);
+                    var segType     = wps[i + 1].type;
+                    var nextSegType = (i + 1 < wps.length - 1) ? wps[i + 2].type : null;
+                    if (segType !== nextSegType) {
+                        segRuns.push({ type: segType, wpStart: runStart, wpEnd: i + 1 });
+                        runStart = i + 1;
+                    }
                 }
+
+                segRuns.forEach(function (run) {
+                    var pts = [];
+                    for (var k = run.wpStart; k <= run.wpEnd; k++) {
+                        pts.push([wps[k].lat, wps[k].lon]);
+                    }
+                    var runColor = TYPE_COLOR[run.type] || '#f0b429';
+
+                    if ((run.type === 'sid' || run.type === 'star') && pts.length >= 2) {
+                        // Smooth with Catmull-Rom — 10 interpolated steps per segment gives
+                        // realistic FMGC-style curves through the procedure waypoints.
+                        var smooth = catmullRomSmooth(pts, 10);
+                        var poly = L.polyline(smooth, {
+                            color: runColor,
+                            weight: 2.5,
+                            opacity: 0.9,
+                            interactive: false,
+                        }).addTo(map);
+                        routeLayer.push(poly);
+                    } else {
+                        // En-route / fix / airport — straight dashed segments
+                        var poly = L.polyline(pts, {
+                            color: runColor,
+                            weight: 2,
+                            dashArray: '6 4',
+                            opacity: 0.8,
+                            interactive: false,
+                        }).addTo(map);
+                        routeLayer.push(poly);
+                    }
+                });
 
                 // Small dots + permanent name labels for intermediate waypoints
                 for (var i = 1; i < wps.length - 1; i++) {
