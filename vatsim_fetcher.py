@@ -746,9 +746,6 @@ class VatsimFetcher:
                     try: minutes_online = (datetime.utcnow() - datetime.fromisoformat(pilot['logon_time'][:19])).total_seconds() / 60
                     except: pass
                 
-                neutral_squawks = {'2000', '2200', '1200', '7000', '0000'}
-                is_non_neutral_squawk = pilot.get('transponder') not in neutral_squawks
-
                 # Stationary aircraft: only show Boarding if at a known stand.
                 # If the airport has stand data but no match, the aircraft is
                 # not at a gate (e.g. holding on a taxiway) — show Taxiing.
@@ -758,10 +755,11 @@ class VatsimFetcher:
                         return 'Taxiing'
                     return 'Boarding'
 
-                # Low-speed ground movement: pushback if near a stand or squawking.
-                # GS 1-4 near a stand = departing the stand (pushback).
+                # Low-speed ground movement: only show Pushback if still at a known stand.
+                # A non-neutral squawk alone is not sufficient — the aircraft may already
+                # be on a taxiway heading to the runway.
                 if gs < 5:
-                    if gate_found or is_non_neutral_squawk: return 'Pushback'
+                    if gate_found: return 'Pushback'
                     return 'Taxiing'
                 elif gs < 45: return 'Taxiing'
                 else: return 'Departing'
