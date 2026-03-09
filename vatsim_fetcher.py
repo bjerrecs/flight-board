@@ -395,18 +395,26 @@ class VatsimFetcher:
                 cs = pilot.get('callsign')
                 fp = pilot.get('flight_plan') or {}
                 if cs and pilot.get('latitude') is not None:
+                    _gs  = pilot.get('groundspeed', 0)
+                    _alt = pilot.get('altitude', 0)
+                    if _alt < 2000 and _gs < 40:
+                        _status = 'Landed'
+                    elif _alt < 8000:
+                        _status = 'Approaching'
+                    else:
+                        _status = 'En Route'
                     self.all_pilots[cs] = {
                         'callsign': cs,
                         'latitude': pilot['latitude'],
                         'longitude': pilot['longitude'],
                         'heading': pilot.get('heading', 0),
-                        'groundspeed': pilot.get('groundspeed', 0),
-                        'altitude': pilot.get('altitude', 0),
+                        'groundspeed': _gs,
+                        'altitude': _alt,
                         'origin': fp.get('departure', ''),
                         'destination': fp.get('arrival', ''),
                         'route': fp.get('route', ''),
-                        'status': 'En Route',
-                        'status_raw': 'En Route',
+                        'status': _status,
+                        'status_raw': _status,
                         'direction': 'ARR',
                     }
 
