@@ -765,10 +765,7 @@
                     var runColor = TYPE_COLOR[run.type] || '#f0b429';
 
                     if ((run.type === 'sid' || run.type === 'star') && pts.length >= 2) {
-                        // Smooth with Catmull-Rom — 10 interpolated steps per segment gives
-                        // realistic FMGC-style curves through the procedure waypoints.
-                        var smooth = catmullRomSmooth(pts, 10);
-                        var poly = L.polyline(smooth, {
+                        var poly = L.polyline(pts, {
                             color: runColor,
                             weight: 2.5,
                             opacity: 0.9,
