@@ -24,6 +24,8 @@ def _haversine_km(lat1, lon1, lat2, lon2):
     a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
     return R * 2 * math.asin(math.sqrt(a))
 
+APP_VERSION = '1.1.6'
+
 app = Flask(__name__)
 app.config.from_object(Config)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -47,7 +49,7 @@ def fetch_vatsim_events():
         return _events_cache['data']
     try:
         resp = requests.get('https://vatsim.net/api/events', timeout=8,
-                            headers={'User-Agent': 'FlightBoard/1.1.6 (flightboard.simfixr.com; tazmattar@gmail.com)'})
+                            headers={'User-Agent': 'FlightBoard/' + APP_VERSION + ' (flightboard.simfixr.com; tazmattar@gmail.com)'})
         resp.raise_for_status()
         _events_cache['data'] = resp.json()
         _events_cache['fetched_at'] = now
@@ -605,7 +607,7 @@ update_flights()
 
 @app.route('/')
 def index():
-    resp = make_response(render_template('index.html', asset_version=int(time.time()), bmc_url=app.config.get('BUY_ME_A_COFFEE_URL', '')))
+    resp = make_response(render_template('index.html', asset_version=int(time.time()), app_version=APP_VERSION, bmc_url=app.config.get('BUY_ME_A_COFFEE_URL', '')))
     resp.headers['Cache-Control'] = 'no-store'
     return resp
 
@@ -685,6 +687,7 @@ def map_display(airport):
         airport_lat=airport_info['lat'],
         airport_lon=airport_info['lon'],
         asset_version=int(time.time()),
+        app_version=APP_VERSION,
     ))
     resp.headers['Cache-Control'] = 'no-store'
     return resp
@@ -816,7 +819,7 @@ def logo_proxy(code):
         return '', 400
     try:
         r = requests.get(f'https://images.kiwi.com/airlines/128/{code}.png', timeout=5,
-                         headers={'User-Agent': 'FlightBoard/1.1.6 (flightboard.simfixr.com; tazmattar@gmail.com)'})
+                         headers={'User-Agent': 'FlightBoard/' + APP_VERSION + ' (flightboard.simfixr.com; tazmattar@gmail.com)'})
         if r.status_code != 200:
             return '', 404
         resp = make_response(r.content)
