@@ -242,6 +242,8 @@
         return osmStands;
     }
 
+    var OSM_CACHE_KEY = 'flightboard.osm.' + AIRPORT;
+
     function fetchAirportFeatures() {
         var q = '[out:json];('
             + 'way[aeroway=runway](around:4000,'   + APT_LAT + ',' + APT_LON + ');'
@@ -250,6 +252,13 @@
             + 'node[aeroway=parking_position](around:4000,' + APT_LAT + ',' + APT_LON + ');'
             + 'way[aeroway=parking_position](around:4000,'  + APT_LAT + ',' + APT_LON + ');'
             + ');out geom;';
+
+        // Check sessionStorage for cached OSM data (avoids re-fetching Overpass on revisit)
+        var cachedElements = null;
+        try {
+            var raw = sessionStorage.getItem(OSM_CACHE_KEY);
+            if (raw) cachedElements = JSON.parse(raw);
+        } catch (e) {}
 
         // Stands are fetched and rendered independently — OSM failure won't block them
         var standsP = fetch('/static/stands.json').then(function (r) { return r.json(); }).catch(function () { return {}; });
@@ -260,10 +269,20 @@
                 updateFeatureVisibility();
             }
 
+            if (cachedElements) {
+                // Use cached data immediately — no Overpass round-trip needed
+                var osmStands = processOsmElements(cachedElements, useLocalStands);
+                if (!useLocalStands && osmStands.length) renderStands(osmStands);
+                updateFeatureVisibility();
+                return;
+            }
+
             // OSM fetch: try primary + mirrors with per-request timeout
             fetchOverpass(q)
                 .then(function (data) {
-                    var osmStands = processOsmElements(data.elements || [], useLocalStands);
+                    var elements = data.elements || [];
+                    try { sessionStorage.setItem(OSM_CACHE_KEY, JSON.stringify(elements)); } catch (e) {}
+                    var osmStands = processOsmElements(elements, useLocalStands);
                     if (!useLocalStands && osmStands.length) renderStands(osmStands);
                     updateFeatureVisibility();
                 })
@@ -727,6 +746,11 @@
         clearRouteLayer();
         if (!callsign) return;
 
+        // Capture ground/airborne state now — fitBounds shouldn't zoom away from the
+        // airport when the user is watching a taxiing or boarding flight
+        var fd = markers[callsign] && markers[callsign]._flightData;
+        var flightIsAirborne = fd && isAirborne(fd);
+
         fetch('/api/route/' + encodeURIComponent(callsign) + '?airport=' + encodeURIComponent(AIRPORT))
             .then(function (r) { return r.json(); })
             .then(function (data) {
@@ -850,11 +874,14 @@
                         .catch(function () {});
                 }
 
-                // Auto-fit to route bounds
-                try {
-                    var allLatLngs = wps.map(function (w) { return [w.lat, w.lon]; });
-                    map.fitBounds(L.polyline(allLatLngs).getBounds().pad(0.1));
-                } catch (e) { /* bounds too small */ }
+                // Auto-fit to route bounds — only when airborne, so ground/taxiing
+                // flights don't zoom the map away from the airport taxiway view
+                if (flightIsAirborne) {
+                    try {
+                        var allLatLngs = wps.map(function (w) { return [w.lat, w.lon]; });
+                        map.fitBounds(L.polyline(allLatLngs).getBounds().pad(0.1));
+                    } catch (e) { /* bounds too small */ }
+                }
             })
             .catch(function (e) { console.warn('Route fetch failed:', e); });
     }
