@@ -1527,35 +1527,40 @@
     function updateMapTitle(f) {
         var titleEl = document.querySelector('.map-airport-name');
         if (!titleEl) return;
-        var dest = (f && f.destination || '').trim().toUpperCase();
-        if (!dest || dest === AIRPORT) {
-            titleEl.textContent = APT_NAME;
-            return;
-        }
+        var dest   = (f && f.destination || '').trim().toUpperCase();
+        var origin = (f && f.origin      || '').trim().toUpperCase();
         var status = (f && f.status) || '';
         var hasLanded = status === 'Landed' || status === 'At Gate' ||
                         ((f.groundspeed || 0) < 10 && (f.altitude || 0) < 3000);
 
-        function applyTitle(destName) {
-            titleEl.textContent = hasLanded
-                ? destName + ' \u2013 Arrived'
-                : APT_NAME + ' \u2192 ' + destName;
+        function lookupName(icao, cb) {
+            if (airportNameCache[icao] !== undefined) { cb(airportNameCache[icao]); return; }
+            // Show ICAO immediately, replace with real name once fetched
+            fetch('/api/airport_name/' + encodeURIComponent(icao))
+                .then(function(r) { return r.json(); })
+                .then(function(data) { airportNameCache[icao] = data.name || icao; cb(airportNameCache[icao]); })
+                .catch(function() { airportNameCache[icao] = icao; cb(icao); });
         }
 
-        if (airportNameCache[dest] !== undefined) {
-            applyTitle(airportNameCache[dest]);
+        // Arriving flight — home airport is the destination
+        if (!dest || dest === AIRPORT) {
+            if (!origin) { titleEl.textContent = APT_NAME; return; }
+            titleEl.textContent = origin + ' \u2192 ' + APT_NAME;
+            lookupName(origin, function(originName) {
+                titleEl.textContent = hasLanded
+                    ? APT_NAME + ' \u2013 Arrived'
+                    : originName + ' \u2192 ' + APT_NAME;
+            });
             return;
         }
 
-        // Show ICAO immediately, then replace with real name once fetched
-        applyTitle(dest);
-        fetch('/api/airport_name/' + encodeURIComponent(dest))
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                airportNameCache[dest] = data.name || dest;
-                applyTitle(airportNameCache[dest]);
-            })
-            .catch(function() { airportNameCache[dest] = dest; });
+        // Departing flight — home airport is the origin
+        titleEl.textContent = APT_NAME + ' \u2192 ' + dest;
+        lookupName(dest, function(destName) {
+            titleEl.textContent = hasLanded
+                ? destName + ' \u2013 Arrived'
+                : APT_NAME + ' \u2192 ' + destName;
+        });
     }
 
     function updateEnRouteMarker(f) {
