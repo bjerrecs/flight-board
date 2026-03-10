@@ -1522,21 +1522,40 @@
             .catch(function (e) { console.warn('Global ATC fetch failed:', e); });
     }
 
+    var airportNameCache = {};  // icao → name, avoid repeat fetches
+
     function updateMapTitle(f) {
         var titleEl = document.querySelector('.map-airport-name');
-        var icaoEl  = document.querySelector('.map-airport-icao');
         if (!titleEl) return;
         var dest = (f && f.destination || '').trim().toUpperCase();
         if (!dest || dest === AIRPORT) {
             titleEl.textContent = APT_NAME;
-            if (icaoEl) icaoEl.style.display = '';
             return;
         }
         var status = (f && f.status) || '';
         var hasLanded = status === 'Landed' || status === 'At Gate' ||
                         ((f.groundspeed || 0) < 10 && (f.altitude || 0) < 3000);
-        titleEl.textContent = hasLanded ? dest + ' \u2013 Arrived' : AIRPORT + ' \u2192 ' + dest;
-        if (icaoEl) icaoEl.style.display = 'none';
+
+        function applyTitle(destName) {
+            titleEl.textContent = hasLanded
+                ? destName + ' \u2013 Arrived'
+                : APT_NAME + ' \u2192 ' + destName;
+        }
+
+        if (airportNameCache[dest] !== undefined) {
+            applyTitle(airportNameCache[dest]);
+            return;
+        }
+
+        // Show ICAO immediately, then replace with real name once fetched
+        applyTitle(dest);
+        fetch('/api/airport_name/' + encodeURIComponent(dest))
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                airportNameCache[dest] = data.name || dest;
+                applyTitle(airportNameCache[dest]);
+            })
+            .catch(function() { airportNameCache[dest] = dest; });
     }
 
     function updateEnRouteMarker(f) {
