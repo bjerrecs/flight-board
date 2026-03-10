@@ -231,7 +231,7 @@
                 </button>
                 <button id="fullscreenBtn" class="fs-footer-btn" title="Fullscreen">⛶</button>
             </div>
-            <div class="footer-version">v{{ app_version }}</div>
+            <button id="changelogBtn" class="footer-version footer-version-btn" title="Changelog">v{{ app_version }}</button>
         </div>
     </div>
 </footer>
@@ -356,6 +356,62 @@
             <section class="help-section help-section-last">
                 <h3>Support</h3>
                 <p>Enjoying FlightBoard? Consider <a href="https://buymeacoffee.com/tazmattar" target="_blank" rel="noopener">supporting development</a> — it keeps the servers running.</p>
+            </section>
+
+        </div>
+    </div>
+</div>
+
+<!-- Changelog Modal -->
+<div id="changelogModal" class="modal">
+    <div class="modal-content help-modal-content">
+        <span class="close" id="changelogModalClose">&times;</span>
+        <h2>Changelog</h2>
+        <div class="help-modal-body">
+
+            <section class="help-section">
+                <h3>v1.2.2 — 2026-03-10</h3>
+                <ul>
+                    <li>Stockholm Arlanda (ESSA) theme and check-in desk assignments</li>
+                    <li>Live Map: OSM taxiway data cached per airport — faster reloads and more reliable display during flight tracking</li>
+                    <li>Live Map: map no longer zooms away from the airport when tracking a ground flight</li>
+                </ul>
+            </section>
+
+            <section class="help-section">
+                <h3>v1.1.9 — 2026-03-09</h3>
+                <ul>
+                    <li>SID/STAR route segments drawn as smooth curves; procedure now inferred from waypoints when not filed, with live METAR wind as tiebreaker</li>
+                    <li>Admin panel: Nav Data tab with AIRAC cycle info and NAVDATA upload</li>
+                </ul>
+            </section>
+
+            <section class="help-section">
+                <h3>v1.1.4 — 2026-03-08</h3>
+                <ul>
+                    <li>Live Map launched with real-time aircraft markers, airline logos, breadcrumb trails, ATC overlays, conflict detection, and boarding pass printing</li>
+                    <li>Flight locator button and auto-follow mode</li>
+                    <li>All airborne VATSIM traffic shown globally when tracking a flight</li>
+                    <li>Actual departure and arrival times shown on the board</li>
+                </ul>
+            </section>
+
+            <section class="help-section">
+                <h3>Earlier — 2026-03-01 to 2026-03-07</h3>
+                <ul>
+                    <li>Gate display page at <code>/gate/ICAO/CALLSIGN</code> for OBS overlays and streaming</li>
+                    <li>METAR popover with decoded weather data</li>
+                    <li>Paris CDG (LFPG) and Manchester (EGCC) themes added</li>
+                    <li>Multi-language footer — Arrivals/Departures/Gates translate based on airport country</li>
+                </ul>
+            </section>
+
+            <section class="help-section help-section-last">
+                <h3>Earlier — 2026-02-27</h3>
+                <ul>
+                    <li>Frankfurt Airport (EDDF) theme with animated Solari split-flap display</li>
+                    <li>Split-flap lite mode for low-powered devices (<code>?lite=1</code>)</li>
+                </ul>
             </section>
 
         </div>
