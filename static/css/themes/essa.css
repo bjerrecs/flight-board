@@ -109,46 +109,6 @@ body.theme-essa .flap-container {
     text-transform: none !important;
 }
 
-/* --- STATUS COLOURS --- */
-body.theme-essa .col-status[data-status="Boarding"] .flap-container {
-    color: #4cff8a !important;      /* bright green */
-}
-
-body.theme-essa .col-status[data-status="Check-in"] .flap-container,
-body.theme-essa .col-status[data-status="Scheduled"] .flap-container {
-    color: var(--essa-white) !important;
-}
-
-body.theme-essa .col-status[data-status="Departing"] .flap-container,
-body.theme-essa .col-status[data-status="Taxiing"] .flap-container,
-body.theme-essa .col-status[data-status="Pushback"] .flap-container {
-    color: #7dd4ff !important;      /* sky blue */
-}
-
-body.theme-essa .col-status[data-status="En Route"] .flap-container {
-    color: var(--essa-white) !important;
-}
-
-body.theme-essa .col-status[data-status*="Delayed"] .flap-container {
-    color: #ff6b6b !important;      /* red */
-}
-
-body.theme-essa .col-status[data-status="Cancelled"] .flap-container,
-body.theme-essa .col-status[data-status="CLOSED"] .flap-container {
-    color: #ff4444 !important;
-}
-
-body.theme-essa .col-status[data-status="At Gate"] .flap-container,
-body.theme-essa .col-status[data-status="Landing"] .flap-container,
-body.theme-essa .col-status[data-status="Landed"] .flap-container,
-body.theme-essa .col-status[data-status="Approaching"] .flap-container {
-    color: #4cff8a !important;
-}
-
-body.theme-essa .col-status[data-status="Wait"] .flap-container {
-    color: var(--essa-yellow) !important;
-}
-
 /* --- FOOTER --- */
 body.theme-essa .fids-footer {
     background-color: var(--essa-blue);
