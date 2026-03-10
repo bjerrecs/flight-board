@@ -5,18 +5,15 @@
    ============================================= */
 
 body.theme-essa {
-    --essa-blue:         #0f3a7a;   /* Primary board blue — all backgrounds & rows */
+    --essa-blue:         #0f3a7a;   /* Single dark blue — used everywhere */
     --essa-blue-border:  #3a74d4;   /* Lighter blue — row borders ONLY */
-    --essa-blue-header:  #0f3a7a;   /* Header/footer background */
-    --essa-blue-th:      #082456;   /* Column header bar — darkest anchor blue */
     --essa-yellow:       #f5c800;   /* Destination names & gate numbers */
     --essa-white:        #ffffff;
-    --essa-divider:      #082456;
 }
 
 /* --- HEADER --- */
 body.theme-essa .fids-header {
-    background-color: var(--essa-blue-header);
+    background-color: var(--essa-blue);
     border-bottom: 3px solid var(--essa-blue-border);
     box-shadow: none;
 }
@@ -41,7 +38,7 @@ body.theme-essa .widget-text {
 
 /* --- SECTION DIVIDER (Departures / Arrivals label) --- */
 body.theme-essa .section-divider {
-    background-color: var(--essa-divider);
+    background-color: var(--essa-blue);
     color: var(--essa-white);
     border-bottom: 2px solid var(--essa-blue-border);
     font-size: 1.4em;
@@ -58,7 +55,7 @@ body.theme-essa .table-scroll-area {
 
 /* --- COLUMN HEADERS (th row) --- */
 body.theme-essa .flight-table th {
-    background-color: var(--essa-blue-th);
+    background-color: var(--essa-blue);
     color: var(--essa-white);
     border-bottom: 2px solid var(--essa-blue-border);
     font-weight: 500;
@@ -68,7 +65,6 @@ body.theme-essa .flight-table th {
 }
 
 /* --- TABLE ROWS --- */
-/* All rows: primary blue background with lighter blue outline border */
 body.theme-essa .flight-table tbody tr {
     outline: 1px solid var(--essa-blue-border);
     outline-offset: -1px;
@@ -79,7 +75,6 @@ body.theme-essa .flight-table td {
     border-bottom: 2px solid var(--essa-blue-border);
     color: var(--essa-white);
 }
-
 
 /* --- YELLOW TEXT: Destination / Origin airport names --- */
 body.theme-essa .col-destination .flap-container,
@@ -150,7 +145,7 @@ body.theme-essa .col-status[data-status="Wait"] .flap-container {
 
 /* --- FOOTER --- */
 body.theme-essa .fids-footer {
-    background-color: var(--essa-blue-header);
+    background-color: var(--essa-blue);
     border-top: 3px solid var(--essa-blue-border);
 }
 
