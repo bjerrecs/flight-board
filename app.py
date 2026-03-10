@@ -1065,6 +1065,16 @@ def api_admin_upload_navdata():
     route_parser.reload_navdata()
     return jsonify({'ok': True, **_get_navdata_info()})
 
+@app.route('/api/airport_name/<icao>')
+def api_airport_name(icao):
+    """Return just the display name for an airport ICAO code"""
+    normalized = _normalize_icao(icao)
+    if not normalized:
+        return jsonify({'name': icao.upper()})
+    airport_info = flight_fetcher.get_airport_info(normalized)
+    name = airport_info.get('name', normalized) if airport_info else normalized
+    return jsonify({'name': name})
+
 @app.route('/api/search_airport', methods=['POST'])
 def search_airport():
     """Search for a dynamic airport by ICAO code and fetch its data"""
