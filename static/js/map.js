@@ -902,6 +902,7 @@
             const off = offsets[f.callsign] || { dx: 14, dy: -14 };
 
             const isTracked = f.callsign === trackedCallsign;
+            if (isTracked) updateMapTitle(f);
             // Dim if in a different zone (airborne vs ground) to the tracked flight
             updateTrail(f, !!trackedCallsign && !isTracked && (isAirborne(f) !== trackedIsAirborne));
             if (markers[f.callsign]) {
@@ -1692,8 +1693,6 @@
     function stopTrackPoller() {
         if (trackPoller) { clearInterval(trackPoller); trackPoller = null; }
         trackedEnRoute = false;
-        var titleEl = document.querySelector('.map-airport-name');
-        if (titleEl) titleEl.textContent = APT_NAME;
     }
 
     function onTrackingStart(callsign) {
@@ -1706,6 +1705,8 @@
 
     function onTrackingStop() {
         stopTrackPoller();
+        var titleEl = document.querySelector('.map-airport-name');
+        if (titleEl) titleEl.textContent = APT_NAME;
         if (globalAtcPoller) { clearInterval(globalAtcPoller); globalAtcPoller = null; }
         // Sector highlights will revert to local CTR on the next updateATC call
         if (nearbyPoller) { clearInterval(nearbyPoller); nearbyPoller = null; }
