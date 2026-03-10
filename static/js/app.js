@@ -274,7 +274,8 @@ document.addEventListener('DOMContentLoaded', () => {
         EGCC: { css: '/static/css/themes/egcc.css', class: 'theme-egcc' },
         EHAM: { css: '/static/css/themes/eham.css', class: 'theme-eham' },
         KJFK: { css: '/static/css/themes/kjfk.css', class: 'theme-kjfk' },
-        RJTT: { css: '/static/css/themes/rjtt.css', class: 'theme-rjtt' }
+        RJTT: { css: '/static/css/themes/rjtt.css', class: 'theme-rjtt' },
+        ESSA: { css: '/static/css/themes/essa.css', class: 'theme-essa' }
     };
     let themeMap = { ...defaultThemeMap };
 
@@ -317,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     "LFPO": "Paris Orly", "LFPG": "Paris CDG", "EDDF": "Frankfurt", "EDDM": "Munich",
                     "OMDB": "Dubai", "VHHH": "Hong Kong", "WSSS": "Singapore",
                     "KBOS": "Boston", "LLBG": "Tel Aviv", "LSHD": "Zurich Heliport",
-                    "LIBG": "Taranto-Grottaglie"
+                    "LIBG": "Taranto-Grottaglie", "ESSA": "Stockholm Arlanda"
                 };
 
                 for (const [icao, details] of Object.entries(data)) {
