@@ -5,13 +5,13 @@
    ============================================= */
 
 body.theme-essa {
-    --essa-blue:         #1a52a8;   /* Primary board blue — row backgrounds */
-    --essa-blue-border:  #3a74d4;   /* Lighter blue — outer row border/outline */
-    --essa-blue-header:  #1a52a8;   /* Header/footer background — same as rows */
-    --essa-blue-th:      #0f3a7a;   /* Column header bar — darker anchor blue */
+    --essa-blue:         #0f3a7a;   /* Primary board blue — all backgrounds & rows */
+    --essa-blue-border:  #3a74d4;   /* Lighter blue — row borders ONLY */
+    --essa-blue-header:  #0f3a7a;   /* Header/footer background */
+    --essa-blue-th:      #082456;   /* Column header bar — darkest anchor blue */
     --essa-yellow:       #f5c800;   /* Destination names & gate numbers */
     --essa-white:        #ffffff;
-    --essa-divider:      #0f3a7a;
+    --essa-divider:      #082456;
 }
 
 /* --- HEADER --- */
@@ -29,7 +29,7 @@ body.theme-essa .add-airport-btn {
 }
 
 body.theme-essa .airport-selector select option {
-    background-color: var(--essa-blue-header);
+    background-color: var(--essa-blue);
     color: var(--essa-white);
 }
 
@@ -80,11 +80,6 @@ body.theme-essa .flight-table td {
     color: var(--essa-white);
 }
 
-/* Slightly darker alternate rows for subtle readability */
-body.theme-essa .flight-table tr:nth-child(even) td {
-    background-color: #1646920a;  /* fractionally darker — near-invisible tint */
-    background-color: #163f94;
-}
 
 /* --- YELLOW TEXT: Destination / Origin airport names --- */
 body.theme-essa .col-destination .flap-container,
