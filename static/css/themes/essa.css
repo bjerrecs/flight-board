@@ -9,6 +9,8 @@ body.theme-essa {
     --essa-blue-border:  #3a74d4;   /* Lighter blue — row borders ONLY */
     --essa-yellow:       #f5c800;   /* Destination names & gate numbers */
     --essa-white:        #ffffff;
+    --font-ui:           'Inter', sans-serif;
+    --font-data:         'Inter', sans-serif;
 }
 
 /* --- HEADER --- */
@@ -43,7 +45,7 @@ body.theme-essa .section-divider {
     border-bottom: 2px solid var(--essa-blue-border);
     font-size: 1.4em;
     padding: 12px 16px;
-    text-transform: uppercase;
+    text-transform: none;
     letter-spacing: 0.05em;
 }
 
@@ -59,7 +61,7 @@ body.theme-essa .flight-table th {
     color: var(--essa-white);
     border-bottom: 2px solid var(--essa-blue-border);
     font-weight: 500;
-    text-transform: uppercase;
+    text-transform: none;
     font-size: 0.9rem;
     letter-spacing: 0.04em;
 }
@@ -101,6 +103,10 @@ body.theme-essa .col-checkin,
 body.theme-essa .col-terminal,
 body.theme-essa .col-airline {
     color: var(--essa-white);
+}
+
+body.theme-essa .col-status .flap-container {
+    text-transform: none;
 }
 
 /* --- STATUS COLOURS --- */
