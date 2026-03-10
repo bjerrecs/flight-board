@@ -58,6 +58,8 @@ class CheckinAssignments:
             return self._frankfurt(airline, seed)
         elif airport_code == 'LFPG':
             return self._cdg(airline, seed)
+        elif airport_code == 'ESSA':
+            return self._arlanda(airline, seed)
         else:
             # Generic fallback for unknown airports
             return self._generic(seed)
@@ -396,6 +398,47 @@ class CheckinAssignments:
         # Default: Terminal 2F general
         desk = (seed % 20) + 21
         return f"2F-{desk}"
+
+    # ==================== SWEDEN ====================
+
+    def _arlanda(self, airline, seed):
+        """Stockholm Arlanda (ESSA) check-in assignments
+
+        Arlanda uses a flat numbered desk range system displayed as e.g. '01-12'.
+        Ranges are allocated by airline/operation type.
+        """
+        # Desks 01-12: Budget/low-cost (Ryanair, Wizz Air)
+        if airline in ['RYR', 'RUK', 'WZZ']:
+            return "01-12"
+
+        # Desks 13-16: Long-haul independents (Norse Atlantic, etc.)
+        if airline in ['NBT', 'NAN']:
+            return "13-16"
+
+        # Desks 17-30: Norwegian + easyJet
+        if airline in ['NAX', 'EZY', 'EJU']:
+            return "17-30"
+
+        # Desks 31-45: SAS domestic
+        if airline in ['SAS']:
+            if seed % 2 == 0:
+                return "31-40"
+            return "36-45"
+
+        # Desks 46-60: SAS international + Scandinavian partners
+        if airline in ['FIN', 'BEL', 'LOT', 'TAP', 'ADR']:
+            return "46-60"
+
+        # Desks 61-70: Star Alliance long-haul (Lufthansa, ANA, SIA, etc.)
+        if airline in ['DLH', 'AUA', 'ACA', 'THA', 'ANA', 'SIA', 'ETH', 'CTN']:
+            return "61-70"
+
+        # Desks 71-90: Charter & leisure (TUI, Jet2, Sunclass, Thomas Cook)
+        if airline in ['TOM', 'EXS', 'SXS', 'VOE', 'FDY']:
+            return "71-90"
+
+        # Desks 91-99: Other scheduled (Gulf, oneworld, independent)
+        return "91-99"
 
     # ==================== GENERIC FALLBACK ====================
 

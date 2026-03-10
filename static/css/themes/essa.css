@@ -6,7 +6,7 @@
 
 body.theme-essa {
     --essa-blue:         #0f3a7a;   /* Single dark blue — used everywhere */
-    --essa-blue-border:  #3a74d4;   /* Lighter blue — row borders ONLY */
+    --essa-blue-border:  #5a90e8;   /* Lighter blue — row borders ONLY */
     --essa-yellow:       #f5c800;   /* Destination names & gate numbers */
     --essa-white:        #ffffff;
     --font-ui:           'Inter', sans-serif;
@@ -16,7 +16,7 @@ body.theme-essa {
 /* --- HEADER --- */
 body.theme-essa .fids-header {
     background-color: var(--essa-blue);
-    border-bottom: 3px solid var(--essa-blue-border);
+    border-bottom: 3px solid var(--essa-white);
     box-shadow: none;
 }
 
@@ -55,6 +55,15 @@ body.theme-essa .table-scroll-area {
     background-color: var(--essa-blue);
 }
 
+/* --- TABLE BORDER (hide black default) --- */
+body.theme-essa .flight-table {
+    border-color: var(--essa-blue);
+}
+
+body.theme-essa .split-panel {
+    border-color: var(--essa-blue);
+}
+
 /* --- COLUMN HEADERS (th row) --- */
 body.theme-essa .flight-table th {
     background-color: var(--essa-blue);
@@ -67,14 +76,10 @@ body.theme-essa .flight-table th {
 }
 
 /* --- TABLE ROWS --- */
-body.theme-essa .flight-table tbody tr {
-    outline: 1px solid var(--essa-blue-border);
-    outline-offset: -1px;
-}
 
 body.theme-essa .flight-table td {
     background-color: var(--essa-blue);
-    border-bottom: 2px solid var(--essa-blue-border);
+    border-bottom: 1px solid var(--essa-blue-border);
     color: var(--essa-white);
 }
 

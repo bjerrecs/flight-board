@@ -141,6 +141,9 @@ window.updateFooterText = function(airportCode, country) {
     window.currentLanguageCode = languageCode;
     document.dispatchEvent(new CustomEvent('language-change', { detail: { languageCode } }));
     
+    // Per-airport overrides for specific labels
+    const gateLabelOverrides = { 'ESSA': 'Gates' };
+
     if (translation.bilingual) {
         // Bilingual display: Local language with English subtitle
         console.log('[Language Handler] Applying BILINGUAL display');
@@ -161,6 +164,11 @@ window.updateFooterText = function(airportCode, country) {
         document.getElementById('departuresLabel1').textContent = translation.departures;
         document.getElementById('departuresLabel2').style.display = 'none';
         document.getElementById('securityLabel').innerHTML = translation.security;
+    }
+
+    // Apply any per-airport label overrides
+    if (gateLabelOverrides[airportCode]) {
+        document.getElementById('gateLabel').textContent = gateLabelOverrides[airportCode];
     }
 }
 
