@@ -50,5 +50,9 @@
   "RJTT": {
     "css": "/static/css/themes/rjtt.css",
     "class": "theme-rjtt"
+  },
+  "ESSA": {
+    "css": "/static/css/themes/essa.css",
+    "class": "theme-essa"
   }
 }

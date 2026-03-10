@@ -49,6 +49,7 @@ class VatsimFetcher:
             'RJTT': { 'name': 'Tokyo Haneda', 'ceiling': 6000, 'has_stands': True  },
             'EHAM': { 'name': 'Amsterdam Schiphol', 'ceiling': 6000, 'has_stands': True },
             'EDDF': { 'name': 'Frankfurt Airport', 'ceiling': 5000, 'has_stands': True },
+            'ESSA': { 'name': 'Stockholm Arlanda', 'ceiling': 7000, 'has_stands': False },
         }
         
         # Load Geofencing Stands (Coordinate based)
