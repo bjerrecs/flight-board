@@ -434,6 +434,18 @@ html, body {
     font-size: 0.65rem;
     color: #fff;
 }
+.footer-version-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+}
+.footer-version-btn:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
 .support-footer-btn {
     display: inline-flex;
     align-items: center;
@@ -799,14 +811,19 @@ html, body {
     font-weight: 600;
 }
 
-/* ---- Help Modal ---- */
-#helpModal .modal-content {
+/* ---- Help / Changelog Modals ---- */
+#helpModal .modal-content,
+#changelogModal .modal-content {
     max-width: 680px;
     margin: 4% auto;
     max-height: 88vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+
+#changelogModal .help-modal-body {
+    font-size: 0.9em;
 }
 .help-modal-body {
     overflow-y: auto;

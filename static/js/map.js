@@ -1524,13 +1524,19 @@
 
     function updateMapTitle(f) {
         var titleEl = document.querySelector('.map-airport-name');
+        var icaoEl  = document.querySelector('.map-airport-icao');
         if (!titleEl) return;
         var dest = (f && f.destination || '').trim().toUpperCase();
-        if (!dest || dest === AIRPORT) { titleEl.textContent = APT_NAME; return; }
+        if (!dest || dest === AIRPORT) {
+            titleEl.textContent = APT_NAME;
+            if (icaoEl) icaoEl.style.display = '';
+            return;
+        }
         var status = (f && f.status) || '';
         var hasLanded = status === 'Landed' || status === 'At Gate' ||
                         ((f.groundspeed || 0) < 10 && (f.altitude || 0) < 3000);
         titleEl.textContent = hasLanded ? dest + ' \u2013 Arrived' : AIRPORT + ' \u2192 ' + dest;
+        if (icaoEl) icaoEl.style.display = 'none';
     }
 
     function updateEnRouteMarker(f) {

@@ -1472,6 +1472,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === helpModal) helpModal.style.display = 'none';
     });
 
+    // ====== CHANGELOG MODAL ======
+    const changelogModal = document.getElementById('changelogModal');
+    const changelogBtn = document.getElementById('changelogBtn');
+    const changelogModalClose = document.getElementById('changelogModalClose');
+
+    if (changelogBtn) {
+        changelogBtn.onclick = function() { changelogModal.style.display = 'block'; };
+    }
+    if (changelogModalClose) {
+        changelogModalClose.onclick = function() { changelogModal.style.display = 'none'; };
+    }
+    window.addEventListener('click', function(e) {
+        if (e.target === changelogModal) changelogModal.style.display = 'none';
+    });
+
     // ====== GATE DISPLAY MODAL ======
     const gateDisplayModal = document.getElementById('gateDisplayModal');
     const gateDisplayClose = document.querySelector('.gate-display-close');
