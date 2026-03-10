@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
                document.body.classList.contains('theme-egll') ||
                document.body.classList.contains('theme-egss') ||
                document.body.classList.contains('theme-egkk') ||
-               document.body.classList.contains('theme-eglc');
+               document.body.classList.contains('theme-eglc') ||
+               document.body.classList.contains('theme-essa');
     }
 
     function toTitleCase(value) {
