@@ -15,14 +15,13 @@ If the flight board adds a little extra joy to your sim experience, a coffee hel
 * **Universal Airport Support:** Instantly load *any* airport on the VATSIM network by searching for its ICAO code in the UI.
 * **Direct Link Loading:** Open the board directly to an airport using `?icao=XXXX` (or `?airport=XXXX`) in the URL.
 * **Pre-Configured Hubs:** One-click switching between major hubs: LSZH, LSGG, LFSB, EGLC, EGLL, EGKK, EGSS, EGCC, EHAM, EDDF, LFPG, KJFK, and RJTT.
-* **Track Flight Mode:** Tap/click any visible flight row to track exactly one callsign and follow it with automatic airport switching.
+* **Flight Info Modal:** Click any flight row to open a card showing airline logo, callsign, aircraft type, status, gate, time, and a live SVG route arc from origin to destination. A **Track on Live Map** button starts tracking and navigates directly to the radar map.
 * **Real-Time Data:** Automatically fetches and refreshes pilot and flight plan data from the VATSIM Public Data API (v3) every 30 seconds.
 * **Live WebSockets:** Uses Socket.IO to push updates immediately to the client without requiring a page refresh.
 * **Header Widgets:** Live ATC status with controller popover, METAR-driven weather icon and temperature display, and a compass link to the Live Map. Hover the weather widget to reveal a **METAR popover** with the raw string and decoded wind, visibility, cloud, temperature/dewpoint, and QNH.
 * **Live Radar Map:** Dedicated page at `/map/<ICAO>` showing all departures and arrivals as real-time aircraft markers on a dark Leaflet map. Markers are color-coded (green = ground ops, blue = arrivals, orange = departures) and rotated to show heading. Click any aircraft to open a detail panel with callsign, status, route, gate, and a link to the gate display. An ATC panel lists online controllers with markers at approximate positions. Uses Socket.IO for live updates.
 * **TCAS-Style Conflict Detection:** En-route and approaching aircraft are continuously monitored for proximity conflicts using ICAO separation minima. Three severity tiers are visualised as pulsing SVG rings on aircraft icons and dashed connecting polylines: yellow (<10 NM / <2,000 ft), orange (<5 NM / <1,000 ft), red (<2 NM / <800 ft). Aircraft below 1,000 ft or in ground/departure phases are excluded. In tracked-flight mode only pairs involving the tracked callsign are shown. Toggleable from the map legend with state persisted in localStorage.
-* **Gate Display Board:** Right-click any flight row to open an airport-style gate information card showing flight number, airline logo, destination/origin city, status badge, gate, scheduled time, and aircraft type.
-* **Full-Page Gate Display (Streamer Mode):** Dedicated full-page gate monitor at `/gate/<ICAO>/<callsign>` — designed for OBS overlays and streaming. Features a clean white layout with large gate number, airline logo, flight number, destination, departure time, aircraft, and status pill. Accent colours are dynamically extracted from the airline's logo. Also accessible via the ↗ link inside the gate display modal.
+* **Full-Page Gate Display (Streamer Mode):** Dedicated full-page gate monitor at `/gate/<ICAO>/<callsign>` — designed for OBS overlays and streaming. Features a clean white layout with large gate number, airline logo, flight number, destination, departure time, aircraft, and status pill. Accent colours are dynamically extracted from the airline's logo.
 * **Help / User Guide:** Built-in modal accessible from the header, covering all features and keyboard shortcuts.
 * **Responsive Layout:**
     * **Landscape Mode:** Displays Departures and Arrivals side-by-side.
@@ -31,9 +30,9 @@ If the flight board adds a little extra joy to your sim experience, a coffee hel
 * **Event Ticker:** A slim scrolling ticker bar appears above the footer whenever the current airport has an active or upcoming VATSIM event (within 24 hours), sourced from the VATSIM Events API. Automatically hidden when no events are scheduled.
 
 ### Track Flight Mode
-* **Start tracking:** Select any visible departure/arrival row.
-* **One active flight:** Selecting a new row replaces the previous tracked callsign.
-* **Stop tracking:** Select the same row again, or use the `x` action in the header tracking label.
+* **Start tracking:** Click any flight row to open the Flight Info modal, then click **Track on Live Map**.
+* **One active flight:** Tracking a new flight replaces the previous tracked callsign.
+* **Stop tracking:** Press the `×` on the tracking chip in the header.
 * **Header indicator:** Shows tracked flight in the format `Tracking Flight BAW123 (EGLL-KJFK)`.
 * **Persistence:** The tracked callsign is saved in local storage and restored after refresh/reconnect.
 * **Auto-switch rule:** The board switches only after the tracked flight reaches a departure/airborne phase (`Departing`, `En Route`, and later statuses).
@@ -167,6 +166,7 @@ This project is open-source and available under the MIT License. See [POLICY.md]
 - [x] Full-page Gate Display for streamers with dynamic airline accent colours
 - [x] Live Radar Map with real-time aircraft tracking and ATC overlay
 - [x] TCAS-style conflict detection on the radar map (three severity tiers, toggleable)
+- [x] Flight Info Modal with SVG route arc and one-tap Track on Live Map CTA
 
 ## Bonus - Running as a Dedicated Kiosk Display
 
