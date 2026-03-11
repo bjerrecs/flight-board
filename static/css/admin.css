@@ -398,3 +398,20 @@ td select {
   font-size: .9rem;
 }
 
+
+/* ── ATIS Log ─────────────────────────────────────────────── */
+.atis-log-empty {
+  text-align: center;
+  opacity: .5;
+  padding: 1.5rem;
+}
+.atis-log-unparsed td { border-left: 3px solid #ff8a65; }
+.atis-log-noatis td   { border-left: 3px solid #fff176; }
+.atis-log-time    { white-space: nowrap; opacity: .7; font-size: .85rem; }
+.atis-log-airport { font-weight: 700; letter-spacing: .05em; }
+.atis-log-text {
+  font-family: monospace;
+  font-size: .8rem;
+  opacity: .8;
+  word-break: break-word;
+}

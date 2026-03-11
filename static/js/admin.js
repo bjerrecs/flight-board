@@ -702,6 +702,33 @@
     });
   })();
 
+  // ── ATIS Log ──────────────────────────────────────────────────────────────
+  async function loadAtisLog() {
+    const response = await fetch('/api/admin/atis_log');
+    if (!response.ok) throw new Error('Failed to load ATIS log');
+    const entries = await response.json();
+    const tbody = document.getElementById('atisLogBody');
+    if (!entries.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="atis-log-empty">No fallback events recorded yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = entries.map(function (e) {
+      var rowClass = e.text ? 'atis-log-unparsed' : 'atis-log-noatis';
+      return '<tr class="' + rowClass + '">'
+        + '<td class="atis-log-time">' + e.time + '</td>'
+        + '<td class="atis-log-airport">' + e.airport + '</td>'
+        + '<td>' + e.reason + '</td>'
+        + '<td class="atis-log-text">' + (e.text || '—') + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  document.getElementById('refreshAtisLogBtn').addEventListener('click', () =>
+    loadAtisLog()
+      .then(() => setStatus('ATIS log refreshed.', 'ok'))
+      .catch(e => setStatus(e.message, 'error'))
+  );
+
   // ── Init ──────────────────────────────────────────────────────────────────
   (async function init() {
     try {
@@ -710,6 +737,7 @@
       await loadTrafficStats();
       await loadCustomAirports();
       loadNavdataInfo();
+      loadAtisLog();
       setStatus('Admin ready.', 'ok');
     } catch (e) {
       setStatus(e.message, 'error');

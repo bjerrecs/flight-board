@@ -128,6 +128,13 @@
     var taxiwayGroup     = L.layerGroup();
     var standGroup       = L.layerGroup();
 
+    var runwayGeometries = {};  // "14/32" -> { polyline, bearing, coords, parts }
+
+    var RUNWAY_STYLE_DEFAULT     = { color: '#555', weight: 6, opacity: 0.55 };
+    var RUNWAY_STYLE_ACTIVE_ARR  = { color: '#64b5f6', weight: 8, opacity: 0.9 };
+    var RUNWAY_STYLE_ACTIVE_DEP  = { color: '#69f0ae', weight: 8, opacity: 0.9 };
+    var RUNWAY_STYLE_ACTIVE_BOTH = { color: '#fff176', weight: 8, opacity: 0.9 };
+
     function updateFeatureVisibility() {
         var z = map.getZoom();
         function toggle(group, minZ) {
@@ -196,7 +203,7 @@
 
             if (aw === 'runway' && el.geometry && el.geometry.length >= 2) {
                 var coords = el.geometry.map(function (p) { return [p.lat, p.lon]; });
-                L.polyline(coords, { color: '#555', weight: 6, opacity: 0.55, interactive: false }).addTo(map);
+                var rwLine = L.polyline(coords, { color: '#555', weight: 6, opacity: 0.55, interactive: false }).addTo(map);
                 L.polyline(coords, { color: '#888', weight: 1, opacity: 0.45, dashArray: '10 8', interactive: false }).addTo(map);
                 var ref = el.tags.ref;
                 if (!ref || ref.indexOf('/') === -1) return;
@@ -213,6 +220,13 @@
                 }
                 addRunwayLabel(p1, labelP1, hdg + 180);
                 addRunwayLabel(p2, labelP2, hdg);
+                // Store reference for active runway highlighting
+                runwayGeometries[ref] = {
+                    polyline: rwLine,
+                    bearing: hdg,
+                    coords: coords,
+                    parts: parts,
+                };
             }
 
             if ((aw === 'taxiway' || aw === 'taxilane') && el.geometry && el.geometry.length >= 2) {
@@ -243,6 +257,96 @@
     }
 
     var OSM_CACHE_KEY = 'flightboard.osm.' + AIRPORT;
+
+    function calcWindRunways(windDir) {
+        // windDir is FROM direction (METAR convention)
+        var active = [];
+        Object.keys(runwayGeometries).forEach(function (ref) {
+            var rw = runwayGeometries[ref];
+            rw.parts.forEach(function (rwyNum) {
+                var num = parseInt(rwyNum);
+                if (isNaN(num)) return;
+                var rwyHdg = num * 10;
+                var diff = Math.abs(rwyHdg - windDir) % 360;
+                diff = Math.min(diff, 360 - diff);
+                if (diff <= 90) active.push(rwyNum);
+            });
+        });
+        return active;
+    }
+
+    function updateRunwayHUD(data, landing, departing) {
+        var srcEl = document.getElementById('rwyHudSource');
+        var landEl = document.getElementById('rwyHudLanding');
+        var depEl = document.getElementById('rwyHudDeparting');
+        var atisEl = document.getElementById('rwyHudAtis');
+        if (!srcEl) return;
+
+        var hasData = landing.length > 0 || departing.length > 0;
+
+        srcEl.classList.remove('rwy-hud-loading');
+        srcEl.textContent = data.source === 'atis' ? 'ATIS' : 'WIND';
+        srcEl.style.background = data.source === 'atis'
+            ? 'rgba(105, 240, 174, 0.2)' : 'rgba(255, 241, 118, 0.2)';
+        srcEl.style.color = data.source === 'atis' ? '#69f0ae' : '#fff176';
+
+        var phonetic = { A:'ALPHA',B:'BRAVO',C:'CHARLIE',D:'DELTA',E:'ECHO',F:'FOXTROT',
+            G:'GOLF',H:'HOTEL',I:'INDIA',J:'JULIET',K:'KILO',L:'LIMA',M:'MIKE',
+            N:'NOVEMBER',O:'OSCAR',P:'PAPA',Q:'QUEBEC',R:'ROMEO',S:'SIERRA',
+            T:'TANGO',U:'UNIFORM',V:'VICTOR',W:'WHISKEY',X:'XRAY',Y:'YANKEE',Z:'ZULU' };
+        atisEl.textContent = data.atis_code
+            ? 'Information ' + (phonetic[data.atis_code.toUpperCase()] || data.atis_code) : '';
+        atisEl.style.display = data.atis_code ? '' : 'none';
+
+        var freqEl = document.getElementById('rwyHudFreq');
+        if (freqEl) {
+            freqEl.textContent = data.frequency ? data.frequency : '';
+            freqEl.style.display = data.frequency ? '' : 'none';
+        }
+
+        landEl.textContent = landing.length ? landing.join(', ') : '--';
+        depEl.textContent = departing.length ? departing.join(', ') : '--';
+
+        // Dim the values when no data, bright when populated
+        landEl.classList.toggle('rwy-hud-dim', !hasData);
+        depEl.classList.toggle('rwy-hud-dim', !hasData);
+    }
+
+    function updateActiveRunways(data) {
+        if (!data) return;
+        var landing = data.landing || [];
+        var departing = data.departing || [];
+
+        if (data.source === 'wind' && data.wind_dir != null) {
+            var calc = calcWindRunways(data.wind_dir);
+            landing = calc;
+            departing = calc;
+        }
+
+        Object.keys(runwayGeometries).forEach(function (ref) {
+            var rw = runwayGeometries[ref];
+            var parts = rw.parts;
+
+            var isLanding = parts.some(function (p) {
+                return landing.indexOf(p) !== -1;
+            });
+            var isDeparting = parts.some(function (p) {
+                return departing.indexOf(p) !== -1;
+            });
+
+            if (isLanding && isDeparting) {
+                rw.polyline.setStyle(RUNWAY_STYLE_ACTIVE_BOTH);
+            } else if (isLanding) {
+                rw.polyline.setStyle(RUNWAY_STYLE_ACTIVE_ARR);
+            } else if (isDeparting) {
+                rw.polyline.setStyle(RUNWAY_STYLE_ACTIVE_DEP);
+            } else {
+                rw.polyline.setStyle(RUNWAY_STYLE_DEFAULT);
+            }
+        });
+
+        updateRunwayHUD(data, landing, departing);
+    }
 
     function fetchAirportFeatures() {
         var q = '[out:json];('
@@ -1798,6 +1902,7 @@
         }
         updateMarkers(allFlights);
         updateATC(data.controllers || []);
+        if (data.active_runways) updateActiveRunways(data.active_runways);
         updateStats(allFlights.length, (data.controllers || []).length);
 
         // Manage en-route poller based on whether tracked flight is in local data

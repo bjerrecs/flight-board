@@ -5,7 +5,11 @@ import json
 import os
 import re
 import time
+from collections import deque
 from datetime import datetime, timedelta
+
+# In-memory ATIS fallback log — last 100 events, persists until service restart
+atis_fallback_log = deque(maxlen=100)
 
 _session = requests.Session()
 _session.headers.update({'User-Agent': 'FlightBoard/1.1.4 (flightboard.simfixr.com; tazmattar@gmail.com)'})
@@ -13,6 +17,48 @@ _session.headers.update({'User-Agent': 'FlightBoard/1.1.4 (flightboard.simfixr.c
 _metar_cache = {}       # icao -> {'text': str, 'fetched_at': float}
 METAR_CACHE_TTL = 5 * 60  # 5 minutes
 from checkin_assignments import CheckinAssignments
+
+# ── ATIS runway parser regexes ─────────────────────────────────────────
+
+_ATIS_ARR_RE = re.compile(
+    r'(?:APCH|APPROACH|ARR|ARRIVAL|LDG|LANDING|EXPECT\s+(?:ILS|RNAV|VIS(?:UAL)?)\s+(?:APPROACH\s+)?)'
+    r'\s*'
+    r'(?:IN\s+USE\s+)?'
+    r'(?:ILS\s+|RNAV\s+|VIS(?:UAL)?\s+)?'
+    r'(?:RWY|RY|RUNWAY)\s*'
+    r'(?:IN\s+USE\s+)?'
+    r'(\d{2}[LRC]?)'
+    r'(?:[,\s]+(?:(?:ILS|RNAV|VIS(?:UAL)?)\s+)?(?:(?:RWY|RY|RUNWAY)\s+)?(\d{2}[LRC]?))?'
+    r'(?:[,\s]+(?:(?:ILS|RNAV|VIS(?:UAL)?)\s+)?(?:(?:RWY|RY|RUNWAY)\s+)?(\d{2}[LRC]?))?',
+    re.IGNORECASE
+)
+
+_ATIS_DEP_RE = re.compile(
+    r'(?:DEP(?:TG|TING|T|G|ARTING|ARTURE)?|TKOF|TAKEOFF)\s+'
+    r'(?:RWY(?:S)?|RY|RUNWAY(?:S)?)\s*'
+    r'(\d{2}[LRC]?)'
+    r'(?:\s+AND\s+(\d{2}[LRC]?))?'
+    r'(?:[,\s]+(?:(?:RWY(?:S)?|RY|RUNWAY(?:S)?)\s+)?(\d{2}[LRC]?))?',
+    re.IGNORECASE
+)
+
+# "ILS RWY 32 APCH IN USE" / "ILS RWY 14R, APCH IN USE"
+# approach type precedes runway, APCH/APPROACH qualifier follows
+_ATIS_ARR_SUFFIX_RE = re.compile(
+    r'(?:ILS|RNAV|VIS(?:UAL)?)\s+'
+    r'(?:RWY(?:S)?|RY|RUNWAY(?:S)?)\s*'
+    r'(\d{2}[LRC]?)'
+    r'(?:[,\s]+(?:ILS|RNAV|VIS(?:UAL)?)\s+(?:RWY(?:S)?|RY|RUNWAY(?:S)?)\s*(\d{2}[LRC]?))*'
+    r'[,\s]+(?:APCH|APPROACH)\b',
+    re.IGNORECASE
+)
+
+_ATIS_COMBINED_RE = re.compile(
+    r'LANDING\s+AND\s+DEPARTING\s+'
+    r'(?:RWY|RY|RUNWAY)\s*'
+    r'(\d{2}[LRC]?)',
+    re.IGNORECASE
+)
 
 CUSTOM_AIRPORTS_PATH = os.path.join('data', 'custom_airports.json')
 
@@ -367,7 +413,12 @@ class VatsimFetcher:
                 
                 results[code]['metar'] = self.get_metar(code)
                 results[code]['controllers'] = self.get_controllers(data.get('controllers', []), code)
-            
+                atis_list = data.get('atis', [])
+                atis_rwys = self.parse_atis_runways(code, atis_list)
+                if not atis_rwys['landing'] and not atis_rwys['departing']:
+                    atis_rwys = self._wind_based_runways(results[code]['metar'], code, atis_list)
+                results[code]['active_runways'] = atis_rwys
+
             # Store global controller + pilot snapshots for tracking API
             new_controllers = []
             for c in data.get('controllers', []):
@@ -474,6 +525,11 @@ class VatsimFetcher:
             
             result['metar'] = self.get_metar(airport_code)
             result['controllers'] = self.get_controllers(data.get('controllers', []), airport_code)
+            atis_list = data.get('atis', [])
+            atis_rwys = self.parse_atis_runways(airport_code, atis_list)
+            if not atis_rwys['landing'] and not atis_rwys['departing']:
+                atis_rwys = self._wind_based_runways(result['metar'], airport_code, atis_list)
+            result['active_runways'] = atis_rwys
             return {airport_code: result}
         except Exception as e:
             print(f"Error fetching {airport_code}: {e}")
@@ -797,14 +853,126 @@ class VatsimFetcher:
         prefix = self._callsign_prefix(callsign)
         return self.fir_map.get(prefix, prefix)
 
+    def _callsign_prefixes(self, code):
+        """
+        Return the set of callsign prefixes to match for a given ICAO code.
+        US airports use the 3-letter FAA code on VATSIM (BOS_TWR not KBOS_TWR),
+        so for K-prefix 4-letter ICAOs we match both forms.
+        """
+        prefixes = {code}
+        if len(code) == 4 and code.startswith('K'):
+            prefixes.add(code[1:])  # KBOS → BOS
+        return prefixes
+
     def get_controllers(self, ctrls, code):
+        prefixes = self._callsign_prefixes(code)
         res = []
         for c in ctrls:
-            if c['callsign'].startswith(code):
+            cs = c['callsign']
+            if any(cs.startswith(p + '_') for p in prefixes):
                 res.append({
-                    'callsign':    c['callsign'],
+                    'callsign':    cs,
                     'frequency':   c['frequency'],
-                    'position':    c['callsign'].split('_')[-1],
-                    'boundary_id': self._boundary_id(c['callsign']),
+                    'position':    cs.split('_')[-1],
+                    'boundary_id': self._boundary_id(cs),
                 })
         return res
+
+    def parse_atis_runways(self, airport_code, atis_list):
+        """
+        Parse VATSIM ATIS text to extract active runways.
+        Returns dict: {
+            'landing': ['14', '16L'],
+            'departing': ['28R'],
+            'atis_code': 'A',
+            'source': 'atis'
+        }
+        """
+        result = {'landing': [], 'departing': [],
+                  'atis_code': None, 'frequency': None, 'source': 'atis'}
+
+        prefixes = self._callsign_prefixes(airport_code)
+        for atis in atis_list:
+            cs = atis.get('callsign', '')
+            if not (any(cs.startswith(p + '_') for p in prefixes)
+                    and cs.endswith('_ATIS')):
+                continue
+
+            text = ' '.join(atis.get('text_atis', []))
+            result['atis_code'] = atis.get('atis_code')
+            result['frequency'] = atis.get('frequency')
+
+            is_dep_atis = '_D_ATIS' in cs
+            is_arr_atis = '_A_ATIS' in cs
+
+            # Combined landing-and-departing pattern first
+            for m in _ATIS_COMBINED_RE.finditer(text):
+                rwy = m.group(1).lstrip('0') or '0'
+                if rwy not in result['landing']:
+                    result['landing'].append(rwy)
+                if rwy not in result['departing']:
+                    result['departing'].append(rwy)
+
+            # Arrival patterns (skip if this is a DEP-only ATIS)
+            if not is_dep_atis:
+                for m in _ATIS_ARR_RE.finditer(text):
+                    for g in m.groups():
+                        if g:
+                            rwy = g.lstrip('0') or '0'
+                            if rwy not in result['landing']:
+                                result['landing'].append(rwy)
+                # "ILS RWY 32 APCH IN USE" format
+                for m in _ATIS_ARR_SUFFIX_RE.finditer(text):
+                    for g in m.groups():
+                        if g:
+                            rwy = g.lstrip('0') or '0'
+                            if rwy not in result['landing']:
+                                result['landing'].append(rwy)
+
+            # Departure patterns (skip if this is an ARR-only ATIS)
+            if not is_arr_atis:
+                for m in _ATIS_DEP_RE.finditer(text):
+                    for g in m.groups():
+                        if g:
+                            rwy = g.lstrip('0') or '0'
+                            if rwy not in result['departing']:
+                                result['departing'].append(rwy)
+
+        return result
+
+    def _wind_based_runways(self, metar_text, airport_code, atis_list=None):
+        """
+        Fallback: return wind direction from METAR for frontend to calculate
+        active runways against its OSM runway geometries.
+        """
+        from route_parser import parse_metar_wind
+        wind_dir = parse_metar_wind(metar_text)
+        ts = datetime.utcnow().strftime('%H:%MZ')
+
+        if atis_list:
+            prefixes = self._callsign_prefixes(airport_code)
+            for atis in atis_list:
+                cs = atis.get('callsign', '')
+                if any(cs.startswith(p + '_') for p in prefixes) and cs.endswith('_ATIS'):
+                    text = ' | '.join(atis.get('text_atis', []))
+                    msg = f"ATIS online but no runways parsed — {cs}"
+                    print(f"[ATIS-FALLBACK] {airport_code}: {msg} | Text: {text}")
+                    atis_fallback_log.appendleft({
+                        'time': ts, 'airport': airport_code,
+                        'reason': msg, 'text': text,
+                    })
+                    break
+        else:
+            msg = f"No ATIS online, using wind ({wind_dir}°)"
+            print(f"[ATIS-FALLBACK] {airport_code}: {msg}")
+            atis_fallback_log.appendleft({
+                'time': ts, 'airport': airport_code,
+                'reason': msg, 'text': '',
+            })
+
+        return {
+            'landing': [], 'departing': [],
+            'atis_code': None,
+            'source': 'wind',
+            'wind_dir': wind_dir,
+        }
