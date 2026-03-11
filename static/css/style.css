@@ -18,6 +18,11 @@
     --row-height: 42px;
 }
 
+body.theme-default {
+    --font-ui: 'Inter', 'Noto Sans CJK JP', 'Noto Sans CJK SC', 'Noto Sans CJK', sans-serif;
+    --font-data: 'Inter', 'Noto Sans CJK JP', 'Noto Sans CJK SC', 'Noto Sans CJK', sans-serif;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 /* LOADING OVERLAY */
