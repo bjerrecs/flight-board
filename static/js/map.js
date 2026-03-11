@@ -526,11 +526,7 @@
     function predictPosition(lat, lon, gs, hdg, elapsedMs) {
         if (!gs || gs < 10) return [lat, lon];
         const R = 3440.065; // Earth radius in nautical miles
-        // Scale factor < 1.0 to compensate for VATSIM data staleness:
-        // the position snapshot is already several seconds old when received,
-        // so full-speed dead reckoning consistently overshoots.
-        const SPEED_FACTOR = 0.80;
-        const distNm = gs * SPEED_FACTOR * (elapsedMs / 3600000);
+        const distNm = gs * (elapsedMs / 3600000);
         const lat1 = lat * Math.PI / 180;
         const lon1 = lon * Math.PI / 180;
         const brng = hdg * Math.PI / 180;
@@ -925,7 +921,19 @@
             // Dim if in a different zone (airborne vs ground) to the tracked flight
             updateTrail(f, !!trackedCallsign && !isTracked && (isAirborne(f) !== trackedIsAirborne));
             if (markers[f.callsign]) {
-                markers[f.callsign].setLatLng(pos);
+                var m = markers[f.callsign];
+                // Instead of snapping to the new API position (which causes the
+                // jump-back), capture where the marker currently sits and set up
+                // a smooth blend from that interpolated position to the new real
+                // position over BLEND_DURATION_MS.
+                if (isAirborne(f) && m._lastUpdate) {
+                    var cur = m.getLatLng();
+                    m._blendFromLat = cur.lat;
+                    m._blendFromLon = cur.lng;
+                    m._blendStart   = Date.now();
+                }
+                // Do NOT call setLatLng here — the interpolator will handle it.
+                // Only update the icon, flight data, and timestamp.
                 markers[f.callsign].setIcon(makeIcon(f, off.dx, off.dy, isTracked));
                 markers[f.callsign]._flightData = f;
                 markers[f.callsign]._lastUpdate = Date.now();
@@ -1594,7 +1602,13 @@
         var off = userOffsets[cs] || { dx: 20, dy: -44 }; // longer stalk for airborne en-route
         updateMapTitle(f);
         if (markers[cs]) {
-            markers[cs].setLatLng(pos);
+            // Smooth blend instead of snap (same logic as updateMarkers)
+            if (isAirborne(f) && markers[cs]._lastUpdate) {
+                var cur = markers[cs].getLatLng();
+                markers[cs]._blendFromLat = cur.lat;
+                markers[cs]._blendFromLon = cur.lng;
+                markers[cs]._blendStart   = Date.now();
+            }
             markers[cs].setIcon(makeIcon(f, off.dx, off.dy, true));
             markers[cs]._flightData = f;
             markers[cs]._lastUpdate = Date.now();
@@ -1673,7 +1687,13 @@
             seen[f.callsign] = true;
             var pos = [f.latitude, f.longitude];
             if (nearbyMarkers[f.callsign]) {
-                nearbyMarkers[f.callsign].setLatLng(pos);
+                // Smooth blend instead of snap
+                if (isAirborne(f) && nearbyMarkers[f.callsign]._lastUpdate) {
+                    var cur = nearbyMarkers[f.callsign].getLatLng();
+                    nearbyMarkers[f.callsign]._blendFromLat = cur.lat;
+                    nearbyMarkers[f.callsign]._blendFromLon = cur.lng;
+                    nearbyMarkers[f.callsign]._blendStart   = Date.now();
+                }
                 nearbyMarkers[f.callsign]._flightData = f;
                 nearbyMarkers[f.callsign]._lastUpdate = Date.now();
             } else {
@@ -1912,7 +1932,14 @@
         }
     });
 
-    /* ── Dead-reckoning interpolation (1 s steps) ─────────────── */
+    /* ── Dead-reckoning interpolation with smooth blending ──────── */
+    // When new API data arrives, markers don't snap to the new position.
+    // Instead, for BLEND_DURATION_MS we smoothly transition from where
+    // the marker was (the old interpolated position) to where dead-reckoning
+    // from the NEW data says it should be. After the blend window, pure
+    // dead-reckoning takes over until the next update.
+    var BLEND_DURATION_MS = 3000; // 3-second blend window
+
     function interpolateMarkers() {
         const now = Date.now();
         const tc = localStorage.getItem('flightboard.tracked_callsign');
@@ -1924,7 +1951,32 @@
                 if (!f || !isAirborne(f) || !m._lastUpdate) return;
                 const elapsed = now - m._lastUpdate;
                 if (elapsed <= 0 || elapsed > 30000) return;
-                const newPos = predictPosition(f.latitude, f.longitude, f.groundspeed, f.heading, elapsed);
+
+                // Dead-reckoned position from the latest API data
+                const drPos = predictPosition(f.latitude, f.longitude, f.groundspeed, f.heading, elapsed);
+
+                var newPos;
+                if (m._blendStart && m._blendFromLat != null) {
+                    var blendElapsed = now - m._blendStart;
+                    if (blendElapsed < BLEND_DURATION_MS) {
+                        // Ease-out cubic for a natural deceleration feel
+                        var t = blendElapsed / BLEND_DURATION_MS;
+                        var ease = 1 - (1 - t) * (1 - t) * (1 - t);
+                        newPos = [
+                            m._blendFromLat + (drPos[0] - m._blendFromLat) * ease,
+                            m._blendFromLon + (drPos[1] - m._blendFromLon) * ease
+                        ];
+                    } else {
+                        // Blend complete — clear blend state, pure DR from here
+                        delete m._blendStart;
+                        delete m._blendFromLat;
+                        delete m._blendFromLon;
+                        newPos = drPos;
+                    }
+                } else {
+                    newPos = drPos;
+                }
+
                 m.setLatLng(newPos);
                 if (autoFollow && cs === tc && !map.getBounds().pad(-0.2).contains(newPos)) {
                     map.panTo(newPos, { animate: true, duration: 0.9 });
