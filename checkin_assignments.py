@@ -68,14 +68,14 @@ class CheckinAssignments:
     
     def _zurich(self, airline, seed):
         """Zurich Airport (LSZH) check-in assignments"""
-        # Desk 1: Star Alliance & Swiss partners
+        # Desk 1: Star Alliance & Swiss partners (Check-in 1, Check-in 3)
         if airline in ['SWR', 'EDW', 'DLH', 'AUA', 'BEL', 'CTN', 'AEE', 'DLA']:
             return "1"
-        
-        # Desk 3: Budget carriers
-        if airline in ['EZY', 'EZS', 'PGT', 'BTI']:
+
+        # Desk 3: Budget carriers (Check-in 3)
+        if airline in ['EZY', 'EZS', 'EJU', 'PGT']:
             return "3"
-        
+
         # Desk 2: All others
         return "2"
     
