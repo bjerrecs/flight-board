@@ -369,6 +369,17 @@
         <div class="help-modal-body">
 
             <section class="help-section">
+                <h3>v1.3.0 — 2026-03-11</h3>
+                <ul>
+                    <li>Live Map: active runway detection — parses VATSIM ATIS text to identify landing and departing runways in use, highlighted in blue (arrivals), green (departures), or yellow (both)</li>
+                    <li>Live Map: runway HUD overlay shows active runway identifiers, ATIS information code, frequency, and data source (ATIS or wind calculation)</li>
+                    <li>Live Map: wind-based fallback calculates into-wind runways from METAR when no ATIS is online</li>
+                    <li>Live Map: ATC controllers now correctly displayed for US airports (K-prefix ICAO to 3-letter FAA code matching)</li>
+                    <li>Admin: ATIS Log tab shows airports where runway parsing fell back to wind, with full raw ATIS text for debugging</li>
+                </ul>
+            </section>
+
+            <section class="help-section">
                 <h3>v1.2.6 — 2026-03-11</h3>
                 <ul>
                     <li>Flight Info Modal: clicking any flight row opens a card with airline logo, status, gate, aircraft, and a live SVG route arc</li>

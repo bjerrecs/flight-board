@@ -79,7 +79,7 @@ def _haversine_km(lat1, lon1, lat2, lon2):
     a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
     return R * 2 * math.asin(math.sqrt(a))
 
-APP_VERSION = '1.2.6'
+APP_VERSION = '1.3.0'
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -1018,6 +1018,11 @@ def admin_custom_airports():
         return jsonify({'success': True, 'count': len(validated)})
     except ValueError as exc:
         return jsonify({'error': str(exc)}), 400
+
+@app.route('/api/admin/atis_log')
+def api_admin_atis_log():
+    from vatsim_fetcher import atis_fallback_log
+    return jsonify(list(atis_fallback_log))
 
 @app.route('/api/admin/navdata_info')
 def api_admin_navdata_info():

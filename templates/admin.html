@@ -26,6 +26,7 @@
       <button class="tab-btn" data-tab="traffic">Traffic Stats</button>
       <button class="tab-btn" data-tab="custom-airports">Custom Airports</button>
       <button class="tab-btn" data-tab="navdata">Nav Data</button>
+      <button class="tab-btn" data-tab="atis-log">ATIS Log</button>
     </nav>
 
     <!-- STANDS PANEL -->
@@ -222,6 +223,29 @@
         <button id="navdataUploadBtn" type="button" class="btn-primary" disabled>Upload &amp; Apply</button>
       </div>
       <p class="import-hint">Zip the <code>earth_nav.dat</code>, <code>earth_fix.dat</code> and <code>CIFP/</code> folder from your X-Plane 12 <code>Custom Data/</code> directory.</p>
+    </section>
+
+    <!-- ATIS LOG PANEL -->
+    <section class="panel tab-panel" id="tab-atis-log">
+      <p class="panel-desc">Airports where the ATIS regex found no runways and wind fallback was used. Resets on service restart. Last 100 events, newest first.</p>
+      <div class="toolbar">
+        <button id="refreshAtisLogBtn" type="button">Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table id="atisLogTable">
+          <thead>
+            <tr>
+              <th style="width:60px">Time</th>
+              <th style="width:60px">Airport</th>
+              <th style="width:260px">Reason</th>
+              <th>Raw ATIS Text</th>
+            </tr>
+          </thead>
+          <tbody id="atisLogBody">
+            <tr><td colspan="4" class="atis-log-empty">No fallback events recorded yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <div id="statusBar" class="status">Ready.</div>

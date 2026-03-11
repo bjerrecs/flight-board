@@ -110,6 +110,24 @@
                 <li class="map-atc-loading"><span class="map-atc-spinner"></span></li>
             </ul>
         </div>
+
+        <!-- Runway HUD (top-left) -->
+        <div id="map-runway-hud" class="map-runway-hud">
+            <div class="rwy-hud-header">
+                <span class="rwy-hud-title">RUNWAY</span>
+                <span id="rwyHudSource" class="rwy-hud-source rwy-hud-loading">···</span>
+            </div>
+            <div id="rwyHudAtis" class="rwy-hud-atis" style="display:none"></div>
+            <div id="rwyHudFreq" class="rwy-hud-freq" style="display:none"></div>
+            <div class="rwy-hud-row">
+                <span class="rwy-hud-label rwy-hud-arr">LDG</span>
+                <span id="rwyHudLanding" class="rwy-hud-value rwy-hud-dim">--</span>
+            </div>
+            <div class="rwy-hud-row">
+                <span class="rwy-hud-label rwy-hud-dep">DEP</span>
+                <span id="rwyHudDeparting" class="rwy-hud-value rwy-hud-dim">--</span>
+            </div>
+        </div>
     </div>
 
     <!-- Boarding Pass (hidden on screen, shown only in print) -->
