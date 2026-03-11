@@ -864,37 +864,26 @@ document.addEventListener('DOMContentLoaded', () => {
             row.setAttribute('data-track-destination', String(flight.destination || ''));
             if (flightTracker) {
                 row.classList.toggle('is-tracked', flightTracker.isTrackedCallsign(safeCallsign));
-                if (!row.dataset.trackingBound) {
-                    row.dataset.trackingBound = '1';
-                    const toggleTrackedFlight = () => {
-                        const callsign = row.getAttribute('data-callsign');
-                        if (!callsign || !flightTracker) return;
-                        const origin = row.getAttribute('data-track-origin') || '';
-                        const destination = row.getAttribute('data-track-destination') || '';
-                        flightTracker.toggleTracking({ callsign, origin, destination });
-                        refreshTrackedRowHighlights();
-                        flightTracker.processFlightData(rawFlightData, currentAirport);
-                    };
-
-                    row.addEventListener('click', () => {
-                        // iOS often fires click after touchend; ignore duplicate click toggles.
-                        if (Date.now() - lastTouchTrackToggleAt < 600) return;
-                        toggleTrackedFlight();
-                    });
-
-                    row.addEventListener('touchend', (event) => {
-                        event.preventDefault();
-                        lastTouchTrackToggleAt = Date.now();
-                        toggleTrackedFlight();
-                    });
-                }
             }
 
-            if (!row.dataset.gateInfoBound) {
-                row.dataset.gateInfoBound = '1';
-                row.addEventListener('contextmenu', (e) => {
-                    e.preventDefault();
-                    openGateDisplay(safeCallsign, type);
+            if (!row.dataset.clickBound) {
+                row.dataset.clickBound = '1';
+                const openModal = () => {
+                    const callsign = row.getAttribute('data-callsign');
+                    if (!callsign) return;
+                    openFlightInfoModal(callsign, type);
+                };
+
+                row.addEventListener('click', () => {
+                    // iOS often fires click after touchend; ignore duplicate taps.
+                    if (Date.now() - lastTouchTrackToggleAt < 600) return;
+                    openModal();
+                });
+
+                row.addEventListener('touchend', (event) => {
+                    event.preventDefault();
+                    lastTouchTrackToggleAt = Date.now();
+                    openModal();
                 });
             }
 
@@ -1250,71 +1239,148 @@ document.addEventListener('DOMContentLoaded', () => {
         ).join('');
     }
 
-    function openGateDisplay(callsign, type) {
+    function resolveLogoSrc(callsign) {
+        const prefix = callsign.substring(0, 3);
+        const code = airlineLogoAliases[prefix] || airlineMapping[prefix] || prefix;
+        const localOnlyAirlines = ['FX', 'FDX', 'UPS', '5X', 'REGA', 'SAZ'];
+        if (virtualAirlines.has(prefix)) return `/static/logos/${prefix}.png`;
+        if (localOnlyAirlines.includes(code)) return `/static/logos/${code}.png`;
+        return `https://images.kiwi.com/airlines/64/${code}.png`;
+    }
+
+    function escapeXml(str) {
+        return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    async function drawRouteArc(origin, destination) {
+        const svg = document.getElementById('fiRouteSvg');
+        if (!svg) return;
+        svg.innerHTML = '';
+
+        const [originData, destData] = await Promise.all([
+            origin ? fetch(`/api/airport_name/${origin}`).then(r => r.json()).catch(() => null) : Promise.resolve(null),
+            destination ? fetch(`/api/airport_name/${destination}`).then(r => r.json()).catch(() => null) : Promise.resolve(null),
+        ]);
+
+        const originName = originData?.name || origin || '–';
+        const destName = destData?.name || destination || '–';
+        const oLat = originData?.lat, dLat = destData?.lat;
+
+        const W = 300, H = 80;
+        let x1 = 45, y1 = 35, x2 = 255, y2 = 35;
+
+        // Use latitude to set vertical position so arc feels geographically real
+        if (oLat != null && dLat != null) {
+            const yMid = 35, yRange = 12;
+            y1 = yMid - (oLat / 90) * yRange;
+            y2 = yMid - (dLat / 90) * yRange;
+        }
+
+        // Quadratic Bezier control point: above the midpoint
+        const cx = W / 2;
+        const cy = Math.min(y1, y2) - 18;
+
+        // Plane sits on arc at t=0.5
+        const px = 0.25 * x1 + 0.5 * cx + 0.25 * x2;
+        const py = 0.25 * y1 + 0.5 * cy + 0.25 * y2;
+
+        // Truncate long airport names for the SVG labels
+        const truncate = (s, n) => s.length > n ? s.slice(0, n - 1) + '…' : s;
+
+        svg.innerHTML = `
+            <path d="M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <circle cx="${x1}" cy="${y1}" r="4" fill="white"/>
+            <circle cx="${x2}" cy="${y2}" r="4" fill="white"/>
+            <text x="${x1}" y="${H - 5}" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9" font-family="sans-serif">${escapeXml(truncate(originName, 18))}</text>
+            <text x="${x2}" y="${H - 5}" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9" font-family="sans-serif">${escapeXml(truncate(destName, 18))}</text>
+            <text x="${px}" y="${py + 4}" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-size="13" font-family="sans-serif">✈</text>
+        `;
+    }
+
+    function startTrackingAndOpenMap(callsign, origin, destination) {
+        if (flightTracker && !flightTracker.isTrackedCallsign(callsign)) {
+            flightTracker.toggleTracking({ callsign, origin, destination });
+            refreshTrackedRowHighlights();
+            flightTracker.processFlightData(rawFlightData, currentAirport);
+        }
+        const mapLink = document.getElementById('mapLink');
+        if (mapLink) window.location.href = mapLink.href;
+    }
+
+    function openFlightInfoModal(callsign, type) {
         if (!callsign) return;
         const isDep = type === 'Departures';
         const flights = isDep ? rawFlightData.departures : rawFlightData.arrivals;
         const flight = (flights || []).find(f => (f.callsign || '').toUpperCase() === callsign);
         if (!flight) return;
 
-        const modal = document.getElementById('gateDisplayModal');
-        const content = document.getElementById('gateDisplayContent');
-        if (!modal || !content) return;
+        const modal = document.getElementById('flightInfoModal');
+        if (!modal) return;
 
-        const airportCode = flight.destination;
-        const airportName = airportMapping[airportCode]?.name || airportCode;
+        // Header
+        const fiLogo = document.getElementById('fiLogo');
+        const fiCallsign = document.getElementById('fiCallsign');
+        const fiAircraft = document.getElementById('fiAircraft');
+        const fiGrid = document.getElementById('fiGrid');
 
-        // Logo (reuse existing logo resolution logic)
-        const prefix = callsign.substring(0, 3);
-        const code = airlineLogoAliases[prefix] || airlineMapping[prefix] || prefix;
-        const localOnlyAirlines = ['FX', 'FDX', 'UPS', '5X', 'REGA', 'SAZ'];
-        let logoSrc;
-        if (virtualAirlines.has(prefix)) {
-            logoSrc = `/static/logos/${prefix}.png`;
-        } else if (localOnlyAirlines.includes(code)) {
-            logoSrc = `/static/logos/${code}.png`;
-        } else {
-            logoSrc = `https://images.kiwi.com/airlines/64/${code}.png`;
+        if (fiLogo) {
+            fiLogo.src = resolveLogoSrc(callsign);
+            fiLogo.style.display = '';
+            fiLogo.onerror = () => { fiLogo.style.display = 'none'; };
+        }
+        if (fiCallsign) fiCallsign.textContent = callsign;
+        if (fiAircraft) fiAircraft.textContent = flight.aircraft || '';
+
+        // Details grid — reuse gate-display-cell classes
+        const status = flight.status || '–';
+        const gate = flight.gate || 'TBA';
+        const timeLabel = isDep ? 'Departure' : 'Arrival';
+        const time = flight.time_display || '–';
+        const checkin = flight.checkin;
+
+        let gridHTML = `
+            <div class="gate-display-cell">
+                <div class="gate-display-cell-label">Status</div>
+                <div class="gate-display-cell-value">
+                    <span class="gate-status-badge" data-status="${status}">${status}</span>
+                </div>
+            </div>
+            <div class="gate-display-cell">
+                <div class="gate-display-cell-label">Gate</div>
+                <div class="gate-display-cell-value">${gate}</div>
+            </div>
+            <div class="gate-display-cell">
+                <div class="gate-display-cell-label">${timeLabel}</div>
+                <div class="gate-display-cell-value">${time}</div>
+            </div>
+            <div class="gate-display-cell">
+                <div class="gate-display-cell-label">Aircraft</div>
+                <div class="gate-display-cell-value">${flight.aircraft || '–'}</div>
+            </div>`;
+
+        if (checkin) {
+            gridHTML += `
+            <div class="gate-display-cell" style="grid-column: 1 / -1;">
+                <div class="gate-display-cell-label">Check-in</div>
+                <div class="gate-display-cell-value">${checkin}</div>
+            </div>`;
         }
 
-        const nearDest = ['Approaching', 'Landing', 'Landed', 'At Gate'].includes(flight.status);
-        let gate = nearDest ? (flight.gate || 'TBA') : 'CLOSED';
+        if (fiGrid) fiGrid.innerHTML = gridHTML;
 
-        const status = flight.status || '–';
-        const timeLabel = isDep ? 'Departure' : 'Arrival';
+        // SVG arc
+        const origin = flight.origin || '';
+        const destination = flight.destination || '';
+        drawRouteArc(origin, destination);
 
-        const gatePageUrl = `/gate/${currentAirport}/${callsign}`;
-        content.innerHTML = `
-            <div class="gate-display-header">
-                <div class="gate-display-flight-num">${callsign}</div>
-                <a href="${gatePageUrl}" target="_blank" class="gate-display-fullpage" title="Open full page">&#x2197;</a>
-                <img src="${logoSrc}" class="gate-display-logo" onerror="this.style.display='none'">
-            </div>
-            <div class="gate-display-destination">
-                <div class="gate-display-city">${airportName}</div>
-                <div class="gate-display-icao">${airportCode}</div>
-            </div>
-            <div class="gate-display-grid">
-                <div class="gate-display-cell">
-                    <div class="gate-display-cell-label">Status</div>
-                    <div class="gate-display-cell-value">
-                        <span class="gate-status-badge" data-status="${status}">${status}</span>
-                    </div>
-                </div>
-                <div class="gate-display-cell">
-                    <div class="gate-display-cell-label">Gate</div>
-                    <div class="gate-display-cell-value">${gate}</div>
-                </div>
-                <div class="gate-display-cell">
-                    <div class="gate-display-cell-label">${timeLabel}</div>
-                    <div class="gate-display-cell-value">${flight.time_display || '–'}</div>
-                </div>
-                <div class="gate-display-cell">
-                    <div class="gate-display-cell-label">Aircraft</div>
-                    <div class="gate-display-cell-value">${flight.aircraft || '–'}</div>
-                </div>
-            </div>
-        `;
+        // Track button
+        const fiTrackBtn = document.getElementById('fiTrackBtn');
+        if (fiTrackBtn) {
+            fiTrackBtn.onclick = () => {
+                modal.style.display = 'none';
+                startTrackingAndOpenMap(callsign, origin, destination);
+            };
+        }
 
         modal.style.display = 'block';
     }
@@ -1487,22 +1553,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === changelogModal) changelogModal.style.display = 'none';
     });
 
-    // ====== GATE DISPLAY MODAL ======
-    const gateDisplayModal = document.getElementById('gateDisplayModal');
-    const gateDisplayClose = document.querySelector('.gate-display-close');
+    // ====== FLIGHT INFO MODAL ======
+    const flightInfoModal = document.getElementById('flightInfoModal');
+    const flightInfoClose = document.querySelector('.flight-info-close');
 
-    if (gateDisplayClose) {
-        gateDisplayClose.onclick = () => { gateDisplayModal.style.display = 'none'; };
+    if (flightInfoClose) {
+        flightInfoClose.onclick = () => { flightInfoModal.style.display = 'none'; };
     }
     window.addEventListener('click', (e) => {
-        if (e.target === gateDisplayModal) gateDisplayModal.style.display = 'none';
+        if (e.target === flightInfoModal) flightInfoModal.style.display = 'none';
     });
 
     // Keyboard navigation
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            if (gateDisplayModal && gateDisplayModal.style.display === 'block') {
-                gateDisplayModal.style.display = 'none';
+            if (flightInfoModal && flightInfoModal.style.display === 'block') {
+                flightInfoModal.style.display = 'none';
             }
         }
 

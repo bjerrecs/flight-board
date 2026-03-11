@@ -1562,8 +1562,14 @@
         var dest   = (f && f.destination || '').trim().toUpperCase();
         var origin = (f && f.origin      || '').trim().toUpperCase();
         var status = (f && f.status) || '';
-        var hasLanded = status === 'Landed' || status === 'At Gate' ||
-                        ((f.groundspeed || 0) < 10 && (f.altitude || 0) < 3000);
+        var gsAltLanded = (f.groundspeed || 0) < 10 && (f.altitude || 0) < 3000;
+        // Full heuristic: status OR gs/alt low (used for arriving flights at this airport)
+        var hasLanded = status === 'Landed' || status === 'At Gate' || gsAltLanded;
+        // Departing-flight heuristic: skip gs/alt — it fires for boarding aircraft at
+        // the departure gate. Only show 'Arrived' once the flight is en-route and
+        // has actually reached the destination (trackedEnRoute = true).
+        var hasLandedDep = status === 'Landed' || status === 'At Gate' ||
+                           (trackedEnRoute && gsAltLanded);
 
         function lookupName(icao, cb) {
             if (airportNameCache[icao] !== undefined) { cb(airportNameCache[icao]); return; }
@@ -1589,7 +1595,7 @@
         // Departing flight — home airport is the origin
         titleEl.textContent = APT_NAME + ' \u2192 ' + dest;
         lookupName(dest, function(destName) {
-            titleEl.textContent = hasLanded
+            titleEl.textContent = hasLandedDep
                 ? destName + ' \u2013 Arrived'
                 : APT_NAME + ' \u2192 ' + destName;
         });

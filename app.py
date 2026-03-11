@@ -1067,13 +1067,15 @@ def api_admin_upload_navdata():
 
 @app.route('/api/airport_name/<icao>')
 def api_airport_name(icao):
-    """Return just the display name for an airport ICAO code"""
+    """Return display name and coordinates for an airport ICAO code"""
     normalized = _normalize_icao(icao)
     if not normalized:
-        return jsonify({'name': icao.upper()})
+        return jsonify({'name': icao.upper(), 'lat': None, 'lon': None})
     airport_info = flight_fetcher.get_airport_info(normalized)
     name = airport_info.get('name', normalized) if airport_info else normalized
-    return jsonify({'name': name})
+    lat = airport_info.get('lat') if airport_info else None
+    lon = airport_info.get('lon') if airport_info else None
+    return jsonify({'name': name, 'lat': lat, 'lon': lon})
 
 @app.route('/api/search_airport', methods=['POST'])
 def search_airport():
