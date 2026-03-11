@@ -1986,6 +1986,17 @@
 
         interpolateGroup(markers);
         interpolateGroup(nearbyMarkers);
+
+        // Move conflict lines to match current interpolated marker positions
+        Object.keys(conflictLines).forEach(function (key) {
+            var parts = key.split('|');
+            var mA = markers[parts[0]] || nearbyMarkers[parts[0]];
+            var mB = markers[parts[1]] || nearbyMarkers[parts[1]];
+            if (!mA || !mB) return;
+            var pA = mA.getLatLng();
+            var pB = mB.getLatLng();
+            conflictLines[key].setLatLngs([[pA.lat, pA.lng], [pB.lat, pB.lng]]);
+        });
     }
 
     setInterval(interpolateMarkers, 1000);
