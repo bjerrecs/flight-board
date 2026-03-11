@@ -3,6 +3,7 @@ import math
 import traceback
 import json
 import os
+import re
 import time
 from datetime import datetime, timedelta
 
@@ -417,6 +418,8 @@ class VatsimFetcher:
                         'status': _status,
                         'status_raw': _status,
                         'direction': 'ARR',
+                        'pilot_name': re.sub(r'\s+[A-Z]{4}$', '', pilot.get('name', '')).strip(),
+                        'cid': pilot.get('cid', ''),
                     }
 
             # Prune _dep_times of callsigns no longer appearing as Departing on any board
@@ -736,6 +739,8 @@ class VatsimFetcher:
             'latitude': pilot.get('latitude'),
             'longitude': pilot.get('longitude'),
             'heading': pilot.get('heading', 0),
+            'pilot_name': re.sub(r'\s+[A-Z]{4}$', '', pilot.get('name', '')).strip(),
+            'cid': pilot.get('cid', ''),
         }
 
     def determine_status(self, pilot, direction, ceiling, dist_km, gate_found, airport_code):

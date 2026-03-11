@@ -1009,6 +1009,8 @@
         var statusEl = document.getElementById('panelStatus');
         statusEl.textContent = f.status || '--';
         statusEl.style.color = statusColor(f.status);
+        document.getElementById('panelPilotName').textContent = f.pilot_name || '--';
+        document.getElementById('panelCid').textContent = f.cid || '--';
         document.getElementById('panelAircraft').textContent = f.aircraft || '--';
         document.getElementById('panelOrigin').textContent = f.origin || '--';
         document.getElementById('panelDest').textContent = f.destination || '--';
