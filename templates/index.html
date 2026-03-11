@@ -64,7 +64,7 @@
 
         <div class="header-widgets">
             <a id="mapLink" class="map-link-btn widget-item" href="/map/LSZH" title="Live Map">
-                <span class="material-icons widget-icon">explore</span>
+                <img src="/static/simfixr_logos/simfixr_map_icon.png" class="simfixr-map-icon" alt="Live Map">
             </a>
 
             <div class="widget-item" id="atcWidget">
@@ -284,8 +284,9 @@
 
             <section class="help-section">
                 <h3>Flight Tracking</h3>
-                <p>Click any flight row to start tracking that callsign. A chip appears in the header showing the flight and route. When the tracked aircraft departs and goes airborne, the board automatically switches to the destination airport. Click the row again or press <strong>×</strong> on the chip to stop.</p>
-                <p>While tracking is active, the <strong>compass icon</strong> pulses green — click it to open the Live Radar Map, which will automatically open the tracked flight's detail panel and draw its planned route. Other aircraft on the map cannot be selected while tracking is active.</p>
+                <p>Click any flight row to open the <strong>Flight Info card</strong> — showing the airline logo, callsign, aircraft type, status, gate, time, and a live SVG route arc from origin to destination.</p>
+                <p>Click <strong>Track on Live Map</strong> in the card to start tracking that callsign and jump straight to the Live Radar Map. A chip appears in the header showing the flight and route. When the tracked aircraft departs and goes airborne, the board automatically switches to the destination airport. Press <strong>×</strong> on the chip to stop tracking.</p>
+                <p>While tracking is active, the <strong>map icon</strong> in the header pulses green. The Live Radar Map automatically opens the tracked flight's detail panel and draws its planned route. Other aircraft on the map cannot be selected while tracking is active.</p>
             </section>
 
             <section class="help-section">
@@ -293,7 +294,7 @@
                 <ul>
                     <li><strong>ATC (radar icon)</strong> — Green when controllers are active. Hover to see positions and frequencies.</li>
                     <li><strong>Weather (cloud icon)</strong> — Live METAR-based icon with temperature in °C. Hover to reveal a decoded METAR popover showing wind, visibility, cloud layers, temperature/dewpoint, and QNH alongside the raw METAR string.</li>
-                    <li><strong>Map (compass icon)</strong> — Opens the Live Radar Map. Pulses green when a flight is being tracked.</li>
+                    <li><strong>Map (waypoint icon)</strong> — Opens the Live Radar Map. Pulses green when a flight is being tracked.</li>
                     <li><strong>Clock</strong> — Current UTC (Zulu) time.</li>
                 </ul>
             </section>
@@ -311,11 +312,9 @@
 
             <section class="help-section">
                 <h3>Gate Display</h3>
-                <p><strong>Quick View</strong> — Right-click any flight row to open a gate information card with status, gate, time, and aircraft.</p>
-                <p><strong>Full-Page Mode</strong> — Inside the gate card, click the <strong>↗</strong> link (top-right) to open a dedicated full-page gate monitor in a new tab. Perfect for OBS overlays or streaming.</p>
-                <p><strong>Direct URL</strong> — Navigate directly to <code>/gate/ICAO/CALLSIGN</code> (e.g. <code>/gate/EGLL/BAW123</code>). The page waits for the flight to appear, then displays live updates.</p>
+                <p><strong>Full-Page Mode</strong> — Navigate directly to <code>/gate/ICAO/CALLSIGN</code> (e.g. <code>/gate/EGLL/BAW123</code>). The page waits for the flight to appear, then displays live gate, status, and departure time updates.</p>
                 <p><strong>Gate Status</strong> — Shows <strong>CLOSED</strong> while the flight is still at the origin or en route. Switches to <strong>TBA</strong> (or an assigned gate number) once the flight is on approach or has landed at the destination.</p>
-                <p><strong>Dynamic Branding</strong> — The page accent colour automatically adapts to match the airline's logo.</p>
+                <p><strong>Dynamic Branding</strong> — The page accent colour automatically adapts to match the airline's logo. Perfect for OBS overlays or streaming.</p>
             </section>
 
             <section class="help-section">
@@ -339,8 +338,8 @@
                 <ul>
                     <li>Bookmark your favourite airport with <code>?icao=XXXX</code> in the URL.</li>
                     <li>Works great on a spare monitor in landscape or portrait orientation.</li>
-                    <li>Track your own flight — the board follows it automatically, the compass pulses green, and the map opens straight to your aircraft.</li>
-                    <li>Right-click a flight for the gate display; the gate shows CLOSED en route and updates to TBA or your gate number on approach.</li>
+                    <li>Track your own flight — click the row, hit <strong>Track on Live Map</strong>, and the map opens straight to your aircraft.</li>
+                    <li>Click any flight for the info card; the gate shows CLOSED en route and updates to TBA or your gate number on approach.</li>
                     <li>Print a boarding pass from the map's flight detail panel — great for immersion.</li>
                     <li>Data refreshes every 20 seconds via live VATSIM data, pushed instantly via WebSocket.</li>
                 </ul>
@@ -368,6 +367,16 @@
         <span class="close" id="changelogModalClose">&times;</span>
         <h2>Changelog</h2>
         <div class="help-modal-body">
+
+            <section class="help-section">
+                <h3>v1.2.6 — 2026-03-11</h3>
+                <ul>
+                    <li>Flight Info Modal: clicking any flight row opens a card with airline logo, status, gate, aircraft, and a live SVG route arc</li>
+                    <li>Track on Live Map: one-tap button in the modal starts tracking and navigates directly to the Live Radar Map</li>
+                    <li>Right-click gate display replaced by the unified left-click modal</li>
+                    <li>Live Map: map header no longer shows "Arrived" for boarding departures at elevated airports</li>
+                </ul>
+            </section>
 
             <section class="help-section">
                 <h3>v1.2.5 — 2026-03-11</h3>
