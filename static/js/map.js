@@ -523,6 +523,25 @@
         return (f.groundspeed || 0) >= 50 || (f.altitude || 0) >= 500;
     }
 
+    function predictPosition(lat, lon, gs, hdg, elapsedMs) {
+        if (!gs || gs < 10) return [lat, lon];
+        const R = 3440.065; // Earth radius in nautical miles
+        // Scale factor < 1.0 to compensate for VATSIM data staleness:
+        // the position snapshot is already several seconds old when received,
+        // so full-speed dead reckoning consistently overshoots.
+        const SPEED_FACTOR = 0.80;
+        const distNm = gs * SPEED_FACTOR * (elapsedMs / 3600000);
+        const lat1 = lat * Math.PI / 180;
+        const lon1 = lon * Math.PI / 180;
+        const brng = hdg * Math.PI / 180;
+        const dR = distNm / R;
+        const lat2 = Math.asin(Math.sin(lat1) * Math.cos(dR) +
+                     Math.cos(lat1) * Math.sin(dR) * Math.cos(brng));
+        const lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(dR) * Math.cos(lat1),
+                     Math.cos(dR) - Math.sin(lat1) * Math.sin(lat2));
+        return [lat2 * 180 / Math.PI, lon2 * 180 / Math.PI];
+    }
+
     function distSq(a, b) {
         var dx = a[0] - b[0], dy = a[1] - b[1];
         return dx * dx + dy * dy;
@@ -909,10 +928,12 @@
                 markers[f.callsign].setLatLng(pos);
                 markers[f.callsign].setIcon(makeIcon(f, off.dx, off.dy, isTracked));
                 markers[f.callsign]._flightData = f;
+                markers[f.callsign]._lastUpdate = Date.now();
                 attachLabelDrag(markers[f.callsign], f.callsign); // setIcon recreates the DOM element so re-attach
             } else {
                 const m = L.marker(pos, { icon: makeIcon(f, off.dx, off.dy, isTracked), zIndexOffset: 1000 }).addTo(map);
                 m._flightData = f;
+                m._lastUpdate = Date.now();
                 m.on('click', function () {
                     const tc = localStorage.getItem('flightboard.tracked_callsign');
                     if (tc && m._flightData.callsign !== tc) return;
@@ -1576,10 +1597,12 @@
             markers[cs].setLatLng(pos);
             markers[cs].setIcon(makeIcon(f, off.dx, off.dy, true));
             markers[cs]._flightData = f;
+            markers[cs]._lastUpdate = Date.now();
             attachLabelDrag(markers[cs], cs); // setIcon recreates the DOM — re-attach drag handler
         } else {
             var m = L.marker(pos, { icon: makeIcon(f, off.dx, off.dy, true), zIndexOffset: 1000 }).addTo(map);
             m._flightData = f;
+            m._lastUpdate = Date.now();
             m.on('click', function () { showFlightPanel(m._flightData); });
             markers[cs] = m;
             attachLabelDrag(m, cs);
@@ -1652,9 +1675,11 @@
             if (nearbyMarkers[f.callsign]) {
                 nearbyMarkers[f.callsign].setLatLng(pos);
                 nearbyMarkers[f.callsign]._flightData = f;
+                nearbyMarkers[f.callsign]._lastUpdate = Date.now();
             } else {
                 var m = L.marker(pos, { icon: makeNearbyIcon(), zIndexOffset: 500 }).addTo(map);
                 m._flightData = f;
+                m._lastUpdate = Date.now();
                 m.on('mouseover', function() { showNearbyTooltip(m); });
                 m.on('mouseout', function() { hideNearbyTooltip(); });
                 nearbyMarkers[f.callsign] = m;
@@ -1886,5 +1911,31 @@
             lastTrackedCallsign = e.newValue || null;
         }
     });
+
+    /* ── Dead-reckoning interpolation (1 s steps) ─────────────── */
+    function interpolateMarkers() {
+        const now = Date.now();
+        const tc = localStorage.getItem('flightboard.tracked_callsign');
+
+        function interpolateGroup(group) {
+            Object.keys(group).forEach(function (cs) {
+                const m = group[cs];
+                const f = m._flightData;
+                if (!f || !isAirborne(f) || !m._lastUpdate) return;
+                const elapsed = now - m._lastUpdate;
+                if (elapsed <= 0 || elapsed > 30000) return;
+                const newPos = predictPosition(f.latitude, f.longitude, f.groundspeed, f.heading, elapsed);
+                m.setLatLng(newPos);
+                if (autoFollow && cs === tc && !map.getBounds().pad(-0.2).contains(newPos)) {
+                    map.panTo(newPos, { animate: true, duration: 0.9 });
+                }
+            });
+        }
+
+        interpolateGroup(markers);
+        interpolateGroup(nearbyMarkers);
+    }
+
+    setInterval(interpolateMarkers, 1000);
 
 })();
