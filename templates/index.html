@@ -452,11 +452,24 @@
         <div id="searchResult"></div>
     </div>
 </div>
-<!-- Gate Display Modal -->
-<div id="gateDisplayModal" class="modal">
-    <div class="modal-content gate-display-content">
-        <span class="gate-display-close">&times;</span>
-        <div id="gateDisplayContent"></div>
+<!-- Flight Info Modal -->
+<div id="flightInfoModal" class="modal">
+    <div class="modal-content flight-info-content">
+        <span class="flight-info-close">&times;</span>
+        <div class="flight-info-header">
+            <img id="fiLogo" class="flight-info-logo" src="" alt="">
+            <div class="flight-info-header-text">
+                <div id="fiCallsign" class="flight-info-callsign"></div>
+                <div id="fiAircraft" class="flight-info-aircraft"></div>
+            </div>
+        </div>
+        <div class="flight-info-route">
+            <svg id="fiRouteSvg" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div class="gate-display-grid" id="fiGrid"></div>
+        <div class="flight-info-track-wrap">
+            <button id="fiTrackBtn" class="flight-info-track-btn">Track on Live Map</button>
+        </div>
     </div>
 </div>
 </body>
