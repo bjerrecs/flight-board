@@ -312,6 +312,11 @@
         depEl.classList.toggle('rwy-hud-dim', !hasData);
     }
 
+    function normalizeRwy(r) {
+        // Strip leading zeros from runway number, keep suffix (e.g. "04R" → "4R", "09" → "9")
+        return r.replace(/^0+(\d)/, '$1');
+    }
+
     function updateActiveRunways(data) {
         if (!data) return;
         var landing = data.landing || [];
@@ -323,15 +328,18 @@
             departing = calc;
         }
 
+        var normLanding = landing.map(normalizeRwy);
+        var normDeparting = departing.map(normalizeRwy);
+
         Object.keys(runwayGeometries).forEach(function (ref) {
             var rw = runwayGeometries[ref];
             var parts = rw.parts;
 
             var isLanding = parts.some(function (p) {
-                return landing.indexOf(p) !== -1;
+                return normLanding.indexOf(normalizeRwy(p)) !== -1;
             });
             var isDeparting = parts.some(function (p) {
-                return departing.indexOf(p) !== -1;
+                return normDeparting.indexOf(normalizeRwy(p)) !== -1;
             });
 
             if (isLanding && isDeparting) {

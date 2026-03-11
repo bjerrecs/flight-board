@@ -20,6 +20,8 @@ from checkin_assignments import CheckinAssignments
 
 # ── ATIS runway parser regexes ─────────────────────────────────────────
 
+_RWY = r'\d{1,2}[LRC]?'  # matches 4R, 04R, 9, 32L, etc.
+
 _ATIS_ARR_RE = re.compile(
     r'(?:APCH|APPROACH|ARR|ARRIVAL|LDG|LANDING|EXPECT\s+(?:ILS|RNAV|VIS(?:UAL)?)\s+(?:APPROACH\s+)?)'
     r'\s*'
@@ -27,28 +29,28 @@ _ATIS_ARR_RE = re.compile(
     r'(?:ILS\s+|RNAV\s+|VIS(?:UAL)?\s+)?'
     r'(?:RWY|RY|RUNWAY)\s*'
     r'(?:IN\s+USE\s+)?'
-    r'(\d{2}[LRC]?)'
-    r'(?:[,\s]+(?:(?:ILS|RNAV|VIS(?:UAL)?)\s+)?(?:(?:RWY|RY|RUNWAY)\s+)?(\d{2}[LRC]?))?'
-    r'(?:[,\s]+(?:(?:ILS|RNAV|VIS(?:UAL)?)\s+)?(?:(?:RWY|RY|RUNWAY)\s+)?(\d{2}[LRC]?))?',
+    r'(' + _RWY + r')'
+    r'(?:[,\s]+(?:(?:ILS|RNAV|VIS(?:UAL)?)\s+)?(?:(?:RWY|RY|RUNWAY)\s+)?(' + _RWY + r'))?'
+    r'(?:[,\s]+(?:(?:ILS|RNAV|VIS(?:UAL)?)\s+)?(?:(?:RWY|RY|RUNWAY)\s+)?(' + _RWY + r'))?',
     re.IGNORECASE
 )
 
 _ATIS_DEP_RE = re.compile(
     r'(?:DEP(?:TG|TING|T|G|ARTING|ARTURE)?|TKOF|TAKEOFF)\s+'
     r'(?:RWY(?:S)?|RY|RUNWAY(?:S)?)\s*'
-    r'(\d{2}[LRC]?)'
-    r'(?:\s+AND\s+(\d{2}[LRC]?))?'
-    r'(?:[,\s]+(?:(?:RWY(?:S)?|RY|RUNWAY(?:S)?)\s+)?(\d{2}[LRC]?))?',
+    r'(' + _RWY + r')'
+    r'(?:\s+AND\s+(' + _RWY + r'))?'
+    r'(?:[,\s]+(?:(?:RWY(?:S)?|RY|RUNWAY(?:S)?)\s+)?(' + _RWY + r'))?',
     re.IGNORECASE
 )
 
-# "ILS RWY 32 APCH IN USE" / "ILS RWY 14R, APCH IN USE"
+# "ILS RWY 32 APCH IN USE" / "ILS RWY 4R, APCH IN USE"
 # approach type precedes runway, APCH/APPROACH qualifier follows
 _ATIS_ARR_SUFFIX_RE = re.compile(
     r'(?:ILS|RNAV|VIS(?:UAL)?)\s+'
     r'(?:RWY(?:S)?|RY|RUNWAY(?:S)?)\s*'
-    r'(\d{2}[LRC]?)'
-    r'(?:[,\s]+(?:ILS|RNAV|VIS(?:UAL)?)\s+(?:RWY(?:S)?|RY|RUNWAY(?:S)?)\s*(\d{2}[LRC]?))*'
+    r'(' + _RWY + r')'
+    r'(?:[,\s]+(?:ILS|RNAV|VIS(?:UAL)?)\s+(?:RWY(?:S)?|RY|RUNWAY(?:S)?)\s*(' + _RWY + r'))*'
     r'[,\s]+(?:APCH|APPROACH)\b',
     re.IGNORECASE
 )
@@ -56,7 +58,7 @@ _ATIS_ARR_SUFFIX_RE = re.compile(
 _ATIS_COMBINED_RE = re.compile(
     r'LANDING\s+AND\s+DEPARTING\s+'
     r'(?:RWY|RY|RUNWAY)\s*'
-    r'(\d{2}[LRC]?)',
+    r'(' + _RWY + r')',
     re.IGNORECASE
 )
 
