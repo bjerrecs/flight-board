@@ -1277,8 +1277,7 @@ document.addEventListener('DOMContentLoaded', () => {
             logoSrc = `https://images.kiwi.com/airlines/64/${code}.png`;
         }
 
-        const nearDest = ['Approaching', 'Landing', 'Landed', 'At Gate'].includes(flight.status);
-        let gate = nearDest ? (flight.gate || 'TBA') : 'CLOSED';
+        let gate = flight.gate || 'TBA';
 
         const status = flight.status || '–';
         const timeLabel = isDep ? 'Departure' : 'Arrival';
