@@ -272,26 +272,42 @@ class VatsimFetcher:
         except: return {}
 
     def load_ukcp_map(self):
-        """Loads the UKCP ID->Name mapping (e.g. 1231 -> '1B')"""
+        """Load UKCP stand ID->name mapping. Fetches live from API, falls back to ukcp_stands.json."""
+        dep_url = 'https://ukcp.vatsim.uk/api/stand/dependency'
+        raw_data = None
+
         try:
-            # Look for the NEW file you created: static/ukcp_stands.json
-            path = os.path.join('static', 'ukcp_stands.json')
-            if not os.path.exists(path): return {}
-            
-            with open(path, 'r') as f:
-                raw_data = json.load(f)
-            
-            # Flatten the data into a single lookup: {1231: "1B", 461: "1"}
-            mapping = {}
-            for airport, stands in raw_data.items():
-                for stand in stands:
-                    # Map both the integer ID and string ID just in case
-                    mapping[stand['id']] = stand['identifier']
-                    mapping[str(stand['id'])] = stand['identifier']
-            return mapping
+            resp = requests.get(dep_url, timeout=5, headers={'Accept': 'application/json'})
+            if resp.status_code == 200:
+                raw_data = resp.json()
+                print(f"UKCP: Loaded stand definitions from API ({sum(len(v) for v in raw_data.values())} stands)")
+                path = os.path.join('static', 'ukcp_stands.json')
+                try:
+                    with open(path, 'w') as f:
+                        json.dump(raw_data, f)
+                except Exception as e:
+                    print(f"UKCP: Could not update ukcp_stands.json: {e}")
+            else:
+                print(f"UKCP: stand/dependency returned {resp.status_code}, falling back to file")
         except Exception as e:
-            print(f"Error loading UKCP mapping: {e}")
-            return {}
+            print(f"UKCP: stand/dependency fetch failed ({e}), falling back to file")
+
+        if raw_data is None:
+            try:
+                path = os.path.join('static', 'ukcp_stands.json')
+                if not os.path.exists(path):
+                    return {}
+                with open(path, 'r') as f:
+                    raw_data = json.load(f)
+            except Exception as e:
+                print(f"Error loading UKCP mapping from file: {e}")
+                return {}
+
+        mapping = {}
+        for airport, stands in raw_data.items():
+            for stand in stands:
+                mapping[str(stand['id'])] = stand['identifier']
+        return mapping
 
     def calculate_distance_m(self, lat1, lon1, lat2, lon2):
         if None in [lat1, lon1, lat2, lon2]: return 999999

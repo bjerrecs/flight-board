@@ -369,6 +369,13 @@
         <div class="help-modal-body">
 
             <section class="help-section">
+                <h3>v1.3.3 — 2026-03-12</h3>
+                <ul>
+                    <li>UKCP stand definitions now fetched live from the UKCP API at startup — fixes missing gate names for recently added stands (IDs 1529–1742, e.g. stand 1740 → "178L"). Falls back to cached <code>ukcp_stands.json</code> if the API is unreachable. The file is refreshed on disk each successful fetch.</li>
+                </ul>
+            </section>
+
+            <section class="help-section">
                 <h3>v1.3.2 — 2026-03-12</h3>
                 <ul>
                     <li>Live Map: preferred runway fallback for calm and light wind — when no ATIS is online and wind is below a per-airport threshold (or variable), the system now returns documented preferred runways instead of leaving it to a wind-heading calculation that degenerates under low-wind conditions</li>
