@@ -107,6 +107,9 @@ class VatsimFetcher:
         # Load UKCP ID Mapping (ID -> Name based)
         self.ukcp_mapping = self.load_ukcp_map()
         
+        # Load preferred runway config (tier 2b fallback)
+        self.preferred_runways = self._load_preferred_runways()
+
         # Initialize Check-in Assignment System
         self.checkin_system = CheckinAssignments()
 
@@ -942,13 +945,49 @@ class VatsimFetcher:
 
         return result
 
+    def _load_preferred_runways(self):
+        path = os.path.join(os.path.dirname(__file__), 'data', 'preferred_runways.json')
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                print(f"Loaded preferred runway config for {len(data)} airports")
+                return data
+        except Exception as e:
+            print(f"Warning: Could not load preferred_runways.json: {e}")
+            return {}
+
+    def _get_preferred_runways(self, icao, wind_speed_kt, wind_dir):
+        """
+        Returns preferred runway config if wind is below the airport's no_factor_wind
+        threshold, is calm, or is variable. Returns None otherwise.
+        """
+        config = self.preferred_runways.get(icao.upper())
+        if not config:
+            return None
+        threshold = config.get('no_factor_wind', 5)
+        wind_is_negligible = (
+            wind_speed_kt is None or
+            wind_speed_kt == 0 or
+            wind_speed_kt < threshold or
+            wind_dir is None  # VRB or unparseable direction
+        )
+        if not wind_is_negligible:
+            return None
+        return {
+            'dep': config.get('preferred_dep', []),
+            'arr': config.get('preferred_arr', []),
+        }
+
     def _wind_based_runways(self, metar_text, airport_code, atis_list=None):
         """
         Fallback: return wind direction from METAR for frontend to calculate
         active runways against its OSM runway geometries.
+        Tier 2b: if wind is calm/light/variable and airport has a preferred
+        runway config, return that instead of leaving it to the frontend wind calc.
         """
-        from route_parser import parse_metar_wind
+        from route_parser import parse_metar_wind, parse_metar_wind_speed
         wind_dir = parse_metar_wind(metar_text)
+        wind_speed = parse_metar_wind_speed(metar_text)
         ts = datetime.utcnow().strftime('%H:%MZ')
 
         if atis_list:
@@ -972,6 +1011,20 @@ class VatsimFetcher:
                 'reason': msg, 'text': '',
             })
 
+        # Tier 2b: preferred runway config (calm/light/variable wind)
+        preferred = self._get_preferred_runways(airport_code, wind_speed, wind_dir)
+        if preferred:
+            print(f"[PREFERRED-RWY] {airport_code}: dep={preferred['dep']} arr={preferred['arr']} "
+                  f"(wind {wind_speed}kt/{wind_dir}°)")
+            return {
+                'landing': preferred['arr'],
+                'departing': preferred['dep'],
+                'atis_code': None,
+                'source': 'preferred',
+                'wind_dir': wind_dir,
+            }
+
+        # Tier 3: pass wind direction to frontend for OSM runway geometry scoring
         return {
             'landing': [], 'departing': [],
             'atis_code': None,
