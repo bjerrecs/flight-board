@@ -206,6 +206,19 @@ def parse_metar_wind(metar_text: str):
     return None if val == 0 else val
 
 
+def parse_metar_wind_speed(metar_text: str) -> int | None:
+    """
+    Extract wind speed in knots from a METAR string.
+    Returns None if unparseable. Returns 0 for calm (00000KT).
+    """
+    if not metar_text:
+        return None
+    m = re.search(r'\b(?:VRB|\d{3})(\d{2,3})(?:G\d{2,3})?KT\b', metar_text)
+    if not m:
+        return None
+    return int(m.group(1))
+
+
 def _into_wind_score(transitions: dict, wind_dir: int) -> float:
     """
     Score a set of procedure transitions against wind direction.

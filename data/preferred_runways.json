@@ -1,0 +1,79 @@
+{
+  "EGLL": {
+    "no_factor_wind": 5,
+    "preferred_dep": ["27R", "27L", "09R"],
+    "preferred_arr": ["27L", "27R", "09L"],
+    "source": "VATSIM UK vMATS Part 2",
+    "notes": "27L/27R preferred when tailwind <=5kt. Westerly config: L/R determined by HAL alternation programme changing at 1500 local — static config cannot track this, both 27s listed. Easterly arrivals always 09L per explicit SOP wording. Night ops single runway, no fixed VATSIM time trigger."
+  },
+  "EGKK": {
+    "no_factor_wind": 5,
+    "preferred_dep": ["26L", "08R"],
+    "preferred_arr": ["26L", "08R"],
+    "source": "VATSIM UK London Gatwick vMATS Part 2 Rev 2025/03",
+    "notes": "26L/08R always primary. 26L preferred calm wind runway when tailwind <=5kt. Northern runway 26R/08L explicitly not recommended for VATSIM use per SOP — excluded from config. Effectively single-runway airport on VATSIM."
+  },
+  "EGSS": {
+    "no_factor_wind": 5,
+    "preferred_dep": ["22", "04"],
+    "preferred_arr": ["22", "04"],
+    "source": "VATSIM UK vMATS Part 2",
+    "notes": "RWY 22 preferred when tailwind <=5kt and surface dry. Calm/changing wind SOP requires TAF and 2000ft wind — unavailable to this system. Single runway, no alternation complexity."
+  },
+  "EGLC": {
+    "no_factor_wind": 3,
+    "preferred_dep": ["27", "09"],
+    "preferred_arr": ["27", "09"],
+    "source": "VATSIM UK vMATS Part 2",
+    "notes": "27 stated preferred but SOP explicitly requires most into-wind runway due to BAe146/RJ zero tailwind tolerance. Calm wind SOP requires 2000ft wind consideration — unavailable to this system. no_factor_wind reduced to 3kt reflecting tighter operational requirements. 27 listed first as documented preference only."
+  },
+  "EGCC": {
+    "no_factor_wind": 5,
+    "preferred_dep": ["23L", "05L"],
+    "preferred_arr": ["23R", "05R"],
+    "source": "VATSIM UK Manchester vMATS Part 2 Rev 2025/02",
+    "notes": "23L/23R preferred when tailwind <=5kt. Dual westerly: 23L dep, 23R arr. Dual easterly: 05L dep, 05R arr. Single runway uses 05L/23R combined. 05R/23L secondary — only when 05L/23R closed. Dual/single switching is time and traffic dependent."
+  },
+  "LSZH": {
+    "no_factor_wind": 7,
+    "preferred_dep": ["28", "32"],
+    "preferred_arr": ["14", "28", "34"],
+    "source": "Swiss Virtual Airlines Operations Manual C",
+    "notes": "Three time-based configs. General/daytime: arr 14, dep 28 (tailwind tolerance 10kt on 14, 7kt on 28). Morning: arr 34, dep 32. Evening: arr 28, dep 32. VATSIM SOP notes Tower ATC may not comply with time-based procedures during peak evening traffic. no_factor_wind set to 7kt reflecting RWY28 documented tailwind tolerance."
+  },
+  "LSGG": {
+    "no_factor_wind": 4,
+    "preferred_dep": ["22", "04"],
+    "preferred_arr": ["22", "04"],
+    "source": "Swiss Virtual Airlines Operations Manual C",
+    "notes": "RWY 22 preferred when tailwind <=4kt. RWY 04 used when tailwind exceeds 4kt. Single runway, no alternation complexity. no_factor_wind set to 4kt matching documented threshold precisely."
+  },
+  "ESSA": {
+    "no_factor_wind": 5,
+    "preferred_dep": ["01L", "19R", "08"],
+    "preferred_arr": ["01R", "19L", "26", "19R", "01L"],
+    "source": "VATSIM Scandinavia documentation",
+    "notes": "Peak config: 01R arr + 01L dep, or 19L arr + 19R dep. Off-peak has six documented combinations. RWY08 arrivals and RWY26 departures explicitly last resort only. Night: 19R dep only for performance reasons 2200-0700 local."
+  },
+  "EDDF": {
+    "no_factor_wind": 5,
+    "preferred_dep": ["25C", "18", "07R", "07C"],
+    "preferred_arr": ["25L", "25R", "07L", "07C"],
+    "source": "VATSIM community guide — NOT official VACC-GER vMATS",
+    "notes": "MEDIUM CONFIDENCE — no official vACC SOP located. West ops (winds 200-300deg): arr 25L+25R, dep 25C+18. East ops (winds 030-120deg): arr 07L+07C, dep 07R+07C. RWY18 exclusively for departures, typically southbound. Update if official VACC-GER documentation is found."
+  },
+  "LFPG": {
+    "no_factor_wind": 5,
+    "preferred_dep": ["27L", "26R", "09R", "08L"],
+    "preferred_arr": ["27R", "26L", "09L", "08R"],
+    "source": "LFPG AIP/SOP document",
+    "notes": "Outer runways 08R/26L and 09L/27R preferred for arrivals. Inner runways 08L/26R and 09R/27L preferred for departures. Inner runway ILS physically switched off except LVP — arrivals on outers is a structural constraint. 26R restricted to chapter 3 westbound/left-turn departures except when 27L unserviceable."
+  },
+  "RJTT": {
+    "no_factor_wind": 5,
+    "preferred_dep": ["05", "16L", "34R", "16R", "34L", "04"],
+    "preferred_arr": ["34R", "34L", "22", "23", "16L"],
+    "source": "Navigraph NDAC chart (flight simulation use)",
+    "notes": "MEDIUM CONFIDENCE. North wind daytime (1400-2100Z): dep 05, arr 34R. North wind night: dep 34R, arr 34L+34R. South wind daytime: dep 16L, arr 23. South wind night: dep 16L/R, arr 22+23. International flights 1400-2100Z: 16L/34R both movements. RWY04 last resort only."
+  }
+}
