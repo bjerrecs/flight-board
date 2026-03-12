@@ -565,6 +565,30 @@ document.addEventListener('DOMContentLoaded', () => {
     (async () => {
         await loadThemeMap();
         await switchAirport(currentAirport, { source: 'init' });
+
+        // If a flight is being tracked and is already past the origin (e.g. user
+        // returned from the map view after the flight reached Approaching), switch
+        // to the destination airport straight away so the arrivals board is visible.
+        if (flightTracker && flightTracker.trackedCallsign) {
+            try {
+                const r = await fetch(`/api/flight/${encodeURIComponent(flightTracker.trackedCallsign)}`);
+                if (r.ok) {
+                    const payload = await r.json();
+                    const f = payload.flight;
+                    if (f) {
+                        const dest = normalizeIcao(f.destination || '');
+                        const status = String(f.status || f.status_raw || '');
+                        // On load, switch any time the flight has left the origin —
+                        // including En Route (not just Approaching) since the flight
+                        // won't appear on the origin board at all once airborne.
+                        const departedStatuses = ['En Route', 'Approaching', 'Landing', 'Landed', 'At Gate'];
+                        if (dest && dest !== currentAirport && departedStatuses.includes(status)) {
+                            await switchAirport(dest, { source: 'tracking' });
+                        }
+                    }
+                }
+            } catch (e) { /* non-fatal */ }
+        }
     })();
 
     // --- FULLSCREEN TOGGLE ---
