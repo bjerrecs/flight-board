@@ -27,7 +27,7 @@ _ATIS_ARR_RE = re.compile(
     r'\s*'
     r'(?:IN\s+USE\s+)?'
     r'(?:ILS\s+|RNAV\s+|VIS(?:UAL)?\s+)?'
-    r'(?:RWY|RY|RUNWAY)\s*'
+    r'(?:(?:RWY|RY|RUNWAY)\s*)?'
     r'(?:IN\s+USE\s+)?'
     r'(' + _RWY + r')'
     r'(?:[,\s]+(?:(?:ILS|RNAV|VIS(?:UAL)?)\s+)?(?:(?:RWY|RY|RUNWAY)\s+)?(' + _RWY + r'))?'
@@ -37,7 +37,7 @@ _ATIS_ARR_RE = re.compile(
 
 _ATIS_DEP_RE = re.compile(
     r'(?:DEP(?:TG|TING|T|G|ARTING|ARTURE)?|TKOF|TAKEOFF)\s+'
-    r'(?:RWY(?:S)?|RY|RUNWAY(?:S)?)\s*'
+    r'(?:(?:RWY(?:S)?|RY|RUNWAY(?:S)?)\s*)?'
     r'(' + _RWY + r')'
     r'(?:\s+AND\s+(' + _RWY + r'))?'
     r'(?:[,\s]+(?:(?:RWY(?:S)?|RY|RUNWAY(?:S)?)\s+)?(' + _RWY + r'))?',
@@ -63,11 +63,18 @@ _ATIS_COMBINED_RE = re.compile(
 )
 
 # "RUNWAY IN USE 26L" / "RWY IN USE 16L AND 16R" — standalone, implies both landing & departing
+# Also handles "RUNWAY IN USE | RWY 23R" (EGCC-style with pipe line-break before RWY keyword)
 _ATIS_RWY_IN_USE_RE = re.compile(
-    r'(?:RWY|RUNWAY)\s+IN\s+USE\s*'
+    r'(?:RWY|RUNWAY)\s+IN\s+USE\s*(?:[|.]\s*(?:RWY|RUNWAY)\s+)?'
     r'(' + _RWY + r')'
     r'(?:[,\s]+AND\s+(' + _RWY + r'))?'
     r'(?:[,\s]+AND\s+(' + _RWY + r'))?',
+    re.IGNORECASE
+)
+
+# "RWY 19R IN USE" — runway number precedes IN USE (e.g. ESSA DEP ATIS), implies both landing & departing
+_ATIS_RWY_NUM_IN_USE_RE = re.compile(
+    r'(?:RWY|RUNWAY)\s+(' + _RWY + r')\s+IN\s+USE',
     re.IGNORECASE
 )
 
@@ -952,6 +959,14 @@ class VatsimFetcher:
                             result['landing'].append(rwy)
                         if rwy not in result['departing']:
                             result['departing'].append(rwy)
+
+            # "RWY 19R IN USE" — number precedes IN USE (e.g. ESSA style)
+            for m in _ATIS_RWY_NUM_IN_USE_RE.finditer(text):
+                rwy = m.group(1).lstrip('0') or '0'
+                if rwy not in result['landing']:
+                    result['landing'].append(rwy)
+                if rwy not in result['departing']:
+                    result['departing'].append(rwy)
 
             # Arrival patterns (skip if this is a DEP-only ATIS)
             if not is_dep_atis:
