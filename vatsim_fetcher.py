@@ -62,6 +62,15 @@ _ATIS_COMBINED_RE = re.compile(
     re.IGNORECASE
 )
 
+# "RUNWAY IN USE 26L" / "RWY IN USE 16L AND 16R" — standalone, implies both landing & departing
+_ATIS_RWY_IN_USE_RE = re.compile(
+    r'(?:RWY|RUNWAY)\s+IN\s+USE\s*'
+    r'(' + _RWY + r')'
+    r'(?:[,\s]+AND\s+(' + _RWY + r'))?'
+    r'(?:[,\s]+AND\s+(' + _RWY + r'))?',
+    re.IGNORECASE
+)
+
 CUSTOM_AIRPORTS_PATH = os.path.join('data', 'custom_airports.json')
 
 # UKCP Stand API Integration
@@ -917,6 +926,16 @@ class VatsimFetcher:
                     result['landing'].append(rwy)
                 if rwy not in result['departing']:
                     result['departing'].append(rwy)
+
+            # Standalone "RWY/RUNWAY IN USE" — implies both landing and departing
+            for m in _ATIS_RWY_IN_USE_RE.finditer(text):
+                for g in m.groups():
+                    if g:
+                        rwy = g.lstrip('0') or '0'
+                        if rwy not in result['landing']:
+                            result['landing'].append(rwy)
+                        if rwy not in result['departing']:
+                            result['departing'].append(rwy)
 
             # Arrival patterns (skip if this is a DEP-only ATIS)
             if not is_dep_atis:
