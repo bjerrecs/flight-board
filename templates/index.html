@@ -338,6 +338,7 @@
                 <p><strong>Nearby Traffic</strong> — While a flight is being tracked and airborne, all other airborne VATSIM aircraft are shown on the map as small white markers with fading trails, giving a live global traffic picture around the tracked flight.</p>
                 <p><strong>ATC Panel</strong> — An expandable panel in the bottom-left lists active controllers. When tracking a flight, the list is automatically filtered to show only controllers at the origin and destination airports plus any relevant sector (CTR) controllers along the route.</p>
                 <p><strong>Conflict Detection</strong> — En-route and approaching aircraft are continuously checked for proximity conflicts using ICAO-aligned separation minima. Conflicting pairs are joined by a dashed coloured line and the aircraft icon pulses with a coloured ring: <span class="help-status-dot" style="background:#fdd835"></span> yellow (&lt;10 NM / &lt;2,000 ft), <span class="help-status-dot" style="background:#ff7043"></span> orange (&lt;5 NM / &lt;1,000 ft), <span class="help-status-dot" style="background:#ef5350"></span> red (&lt;2 NM / &lt;800 ft). When tracking a flight only conflicts involving that flight are shown. Toggle off via the <strong>Conflicts</strong> button in the legend; the setting persists across sessions.</p>
+                <p><strong>Weather Radar</strong> — Toggle a live global precipitation overlay via the <strong>Weather</strong> button in the map legend. Powered by RainViewer and refreshed automatically every 10 minutes. State persists across sessions.</p>
                 <p><strong>Live Updates</strong> — The map refreshes in real time via WebSocket — no page reload needed.</p>
             </section>
 
@@ -375,6 +376,22 @@
         <span class="close" id="changelogModalClose">&times;</span>
         <h2>Changelog</h2>
         <div class="help-modal-body">
+
+            <section class="help-section">
+                <h3>v1.3.5 — 2026-03-13</h3>
+                <ul>
+                    <li>Live Map: RainViewer global weather radar overlay — toggleable from the map legend, state persisted across sessions, auto-refreshes every 10 minutes</li>
+                </ul>
+            </section>
+
+            <section class="help-section">
+                <h3>v1.3.4 — 2026-03-13</h3>
+                <ul>
+                    <li>Google Analytics tracking added to admin, login, gate, index, and map templates</li>
+                    <li>EHAM theme: Inter font, lowercase text styling</li>
+                    <li>ATIS regex extended to handle LDG/TKOF without RWY prefix, reversed RWY IN USE phrasing, and pipe-separated runway lists</li>
+                </ul>
+            </section>
 
             <section class="help-section">
                 <h3>v1.3.3 — 2026-03-12</h3>
