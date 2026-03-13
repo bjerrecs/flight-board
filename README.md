@@ -141,7 +141,9 @@ If the flight board adds a little extra joy to your sim experience, a coffee hel
 
 ## License
 
-This project is open-source and available under the MIT License. See [POLICY.md](POLICY.md) for branding and data usage terms.
+This project is open-source and available under the **GNU AGPLv3 License**. See the [LICENSE](LICENSE.md) file for more details. 
+
+See [POLICY.md](POLICY.md) for branding, data usage terms, and disclaimers regarding flight simulation use.
 
 ## Acknowledgements
 

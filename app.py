@@ -1,3 +1,7 @@
+# SimFixr FlightBoard
+# Copyright (C) 2026 Tariq Mattar/SimFixr
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation.
+
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, make_response
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from apscheduler.schedulers.background import BackgroundScheduler
