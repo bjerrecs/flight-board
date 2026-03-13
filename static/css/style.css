@@ -2901,3 +2901,7 @@ body.theme-egll .simfixr-map-icon {
 .map-legend-toggle.legend-toggle--off .legend-toggle-indicator {
     color: #555;
 }
+.rainviewer-layer img {
+    image-rendering: auto;
+    filter: blur(2px);
+}
