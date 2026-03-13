@@ -79,32 +79,23 @@ If the flight board adds a little extra joy to your sim experience, a coffee hel
 ### Zurich (LSZH) - Classic Style
 ![Zurich Board](screenshots/LSZH.png)
 
-### Geneva (LSGG) - Blue Header Theme
-![Geneva Board](screenshots/LSGG.png)
-
-### Basel (LFSB) - EuroAirport Blue Theme
-![Basel Board](screenshots/LFSB.png)
-
 ### Schipol (EHAM) - White Theme
 ![Schipol Board](screenshots/EHAM.png)
 
 ### London Heathrow (EGLL) - Yellow Theme
 ![Heathrow Board](screenshots/EGLL.png)
 
-### London Gatwick (EGKK) - Yellow Theme
-![Gatwick Board](screenshots/EGKK.png)
+### Frankfurt (EDDF) - Split-Flap Theme
+![Frankfurt Board](screenshots/EDDF.png)
 
-### London City (EGLC) - Blue, White and Grey Theme
-![City Board](screenshots/EGLC.png)
+## Live Map
 
-### Paris CDG (LFPG) - ADP Midnight Blue Theme
-![Paris CDG Board](screenshots/LFPG.png)
+### Flight Tracking Map
+![Live Map](screenshots/live_map_1.png)
 
-### Manchester (EGCC) - Yellow Theme
-![Manchester Board](screenshots/EGCC.png)
+### Weather Radar
+![Weather Radar](screenshots/live_weather.png)
 
-### Tokyo Haneda (RJTT) - Haneda Theme
-![Haneda Board](screenshots/RJTT.png)
 
 ## Technical Stack
 
