@@ -60,25 +60,25 @@ _ATIS_ARR_SUFFIX_RE = re.compile(
 )
 
 _ATIS_COMBINED_RE = re.compile(
-    r'LANDING\s+AND\s+DEPARTING\s+'
-    r'(?:RWY|RY|RUNWAY)\s*'
+    r'(?:LANDING\s+AND\s+DEPARTING|DEPARTING\s+AND\s+LANDING)\s+'
+    r'(?:(?:RWY|RY|RUNWAY)S?\s*)?'
     r'(' + _RWY + r')',
     re.IGNORECASE
 )
 
 # "RUNWAY IN USE 26L" / "RWY IN USE 16L AND 16R" — standalone, implies both landing & departing
-# Also handles "RUNWAY IN USE | RWY 23R" (EGCC-style with pipe line-break before RWY keyword)
+# Also handles "RUNWAY IN USE RWY 23R" (when ATIS list is joined with spaces)
 _ATIS_RWY_IN_USE_RE = re.compile(
-    r'(?:RWY|RUNWAY)\s+IN\s+USE\s*(?:[|.]\s*(?:RWY|RUNWAY)\s+)?'
+    r'(?:RWY|RUNWAY)S?\s+IN\s+USE\s*(?:[:|.-]\s*)?(?:(?:RWY|RUNWAY)S?\s+)?'
     r'(' + _RWY + r')'
     r'(?:[,\s]+AND\s+(' + _RWY + r'))?'
     r'(?:[,\s]+AND\s+(' + _RWY + r'))?',
     re.IGNORECASE
 )
 
-# "RWY 19R IN USE" — runway number precedes IN USE (e.g. ESSA DEP ATIS), implies both landing & departing
+# "RWY 19R IN USE" — runway number precedes IN USE (e.g. ESSA DEP ATIS)
 _ATIS_RWY_NUM_IN_USE_RE = re.compile(
-    r'(?:RWY|RUNWAY)\s+(' + _RWY + r')\s+IN\s+USE',
+    r'(?:RWY|RUNWAY)S?\s+(' + _RWY + r')\s+IN\s+USE',
     re.IGNORECASE
 )
 
