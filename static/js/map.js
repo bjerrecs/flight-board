@@ -1401,7 +1401,7 @@
     /* ── Weather Radar Overlay (RainViewer) ──────────────── */
     let weatherRadarLayer = null;
     let weatherUpdateTimer = null;
-    let showWeather = localStorage.getItem('flightboard.show_weather') === 'true';
+    let showWeather = localStorage.getItem('flightboard.show_weather') !== 'false';
 
     function fetchAndAddWeatherRadar() {
         fetch('https://api.rainviewer.com/public/weather-maps.json')
