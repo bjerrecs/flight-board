@@ -631,7 +631,8 @@ def _add_security_headers(response):
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data: https:; "
         "connect-src 'self' wss: https://api.rainviewer.com https://vatsim.net https://overpass-api.de "
-        "https://www.google-analytics.com https://images.kiwi.com; "
+        "https://www.google-analytics.com https://images.kiwi.com https://cdn.jsdelivr.net "
+        "https://raw.githubusercontent.com; "
         "frame-ancestors 'none';"
     ))
     return response
