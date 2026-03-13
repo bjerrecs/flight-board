@@ -23,6 +23,8 @@ import psycopg2
 import zipfile
 import tempfile
 import shutil as _shutil
+import hmac
+import secrets
 
 _AIRAC_YEAR_STARTS = {
     2023: _date(2023, 1, 26),
@@ -87,7 +89,7 @@ APP_VERSION = '1.3.5'
 
 app = Flask(__name__)
 app.config.from_object(Config)
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins=app.config.get('ALLOWED_ORIGIN', 'https://flightboard.simfixr.com'))
 
 flight_fetcher = VatsimFetcher()
 # Global store: {'LSZH': {...}, 'LSGG': {...}, 'EDDF': {...}, etc}
@@ -587,26 +589,52 @@ def _clear_failed_attempts(key):
 def _sanitize_next_url(next_url):
     if not next_url:
         return url_for('admin')
-    if isinstance(next_url, str) and next_url.startswith('/'):
+    if isinstance(next_url, str) and next_url.startswith('/') and not next_url.startswith('//'):
         return next_url
     return url_for('admin')
 
 @app.before_request
 def _protect_admin_routes():
     path = request.path or ''
-    protected = path == '/admin' or path.startswith('/api/admin/')
+    protected = path == '/admin' or path.startswith('/api/admin/') or path == '/admin/logout'
     if not protected:
         return None
 
-    if _is_admin_authenticated():
-        return None
+    if not _is_admin_authenticated():
+        if path.startswith('/api/admin/'):
+            return jsonify({'error': 'Unauthorized'}), 401
+        return redirect(url_for('admin_login', next=(request.full_path if request.query_string else request.path)))
 
-    if path.startswith('/api/admin/'):
-        return jsonify({'error': 'Unauthorized'}), 401
+    if 'csrf_token' not in session:
+        session['csrf_token'] = secrets.token_hex(32)
 
-    next_url = request.full_path if request.query_string else request.path
-    return redirect(url_for('admin_login', next=next_url))
+    if request.method == 'POST':
+        token = request.headers.get('X-CSRF-Token') or request.form.get('csrf_token', '')
+        expected = session.get('csrf_token', '')
+        if not token or not expected or not hmac.compare_digest(token, expected):
+            if path.startswith('/api/admin/'):
+                return jsonify({'error': 'Invalid request'}), 403
+            return redirect(url_for('admin'))
 
+    return None
+
+
+@app.after_request
+def _add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers.setdefault('Content-Security-Policy', (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' wss: https://api.rainviewer.com https://vatsim.net https://overpass-api.de "
+        "https://www.google-analytics.com https://images.kiwi.com; "
+        "frame-ancestors 'none';"
+    ))
+    return response
 
 @app.before_request
 def _track_page_requests():
@@ -673,7 +701,7 @@ def index():
 
 @app.route('/admin')
 def admin():
-    return render_template('admin.html', asset_version=int(time.time()))
+    return render_template('admin.html', asset_version=int(time.time()), csrf_token=session.get('csrf_token', ''))
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -706,7 +734,7 @@ def admin_login():
     if not expected_password:
         return render_template('admin_login.html', error='Admin password is not configured.'), 500
 
-    if username == expected_username and password == expected_password:
+    if username == expected_username and hmac.compare_digest(password, expected_password):
         _clear_failed_attempts(client_key)
         session[ADMIN_SESSION_KEY] = True
         session['admin_username'] = expected_username
@@ -1030,14 +1058,10 @@ def api_admin_atis_log():
 
 @app.route('/api/admin/navdata_info')
 def api_admin_navdata_info():
-    if not session.get('admin_logged_in'):
-        return jsonify({'error': 'Unauthorised'}), 401
     return jsonify(_get_navdata_info())
 
 @app.route('/api/admin/upload_navdata', methods=['POST'])
 def api_admin_upload_navdata():
-    if not session.get('admin_logged_in'):
-        return jsonify({'error': 'Unauthorised'}), 401
     f = request.files.get('file')
     if not f or not f.filename.lower().endswith('.zip'):
         return jsonify({'error': 'Please upload a .zip file'}), 400
@@ -1052,6 +1076,16 @@ def api_admin_upload_navdata():
                              if os.path.basename(n) in ('earth_nav.dat', 'earth_fix.dat')]
                 if not nav_names:
                     return jsonify({'error': 'Zip must contain earth_nav.dat or earth_fix.dat'}), 400
+                # Guard against zip bombs
+                MAX_UNCOMPRESSED = 500 * 1024 * 1024  # 500 MB
+                if sum(m.file_size for m in zf.infolist()) > MAX_UNCOMPRESSED:
+                    return jsonify({'error': 'Archive too large'}), 400
+                # Guard against path traversal
+                tmp_real = os.path.realpath(tmp)
+                for member in zf.infolist():
+                    member_path = os.path.realpath(os.path.join(tmp, member.filename))
+                    if not member_path.startswith(tmp_real + os.sep) and member_path != tmp_real:
+                        return jsonify({'error': 'Invalid zip file'}), 400
                 parts = nav_names[0].split('/')
                 prefix = '/'.join(parts[:-1]) if len(parts) > 1 else ''
                 zf.extractall(tmp)
