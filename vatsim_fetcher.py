@@ -939,7 +939,7 @@ class VatsimFetcher:
                     and cs.endswith('_ATIS')):
                 continue
 
-            text = ' '.join(atis.get('text_atis', []))
+            text = ' '.join(atis.get('text_atis') or [])
             result['atis_code'] = atis.get('atis_code')
             result['frequency'] = atis.get('frequency')
 
@@ -1049,7 +1049,7 @@ class VatsimFetcher:
             for atis in atis_list:
                 cs = atis.get('callsign', '')
                 if any(cs.startswith(p + '_') for p in prefixes) and cs.endswith('_ATIS'):
-                    text = ' | '.join(atis.get('text_atis', []))
+                    text = ' | '.join(atis.get('text_atis') or [])
                     msg = f"ATIS online but no runways parsed — {cs}"
                     print(f"[ATIS-FALLBACK] {airport_code}: {msg} | Text: {text}")
                     atis_fallback_log.appendleft({
