@@ -1,3 +1,7 @@
+# SimFixr FlightBoard
+# Copyright (C) 2026 Tariq Mattar/SimFixr
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation.
+
 """
 Airport Check-in Desk Assignment Logic
 Provides realistic, deterministic check-in desk assignments based on airline and terminal operations
