@@ -32,10 +32,11 @@ Thumbs.db
 scandi_stand_info/
 static/scandinavian_stands.json
 
-# Markdown docs (except README and POLICY)
+# Markdown docs (except README, POLICY and LICENSE)
 *.md
 !README.md
 !POLICY.md
+!LICENSE.md
 
 # Generated/intermediate import files
 *.generated.json
