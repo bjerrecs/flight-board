@@ -1398,6 +1398,80 @@
     updateClock();
     setInterval(updateClock, 10000);
 
+    /* ── Weather Radar Overlay (RainViewer) ──────────────── */
+    let weatherRadarLayer = null;
+    let weatherUpdateTimer = null;
+    let showWeather = localStorage.getItem('flightboard.show_weather') !== 'false';
+
+    function fetchAndAddWeatherRadar() {
+        fetch('https://api.rainviewer.com/public/weather-maps.json')
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                const latestFrame = data.radar.past[data.radar.past.length - 1];
+                const tileUrl = data.host + latestFrame.path + '/256/{z}/{x}/{y}/2/1_1.png';
+
+                if (weatherRadarLayer && map.hasLayer(weatherRadarLayer)) {
+                    map.removeLayer(weatherRadarLayer);
+                }
+
+                weatherRadarLayer = L.tileLayer(tileUrl, {
+                    tileSize: 256,
+                    maxNativeZoom: 7,
+                    opacity: 0.5,
+                    transparent: true,
+                    attribution: '<a href="https://rainviewer.com" target="_blank">RainViewer</a>',
+                    zIndex: 400
+                });
+
+                if (showWeather) {
+                    weatherRadarLayer.addTo(map);
+                }
+            })
+            .catch(function(err) { console.error('Error fetching RainViewer data:', err); });
+    }
+
+    function toggleWeatherRadar() {
+        showWeather = !showWeather;
+        localStorage.setItem('flightboard.show_weather', showWeather);
+
+        var btn = document.getElementById('weatherToggleBtn');
+        if (btn) {
+            btn.classList.toggle('legend-toggle--off', !showWeather);
+            var indicator = btn.querySelector('.legend-toggle-indicator');
+            if (indicator) indicator.textContent = showWeather ? 'ON' : 'OFF';
+        }
+
+        if (showWeather) {
+            if (weatherRadarLayer) {
+                weatherRadarLayer.addTo(map);
+            } else {
+                fetchAndAddWeatherRadar();
+            }
+            if (!weatherUpdateTimer) weatherUpdateTimer = setInterval(fetchAndAddWeatherRadar, 10 * 60 * 1000);
+        } else {
+            if (weatherRadarLayer && map.hasLayer(weatherRadarLayer)) {
+                map.removeLayer(weatherRadarLayer);
+            }
+            if (weatherUpdateTimer) {
+                clearInterval(weatherUpdateTimer);
+                weatherUpdateTimer = null;
+            }
+        }
+    }
+
+    var weatherToggleBtn = document.getElementById('weatherToggleBtn');
+    if (weatherToggleBtn) {
+        weatherToggleBtn.classList.toggle('legend-toggle--off', !showWeather);
+        var wIndicator = weatherToggleBtn.querySelector('.legend-toggle-indicator');
+        if (wIndicator) wIndicator.textContent = showWeather ? 'ON' : 'OFF';
+        weatherToggleBtn.addEventListener('click', toggleWeatherRadar);
+    }
+
+    fetchAndAddWeatherRadar();
+    if (showWeather) {
+        weatherUpdateTimer = setInterval(fetchAndAddWeatherRadar, 10 * 60 * 1000);
+    }
+
     /* ── Fullscreen ───────────────────────────────────────── */
     var fsBtn = document.getElementById('mapFullscreenBtn');
     if (fsBtn) {
