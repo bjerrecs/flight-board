@@ -3,6 +3,8 @@
 // This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation.
 
 (function () {
+  const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
   // ── Element refs ──────────────────────────────────────────────────────────
   const standsIcaoInput    = document.getElementById('standsIcaoInput');
   const loadStandsBtn      = document.getElementById('loadStandsBtn');
@@ -180,7 +182,7 @@
     const stands = collectStands();
     const response = await fetch('/api/admin/stands/' + icao, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF_TOKEN },
       body: JSON.stringify({ stands })
     });
 
@@ -439,7 +441,7 @@
   async function saveThemeMap() {
     const response = await fetch('/api/admin/theme_map', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF_TOKEN },
       body: JSON.stringify({ theme_map: collectThemeMap() })
     });
     const data = await response.json();
@@ -553,7 +555,7 @@
   async function saveCustomAirports() {
     const response = await fetch('/api/admin/custom_airports', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF_TOKEN },
       body: JSON.stringify({ custom_airports: collectCustomAirports() })
     });
     const data = await response.json();
@@ -686,7 +688,7 @@
       fd.append('file', fileInput.files[0]);
       uploadBtn.disabled = true;
       setStatus('Uploading navdata — this may take a moment…');
-      fetch('/api/admin/upload_navdata', { method: 'POST', body: fd })
+      fetch('/api/admin/upload_navdata', { method: 'POST', body: fd, headers: { 'X-CSRF-Token': CSRF_TOKEN } })
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (data.error) {
