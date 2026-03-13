@@ -626,8 +626,8 @@ def _add_security_headers(response):
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     response.headers.setdefault('Content-Security-Policy', (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' https://cdn.socket.io https://www.googletagmanager.com https://www.google-analytics.com; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "script-src 'self' 'unsafe-inline' https://cdn.socket.io https://unpkg.com https://www.googletagmanager.com https://www.google-analytics.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data: https:; "
         "connect-src 'self' wss: https://api.rainviewer.com https://vatsim.net https://overpass-api.de "
