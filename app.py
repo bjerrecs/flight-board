@@ -85,7 +85,7 @@ def _haversine_km(lat1, lon1, lat2, lon2):
     a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
     return R * 2 * math.asin(math.sqrt(a))
 
-APP_VERSION = '1.3.6'
+APP_VERSION = '1.3.7'
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -1121,6 +1121,14 @@ def api_airport_name(icao):
     lat = airport_info.get('lat') if airport_info else None
     lon = airport_info.get('lon') if airport_info else None
     return jsonify({'name': name, 'lat': lat, 'lon': lon})
+
+@app.route('/api/metar/<icao>')
+def api_metar(icao):
+    normalized = _normalize_icao(icao)
+    if not normalized:
+        return jsonify({'metar': None}), 400
+    text = flight_fetcher.get_metar(normalized)
+    return jsonify({'metar': None if text == 'Unavailable' else text})
 
 @app.route('/api/search_airport', methods=['POST'])
 def search_airport():

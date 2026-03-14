@@ -76,6 +76,17 @@
                 <div class="map-panel-row"><span class="map-panel-label">Speed</span><span id="panelSpeed" class="map-panel-value">--</span></div>
                 <div class="map-panel-row"><span class="map-panel-label">Gate</span><span id="panelGate" class="map-panel-value">--</span></div>
                 <div class="map-panel-row"><span class="map-panel-label">Route</span><span id="panelRoute" class="map-panel-value map-panel-route">--</span></div>
+                <div id="panelWeather" class="map-panel-weather" style="display:none">
+                    <div class="map-panel-weather-header">
+                        <span class="map-panel-weather-icao" id="panelWeatherIcao"></span>
+                        <span class="map-panel-weather-label">Weather</span>
+                    </div>
+                    <div class="map-panel-row"><span class="map-panel-label">Condition</span><span id="panelWxCondition" class="map-panel-value">--</span></div>
+                    <div class="map-panel-row"><span class="map-panel-label">Wind</span><span id="panelWxWind" class="map-panel-value">--</span></div>
+                    <div class="map-panel-row"><span class="map-panel-label">Temp</span><span id="panelWxTemp" class="map-panel-value">--</span></div>
+                    <div class="map-panel-row" id="panelWxVisRow" style="display:none"><span class="map-panel-label">Visibility</span><span id="panelWxVis" class="map-panel-value">--</span></div>
+                    <div class="map-panel-row" id="panelWxQnhRow" style="display:none"><span class="map-panel-label">QNH</span><span id="panelWxQnh" class="map-panel-value">--</span></div>
+                </div>
             </div>
             <a id="panelGateLink" class="map-panel-gate-link" href="#" target="_blank">
                 <span class="material-icons">tv</span> Gate Display

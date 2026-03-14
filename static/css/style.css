@@ -2233,6 +2233,30 @@ body.map-page {
     word-break: break-all;
 }
 
+.map-panel-weather {
+    margin-top: 8px;
+    border-top: 1px solid #2a2a2a;
+    padding-top: 4px;
+}
+.map-panel-weather-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0 2px;
+}
+.map-panel-weather-icao {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.05em;
+}
+.map-panel-weather-label {
+    font-size: 0.7rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
 .map-panel-gate-link {
     display: flex;
     align-items: center;
