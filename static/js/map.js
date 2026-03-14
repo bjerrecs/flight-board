@@ -1138,6 +1138,150 @@
         return '#aaa';
     }
 
+    function parseMetarForPanel(metar) {
+        if (!metar || metar === 'Unavailable') return null;
+        var r = { condition: null, wind: null, temp: null, vis: null, qnh_hpa: null, qnh_inhg: null };
+
+        // Condition — priority order
+        if (/\bTS\b/.test(metar))                              r.condition = 'Thunderstorm';
+        else if (/\b(?:SN|SG)\b/.test(metar))                 r.condition = 'Snow';
+        else if (/\b(?:RA|DZ)\b/.test(metar))                 r.condition = 'Rain';
+        else if (/\b(?:FG|BR)\b/.test(metar))                 r.condition = 'Fog / Mist';
+        else if (/\b(?:OVC|BKN)\d{3}\b/.test(metar))         r.condition = 'Overcast';
+        else if (/\b(?:SCT|FEW)\d{3}\b/.test(metar))         r.condition = 'Partly Cloudy';
+        else if (/\b(?:CAVOK|CLR|SKC|NSC)\b/.test(metar))    r.condition = 'Clear';
+        else                                                   r.condition = 'Unknown';
+
+        // Wind
+        var wm = metar.match(/\b(VRB|\d{3})(\d{2,3})(G(\d{2,3}))?KT\b/);
+        if (wm) {
+            var dir  = wm[1] === 'VRB' ? 'Variable' : wm[1] + '\u00b0';
+            var spd  = parseInt(wm[2], 10);
+            var gust = wm[4] ? ', gusting ' + parseInt(wm[4], 10) + 'kt' : '';
+            r.wind = dir + ' at ' + spd + 'kt' + gust;
+        } else {
+            r.wind = 'Calm';
+        }
+
+        // Temperature — e.g. 12/05 or M02/M08
+        var tm = metar.match(/\b(M?\d{2})\/(M?\d{2})\b/);
+        if (tm) {
+            r.temp = parseInt(tm[1].replace('M', '-'), 10) + '\u00b0C';
+        }
+
+        // Visibility — only populate if < 5000m (strip time and wind groups first)
+        if (!metar.includes('CAVOK')) {
+            var stripped = metar
+                .replace(/\b\d{6}Z\b/, '')
+                .replace(/\b(?:VRB|\d{3})\d{2,3}(?:G\d{2,3})?KT\b/, '');
+            var vm = stripped.match(/\b(\d{4})\b/);
+            if (vm) {
+                var vis = parseInt(vm[1], 10);
+                if (vis < 5000) r.vis = vis + 'm';
+            }
+        }
+
+        // Pressure — Q prefix = hPa (international), A prefix = inHg×100 (US)
+        var qm = metar.match(/\bQ(\d{4})\b/);
+        var am = metar.match(/\bA(\d{4})\b/);
+        if (qm) {
+            r.qnh_hpa  = parseInt(qm[1], 10);
+            r.qnh_inhg = (r.qnh_hpa / 33.8639).toFixed(2);
+        } else if (am) {
+            r.qnh_inhg = (parseInt(am[1], 10) / 100).toFixed(2);
+            r.qnh_hpa  = Math.round(parseFloat(r.qnh_inhg) * 33.8639);
+        }
+
+        return r;
+    }
+
+    var lastWeatherIcao = null;
+    // 150 nm in km — switch from origin to destination weather within this range
+    var DEST_WEATHER_THRESHOLD_KM = 278;
+
+    function _applyWeather(icao, data) {
+        var weatherEl = document.getElementById('panelWeather');
+        if (lastWeatherIcao !== icao) return;
+        var wx = parseMetarForPanel(data.metar);
+        if (!wx) { weatherEl.style.display = 'none'; return; }
+        weatherEl.style.display = 'block';
+        document.getElementById('panelWeatherIcao').textContent  = icao;
+        document.getElementById('panelWxCondition').textContent  = wx.condition || '--';
+        document.getElementById('panelWxWind').textContent       = wx.wind      || '--';
+        document.getElementById('panelWxTemp').textContent       = wx.temp      || '--';
+        if (wx.vis) {
+            document.getElementById('panelWxVis').textContent     = wx.vis;
+            document.getElementById('panelWxVisRow').style.display = '';
+        } else {
+            document.getElementById('panelWxVisRow').style.display = 'none';
+        }
+        if (wx.qnh_hpa !== null) {
+            var isUS = icao.charAt(0) === 'K';
+            var qnhText = wx.qnh_hpa + ' hPa';
+            if (isUS && wx.qnh_inhg !== null) qnhText += ' / ' + wx.qnh_inhg + ' inHg';
+            document.getElementById('panelWxQnh').textContent      = qnhText;
+            document.getElementById('panelWxQnhRow').style.display  = '';
+        } else {
+            document.getElementById('panelWxQnhRow').style.display = 'none';
+        }
+    }
+
+    function _fetchAndApply(icao) {
+        fetch('/api/metar/' + encodeURIComponent(icao))
+            .then(function (r) { return r.json(); })
+            .then(function (data) { _applyWeather(icao, data); })
+            .catch(function () {
+                if (lastWeatherIcao === icao) document.getElementById('panelWeather').style.display = 'none';
+            });
+    }
+
+    function _showWeatherFor(icao) {
+        var weatherEl = document.getElementById('panelWeather');
+        weatherEl.style.display = 'block';
+        if (icao !== lastWeatherIcao) {
+            // New airport — show placeholders while fetching
+            document.getElementById('panelWeatherIcao').textContent     = icao;
+            document.getElementById('panelWxCondition').textContent     = '\u2026';
+            document.getElementById('panelWxWind').textContent          = '\u2026';
+            document.getElementById('panelWxTemp').textContent          = '\u2026';
+            document.getElementById('panelWxVisRow').style.display      = 'none';
+            document.getElementById('panelWxQnhRow').style.display      = 'none';
+            lastWeatherIcao = icao;
+            _fetchAndApply(icao);
+        }
+        // If same ICAO as before, keep current values (next 15s cycle will refresh if needed)
+    }
+
+    function fetchFlightWeather(f) {
+        var weatherEl = document.getElementById('panelWeather');
+        if (!f) { weatherEl.style.display = 'none'; return; }
+
+        var dest   = (f.destination && f.destination.length === 4) ? f.destination : null;
+        var origin = (f.origin      && f.origin.length === 4)      ? f.origin      : null;
+
+        // If no destination, just show origin weather (or hide if neither)
+        if (!dest) {
+            if (origin) _showWeatherFor(origin); else weatherEl.style.display = 'none';
+            return;
+        }
+        // If no origin, always show destination
+        if (!origin) { _showWeatherFor(dest); return; }
+
+        // Both exist — decide based on distance to destination.
+        // Fetch destination coords, then pick airport.
+        var flightLat = f.latitude, flightLon = f.longitude;
+        if (!flightLat || !flightLon) { _showWeatherFor(dest); return; }
+
+        fetch('/api/airport_name/' + encodeURIComponent(dest))
+            .then(function (r) { return r.json(); })
+            .then(function (info) {
+                if (!info.lat || !info.lon) { _showWeatherFor(dest); return; }
+                var distKm = haversineKm(flightLat, flightLon, info.lat, info.lon);
+                _showWeatherFor(distKm > DEST_WEATHER_THRESHOLD_KM ? origin : dest);
+            })
+            .catch(function () { _showWeatherFor(dest); });
+    }
+
     function showFlightPanel(f) {
         selectedCallsign = f.callsign;
         document.getElementById('panelCallsign').textContent = f.callsign;
@@ -1165,11 +1309,14 @@
         document.getElementById('panelRoute').textContent = f.route || '--';
         document.getElementById('panelGateLink').href = '/gate/' + AIRPORT + '/' + f.callsign;
         panel.classList.add('open');
+        fetchFlightWeather(f);
     }
 
     function closeFlightPanel() {
         selectedCallsign = null;
         panel.classList.remove('open');
+        lastWeatherIcao = null;
+        document.getElementById('panelWeather').style.display = 'none';
     }
 
     document.getElementById('flightPanelClose').addEventListener('click', closeFlightPanel);
