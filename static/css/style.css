@@ -597,11 +597,15 @@ html, body {
     .widget-icon {
         font-size: 1.8rem;
     }
-    
+
+    .simfixr-map-icon {
+        height: 1.8rem;
+    }
+
     .widget-text {
         font-size: 1.4rem;
     }
-    
+
     .atc-popover {
         width: 200px;
     }
@@ -614,6 +618,8 @@ html, body {
 
 /* Small screens / mobile optimization */
 @media (max-width: 768px) {
+    :root { --font-size-cell: 0.85rem; --font-size-header: 0.75rem; --row-height: 36px; }
+
     .airport-selector select {
         font-size: 1.8rem;
         max-width: 30vw;
@@ -643,7 +649,11 @@ html, body {
     .widget-icon {
         font-size: 1.6rem;
     }
-    
+
+    .simfixr-map-icon {
+        height: 1.6rem;
+    }
+
     .widget-text {
         font-size: 1.2rem;
     }
