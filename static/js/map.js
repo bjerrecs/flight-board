@@ -15,7 +15,6 @@
         center: [APT_LAT, APT_LON],
         zoom: 11,
         zoomControl: false,
-        preferCanvas: true,
     });
 
     L.control.zoom({ position: 'topright' }).addTo(map);
