@@ -986,6 +986,14 @@ body.theme-eham .tracking-chip {
     flex-shrink: 0;
 }
 
+.simfixr-map-icon {
+    height: 1.7rem;
+    width: auto;
+    display: block;
+    opacity: 0.75;
+    transition: opacity 0.2s;
+}
+
 .widget-text {
     font-size: 1.8rem;
     font-weight: 700;
@@ -2510,13 +2518,6 @@ body.map-page .leaflet-control-flight a.follow-active {
     color: inherit;
 }
 
-.simfixr-map-icon {
-    height: 1.7rem;
-    width: auto;
-    display: block;
-    opacity: 0.75;
-    transition: opacity 0.2s;
-}
 .map-link-btn:hover .simfixr-map-icon { opacity: 1; }
 
 /* Use black icon on light/yellow header themes (including unthemed airports) */
@@ -2528,7 +2529,7 @@ body.theme-egkk .simfixr-map-icon,
 body.theme-egss .simfixr-map-icon,
 body.theme-egcc .simfixr-map-icon,
 body.theme-egll .simfixr-map-icon {
-    content: url('/static/simfixr_logos/simfixr_map_black_icon.png');
+    filter: brightness(0);
 }
 
 @keyframes tracking-pulse {
