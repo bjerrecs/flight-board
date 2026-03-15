@@ -187,6 +187,12 @@ def _runway_heading(transition_name: str):
     return int(m.group(1)) * 10 if m else None
 
 
+def _rwy_key(designator: str) -> str:
+    """'27L' → 'RW27L', already-prefixed 'RW27L' → 'RW27L'"""
+    d = designator.strip().upper()
+    return d if d.startswith('RW') else 'RW' + d
+
+
 def _heading_diff(a: int, b: int) -> int:
     """Smallest angular difference between two headings, 0–180."""
     d = abs(a - b) % 360
@@ -253,7 +259,7 @@ def _pick_into_wind(candidates: list, cifp_procs: dict, wind_dir, dist_fn) -> st
 # ── Procedure inference from route waypoints ────────────────────────────────
 
 def _infer_sid(origin_cifp: dict, first_fix: str, airport_ref: tuple,
-               next_fix_ref, wind_dir) -> tuple:
+               next_fix_ref, wind_dir, dep_runways=None) -> tuple:
     """
     Infer a SID when no procedure name is filed in the route.
     Uses first_fix (the first named en-route waypoint) as the SID exit fix.
@@ -276,6 +282,14 @@ def _infer_sid(origin_cifp: dict, first_fix: str, airport_ref: tuple,
         return None, []
 
     if len(candidates) > 1:
+        # Constrain to SIDs that have a transition matching an active dep runway
+        if dep_runways and len(candidates) > 1:
+            keys = {_rwy_key(r) for r in dep_runways}
+            active_cands = [n for n in candidates
+                            if any(k.upper() in keys for k in sids[n])]
+            if active_cands:
+                candidates = active_cands
+
         ref = next_fix_ref or airport_ref
         def dist_fn(name):
             for ids in sids[name].values():
@@ -288,11 +302,12 @@ def _infer_sid(origin_cifp: dict, first_fix: str, airport_ref: tuple,
     else:
         name = candidates[0]
 
-    return name, _best_sid_transition(sids[name], airport_ref, next_fix_ref)
+    return name, _best_sid_transition(sids[name], airport_ref, next_fix_ref,
+                                      active_runways=dep_runways)
 
 
 def _infer_star(dest_cifp: dict, last_fix: str, airport_ref: tuple,
-                prev_fix_ref, wind_dir) -> tuple:
+                prev_fix_ref, wind_dir, arr_runways=None) -> tuple:
     """
     Infer a STAR when no procedure name is filed in the route.
     Uses last_fix (the last named en-route waypoint) as the STAR entry fix.
@@ -313,6 +328,14 @@ def _infer_star(dest_cifp: dict, last_fix: str, airport_ref: tuple,
         return None, []
 
     if len(candidates) > 1:
+        # Constrain to STARs that have a transition matching an active arr runway
+        if arr_runways and len(candidates) > 1:
+            keys = {_rwy_key(r) for r in arr_runways}
+            active_cands = [n for n in candidates
+                            if any(k.upper() in keys for k in stars[n])]
+            if active_cands:
+                candidates = active_cands
+
         ref = prev_fix_ref or airport_ref
         def dist_fn(name):
             for ids in stars[name].values():
@@ -325,15 +348,18 @@ def _infer_star(dest_cifp: dict, last_fix: str, airport_ref: tuple,
     else:
         name = candidates[0]
 
-    return name, _best_star_transition(stars[name], airport_ref, prev_fix_ref)
+    return name, _best_star_transition(stars[name], airport_ref, prev_fix_ref,
+                                       active_runways=arr_runways)
 
 
-def _best_sid_transition(transitions: dict, airport_ref: tuple, next_fix_ref: tuple | None) -> list:
+def _best_sid_transition(transitions: dict, airport_ref: tuple, next_fix_ref: tuple | None,
+                         active_runways=None) -> list:
     """
     Pick the SID transition whose EXIT (last) fix is closest to next_fix_ref
     (the first en-route waypoint after the SID in the filed route).
     Falls back to nearest ENTRY fix from airport if next_fix_ref is unavailable.
     Prepends the common 'ALL' transition idents if present.
+    If active_runways is provided, prefers/constrains to matching runway transitions.
     """
     if not transitions:
         return []
@@ -345,6 +371,20 @@ def _best_sid_transition(transitions: dict, airport_ref: tuple, next_fix_ref: tu
 
     if not runway_transitions:
         return all_idents
+
+    # Active runway priority: prefer transitions matching ATIS-confirmed dep runway
+    if active_runways:
+        keys = {_rwy_key(r) for r in active_runways}
+        matched = [k for k in runway_transitions if k.upper() in keys]
+        if len(matched) == 1:
+            chosen = list(all_idents)
+            for ident in runway_transitions[matched[0]]:
+                if ident not in chosen:
+                    chosen.append(ident)
+            return chosen
+        if matched:
+            runway_transitions = {k: v for k, v in runway_transitions.items()
+                                   if k.upper() in keys}
 
     ref = next_fix_ref if next_fix_ref else airport_ref
     # For SID: score by distance from ref to the LAST resolvable fix in each transition
@@ -369,12 +409,14 @@ def _best_sid_transition(transitions: dict, airport_ref: tuple, next_fix_ref: tu
     return chosen
 
 
-def _best_star_transition(transitions: dict, airport_ref: tuple, prev_fix_ref: tuple | None) -> list:
+def _best_star_transition(transitions: dict, airport_ref: tuple, prev_fix_ref: tuple | None,
+                          active_runways=None) -> list:
     """
     Pick the STAR transition whose ENTRY (first) fix is closest to prev_fix_ref
     (the last en-route waypoint before the STAR in the filed route).
     Falls back to airport ref if prev_fix_ref is unavailable.
     Appends the common 'ALL' transition idents if present.
+    If active_runways is provided, prefers/constrains to matching runway transitions.
     """
     if not transitions:
         return []
@@ -386,6 +428,20 @@ def _best_star_transition(transitions: dict, airport_ref: tuple, prev_fix_ref: t
 
     if not runway_transitions:
         return all_idents
+
+    # Active runway priority: prefer transitions matching ATIS-confirmed arr runway
+    if active_runways:
+        keys = {_rwy_key(r) for r in active_runways}
+        matched = [k for k in runway_transitions if k.upper() in keys]
+        if len(matched) == 1:
+            chosen = list(all_idents)
+            for ident in runway_transitions[matched[0]]:
+                if ident not in chosen:
+                    chosen.append(ident)
+            return chosen
+        if matched:
+            runway_transitions = {k: v for k, v in runway_transitions.items()
+                                   if k.upper() in keys}
 
     ref = prev_fix_ref if prev_fix_ref else airport_ref
     # For STAR: score by distance from ref to the FIRST resolvable fix in each transition
@@ -501,15 +557,19 @@ def _strip_runway_suffix(token: str) -> str:
 # ── Public API ──────────────────────────────────────────────────────────────
 
 def resolve_route(route_str: str, origin_icao: str, dest_icao: str,
-                  wind_dir: int = None) -> list:
+                  wind_dir: int = None, dep_runways=None, arr_runways=None) -> list:
     """
     Parse a VATSIM flight plan route string into an ordered list of waypoints.
 
     Returns a list of dicts: [{name, lat, lon, type}, ...]
     where type is one of: 'airport', 'fix', 'navaid'
 
-    wind_dir: wind direction in degrees (FROM), used to prefer into-wind runway
-    transitions when inferring SID/STAR from route waypoints.
+    wind_dir:     wind direction in degrees (FROM), used to prefer into-wind runway
+                  transitions when inferring SID/STAR from route waypoints.
+    dep_runways:  list of active departing runway designators from ATIS (e.g. ['25R']).
+                  When provided, constrains SID transition selection to the active runway.
+    arr_runways:  list of active landing runway designators from ATIS (e.g. ['27L']).
+                  When provided, constrains STAR transition selection to the active runway.
 
     Returns [] if navdata is unavailable or route cannot be resolved.
     """
@@ -596,7 +656,7 @@ def resolve_route(route_str: str, origin_icao: str, dest_icao: str,
         if _inferred_sid_fix:
             _, _inferred_sid_idents = _infer_sid(
                 origin_cifp, _inferred_sid_fix, origin_coords,
-                _second_fix_pos, wind_dir
+                _second_fix_pos, wind_dir, dep_runways=dep_runways
             )
 
     # ── Infer STAR from last route fix when no STAR name was filed ───────────
@@ -624,7 +684,7 @@ def resolve_route(route_str: str, origin_icao: str, dest_icao: str,
         if _inferred_star_fix:
             _, _inferred_star_idents = _infer_star(
                 dest_cifp, _inferred_star_fix, dest_coords,
-                _prev_fix_pos, wind_dir
+                _prev_fix_pos, wind_dir, arr_runways=arr_runways
             )
 
     _inferred_sid_done  = False
@@ -657,7 +717,8 @@ def resolve_route(route_str: str, origin_icao: str, dest_icao: str,
         if token == sid_token and not sid_done:
             sid_done = True
             sid_ref = origin_coords or last_coords
-            idents = _best_sid_transition(origin_cifp['SID'][token], sid_ref, sid_next_ref)
+            idents = _best_sid_transition(origin_cifp['SID'][token], sid_ref, sid_next_ref,
+                                          active_runways=dep_runways)
             expanded = _expand_procedure(idents, sid_ref, 'sid')
             waypoints.extend(expanded)
             if expanded:
@@ -671,7 +732,8 @@ def resolve_route(route_str: str, origin_icao: str, dest_icao: str,
             if star_token not in remaining:
                 star_done = True
                 star_ref = dest_coords or last_coords
-                idents = _best_star_transition(dest_cifp['STAR'][token], star_ref, star_prev_ref)
+                idents = _best_star_transition(dest_cifp['STAR'][token], star_ref, star_prev_ref,
+                                              active_runways=arr_runways)
                 expanded = _expand_procedure(idents, star_ref, 'star')
                 waypoints.extend(expanded)
                 if expanded:

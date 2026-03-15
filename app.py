@@ -879,6 +879,7 @@ def api_route(callsign):
     if not flight:
         return jsonify({'callsign': callsign, 'waypoints': [], 'error': 'flight not found'})
     origin = flight.get('origin', '')
+    dest   = flight.get('destination', '')
     wind_dir = None
     if origin:
         try:
@@ -886,11 +887,15 @@ def api_route(callsign):
             wind_dir = route_parser.parse_metar_wind(metar)
         except Exception:
             pass
+    dep_runways = current_data.get(origin, {}).get('active_runways', {}).get('departing', []) or None
+    arr_runways = current_data.get(dest,   {}).get('active_runways', {}).get('landing',   []) or None
     waypoints = route_parser.resolve_route(
         flight.get('route', ''),
         origin,
-        flight.get('destination', ''),
+        dest,
         wind_dir=wind_dir,
+        dep_runways=dep_runways,
+        arr_runways=arr_runways,
     )
     return jsonify({'callsign': callsign, 'waypoints': waypoints})
 

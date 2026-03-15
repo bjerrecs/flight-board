@@ -133,7 +133,9 @@
     var taxiwayGroup     = L.layerGroup();
     var standGroup       = L.layerGroup();
 
-    var runwayGeometries = {};  // "14/32" -> { polyline, bearing, coords, parts }
+    var runwayGeometries = {};  // "14/32" -> { polyline, bearing, coords, parts, label1, label2 }
+    var activeDepRunways = []; // designators of currently active departing runways (local airport)
+    var activeArrRunways = []; // designators of currently active landing runways (local airport)
 
     var RUNWAY_STYLE_DEFAULT     = { color: '#555', weight: 6, opacity: 0.55 };
     var RUNWAY_STYLE_ACTIVE_ARR  = { color: '#64b5f6', weight: 8, opacity: 0.9 };
@@ -231,6 +233,8 @@
                     bearing: hdg,
                     coords: coords,
                     parts: parts,
+                    label1: labelP1,  // runway designator at coords[0]
+                    label2: labelP2,  // runway designator at coords[coords.length-1]
                 };
             }
 
@@ -322,6 +326,17 @@
         return r.replace(/^0+(\d)/, '$1');
     }
 
+    function findRunwayThreshold(designator) {
+        // Returns [lat, lon] of the threshold for the given runway designator, or null.
+        var d = normalizeRwy(designator);
+        for (var ref in runwayGeometries) {
+            var rg = runwayGeometries[ref];
+            if (normalizeRwy(rg.label1) === d) return rg.coords[0];
+            if (normalizeRwy(rg.label2) === d) return rg.coords[rg.coords.length - 1];
+        }
+        return null;
+    }
+
     function updateActiveRunways(data) {
         if (!data) return;
         var landing = data.landing || [];
@@ -359,6 +374,8 @@
         });
 
         updateRunwayHUD(data, landing, departing);
+        activeDepRunways = departing;
+        activeArrRunways = landing;
     }
 
     function fetchAirportFeatures() {
@@ -894,6 +911,22 @@
             .then(function (data) {
                 var wps = data.waypoints || [];
                 if (wps.length < 2) return;
+
+                // Snap local airport endpoint to active runway threshold so that
+                // SID/STAR polylines originate from the runway end, not the airport centre.
+                var fd0 = markers[callsign] && markers[callsign]._flightData;
+                var originIcao0 = (fd0 && fd0.origin) || wps[0].name || '';
+                var destIcao0   = (fd0 && fd0.destination) || wps[wps.length - 1].name || '';
+                if (originIcao0 === AIRPORT && wps.length >= 2 && wps[1].type === 'sid'
+                        && activeDepRunways.length > 0) {
+                    var thresh = findRunwayThreshold(activeDepRunways[0]);
+                    if (thresh) { wps[0] = { name: wps[0].name, lat: thresh[0], lon: thresh[1], type: 'airport' }; }
+                }
+                if (destIcao0 === AIRPORT && wps.length >= 2 && wps[wps.length - 2].type === 'star'
+                        && activeArrRunways.length > 0) {
+                    var thresh = findRunwayThreshold(activeArrRunways[0]);
+                    if (thresh) { wps[wps.length - 1] = { name: wps[wps.length - 1].name, lat: thresh[0], lon: thresh[1], type: 'airport' }; }
+                }
 
                 renderedRouteCallsign = callsign;
                 routeLayer = [];
