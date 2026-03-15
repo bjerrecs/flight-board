@@ -15,6 +15,7 @@
         center: [APT_LAT, APT_LON],
         zoom: 11,
         zoomControl: false,
+        preferCanvas: true,
     });
 
     L.control.zoom({ position: 'topright' }).addTo(map);
@@ -78,6 +79,7 @@
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 19,
+        detectRetina: true,
     }).addTo(map);
 
     // Airport marker — stored so ATC badges can be updated dynamically
@@ -413,6 +415,9 @@
     var boundaryLayer = null;
     var sectorLabelMarkers = {};          // sector id → L.marker
     var activeCtrControllers = new Map(); // prefix → {callsign, frequency}
+    var boundariesLoaded = false;
+    // Default true — boundaries on unless user has previously turned them off
+    var showBoundaries = localStorage.getItem('flightboard.show_boundaries') !== 'false';
 
     var SECTOR_DIM  = { color: '#4caf50', weight: 1,   opacity: 0.3, fillOpacity: 0.02 };
     var SECTOR_LIT  = { color: '#69f0ae', weight: 1.5, opacity: 0.8, fillOpacity: 0.10 };
@@ -479,13 +484,16 @@
                     sectorLabelMarkers[p.id] = m;
                 });
 
+                boundariesLoaded = true;
                 updateBoundaryLabelVisibility();
                 highlightActiveSectors(); // apply any already-known CTR state
             })
             .catch(function (err) { console.warn('ATC Boundary load failed:', err); });
     }
 
-    fetchATCBoundaries();
+    if (showBoundaries) {
+        fetchATCBoundaries();
+    }
 
     /* ── Airline logo resolution (mirrors app.js logic) ──── */
     var virtualAirlines = new Set(['XNO']);
@@ -1554,6 +1562,7 @@
     let weatherRadarLayer = null;
     let weatherUpdateTimer = null;
     let showWeather = localStorage.getItem('flightboard.show_weather') === 'true';
+
     const owmApiKey = window.OWM_API_KEY;
 
     function fetchAndAddWeather() {
@@ -1632,6 +1641,38 @@
         weatherUpdateTimer = setInterval(fetchAndAddWeather, 10 * 60 * 1000);
     }
 
+    function toggleBoundaries() {
+        showBoundaries = !showBoundaries;
+        localStorage.setItem('flightboard.show_boundaries', showBoundaries);
+
+        var btn = document.getElementById('boundariesToggleBtn');
+        if (btn) {
+            btn.classList.toggle('legend-toggle--off', !showBoundaries);
+            var indicator = btn.querySelector('.legend-toggle-indicator');
+            if (indicator) indicator.textContent = showBoundaries ? 'ON' : 'OFF';
+        }
+
+        if (showBoundaries) {
+            if (!boundariesLoaded) {
+                fetchATCBoundaries();  // lazy-load if not yet fetched
+            } else {
+                if (boundaryLayer && !map.hasLayer(boundaryLayer)) boundaryLayer.addTo(map);
+                if (!map.hasLayer(boundaryLabelGroup)) boundaryLabelGroup.addTo(map);
+            }
+        } else {
+            if (boundaryLayer && map.hasLayer(boundaryLayer)) map.removeLayer(boundaryLayer);
+            if (map.hasLayer(boundaryLabelGroup)) map.removeLayer(boundaryLabelGroup);
+        }
+    }
+
+    var boundariesToggleBtn = document.getElementById('boundariesToggleBtn');
+    if (boundariesToggleBtn) {
+        boundariesToggleBtn.classList.toggle('legend-toggle--off', !showBoundaries);
+        var bIndicator = boundariesToggleBtn.querySelector('.legend-toggle-indicator');
+        if (bIndicator) bIndicator.textContent = showBoundaries ? 'ON' : 'OFF';
+        boundariesToggleBtn.addEventListener('click', toggleBoundaries);
+    }
+
     /* ── Fullscreen ───────────────────────────────────────── */
     var fsBtn = document.getElementById('mapFullscreenBtn');
     if (fsBtn) {
@@ -1652,12 +1693,15 @@
     var conflictToggleBtn = document.getElementById('conflictToggleBtn');
     if (conflictToggleBtn) {
         conflictToggleBtn.classList.toggle('legend-toggle--off', !showConflicts);
+        var conflictKey = document.getElementById('conflictKey');
+        if (conflictKey) conflictKey.style.display = showConflicts ? '' : 'none';
         conflictToggleBtn.addEventListener('click', function () {
             showConflicts = !showConflicts;
             localStorage.setItem('flightboard.show_conflicts', showConflicts);
             conflictToggleBtn.classList.toggle('legend-toggle--off', !showConflicts);
             var indicator = conflictToggleBtn.querySelector('.legend-toggle-indicator');
             if (indicator) indicator.textContent = showConflicts ? 'ON' : 'OFF';
+            if (conflictKey) conflictKey.style.display = showConflicts ? '' : 'none';
             if (!showConflicts) clearAllConflicts();
         });
     }
