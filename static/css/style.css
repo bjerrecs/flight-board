@@ -599,7 +599,7 @@ html, body {
     }
 
     .simfixr-map-icon {
-        height: 1.8rem;
+        height: 1.5rem;
     }
 
     .widget-text {
@@ -1216,6 +1216,10 @@ body.theme-eham .tracking-chip {
 
     .widget-icon {
         font-size: 1.35rem;
+    }
+
+    .simfixr-map-icon {
+        height: 1.35rem;
     }
 
     .widget-text {
@@ -2507,7 +2511,7 @@ body.map-page .leaflet-control-flight a.follow-active {
 }
 
 .simfixr-map-icon {
-    height: 2rem;
+    height: 1.7rem;
     width: auto;
     display: block;
     opacity: 0.75;
