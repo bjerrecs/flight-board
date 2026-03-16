@@ -98,7 +98,7 @@ def _haversine_km(lat1, lon1, lat2, lon2):
     a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
     return R * 2 * math.asin(math.sqrt(a))
 
-APP_VERSION = '1.3.8'
+APP_VERSION = '1.3.9'
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -155,6 +155,7 @@ DEFAULT_THEME_MAP = {
     'EGSS': {'css': '/static/css/themes/egss.css', 'class': 'theme-egss'},
     'EGCC': {'css': '/static/css/themes/egcc.css', 'class': 'theme-egcc'},
     'EHAM': {'css': '/static/css/themes/eham.css', 'class': 'theme-eham'},
+    'KEWR': {'css': '/static/css/themes/kewr.css', 'class': 'theme-kewr'},
     'KJFK': {'css': '/static/css/themes/kjfk.css', 'class': 'theme-kjfk'},
     'RJTT': {'css': '/static/css/themes/rjtt.css', 'class': 'theme-rjtt'},
     'ESSA': {'css': '/static/css/themes/essa.css', 'class': 'theme-essa'},

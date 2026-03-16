@@ -54,6 +54,8 @@ class CheckinAssignments:
             return self._london_city(airline, seed)
         elif airport_code == 'EHAM':
             return self._schiphol(airline, seed)
+        elif airport_code == 'KEWR':
+            return self._newark(airline, seed)
         elif airport_code == 'KJFK':
             return self._jfk(airline, seed)
         elif airport_code == 'RJTT':
@@ -306,6 +308,22 @@ class CheckinAssignments:
         # Default: Terminal 4 (largest/most diverse)
         row = ((seed % 7) + 1)
         return f"T4-{row}"
+    
+    def _newark(self, airline, seed):
+        """Newark Liberty (KEWR) check-in assignments"""
+        # Terminal C: United Airlines Hub
+        if airline in ['UAL', 'UCA', 'BTA']:
+            desk = (seed % 40) + 1
+            return f"C{desk:02d}"
+
+        # Terminal A: Domestic & Air Canada
+        if airline in ['ACA', 'AAL', 'DAL', 'JBU']:
+            desk = (seed % 30) + 1
+            return f"A{desk:02d}"
+
+        # Terminal B: International and all other carriers
+        desk = (seed % 40) + 1
+        return f"B{desk:02d}"
     
     # ==================== JAPAN ====================
     def _haneda(self, airline, seed):

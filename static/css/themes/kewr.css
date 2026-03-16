@@ -1,0 +1,156 @@
+/* =============================================
+   NEWARK (KEWR) THEME
+   Black background, white text, 
+   yellow terminal boxes, vertical status bars
+   ============================================= */
+
+body.theme-kewr {
+    --kewr-yellow: #fbd304;
+    --kewr-dark: #000000;
+    --font-ui: 'Inter', sans-serif;
+    --font-data: 'Inter', sans-serif;
+    background-color: var(--kewr-dark);
+    color: #ffffff;
+}
+
+/* Allow Proper case / no uppercase forcing */
+body.theme-kewr .flight-table th,
+body.theme-kewr .flight-table td,
+body.theme-kewr .section-divider {
+    text-transform: none;
+}
+
+/* Header & Dividers */
+body.theme-kewr .fids-header {
+    background-color: var(--kewr-dark);
+    border-bottom: 2px solid #333333;
+}
+
+body.theme-kewr .airport-selector select,
+body.theme-kewr .clock-container,
+body.theme-kewr .add-airport-btn {
+    color: #ffffff !important;
+    background: transparent;
+}
+
+
+body.theme-kewr .gate-icon-box {
+    color: var(--kewr-yellow);
+}
+
+body.theme-kewr .airport-selector select option {
+    background-color: var(--kewr-dark);
+    color: #ffffff;
+}
+
+body.theme-kewr .section-divider {
+    background-color: var(--kewr-dark);
+    color: #ffffff;
+    border-bottom: 1px solid #333333;
+    padding: 12px 20px;
+    font-weight: 700;
+    text-transform: none;
+}
+
+/* Table Styling */
+body.theme-kewr .flight-table th {
+    background: var(--kewr-dark);
+    color: #aaaaaa;
+    border-bottom: 1px solid #333333;
+    text-transform: none;
+}
+
+body.theme-kewr .flight-table td {
+    border-bottom: 1px solid #1a1a1a;
+}
+
+/* --- GATE STYLING --- */
+body.theme-kewr .col-gate {
+    color: #ffffff;
+    display: table-cell;
+}
+
+/* --- CHECK-IN STYLING (Terminal Letter Box) --- */
+body.theme-kewr .col-checkin .terminal-letter {
+    background-color: var(--kewr-yellow);
+    color: #000000;
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-right: 6px;
+    font-weight: 700;
+}
+
+/* --- STATUS STYLING (Vertical Bar) --- */
+body.theme-kewr .col-status {
+    color: #ffffff;
+    text-align: left;
+}
+
+body.theme-kewr .col-status .flap-container {
+    background-color: transparent !important;
+    color: #ffffff !important;
+    position: relative;
+    padding-left: 16px; /* Make room for the vertical bar */
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    text-transform: none !important; /* Force Proper case instead of ALL CAPS */
+}
+
+/* Creates the small vertical bar */
+body.theme-kewr .col-status .flap-container::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;   /* Narrow width */
+    height: 16px; /* Taller height */
+    border-radius: 2px;
+}
+
+/* Apply colors to the vertical bar based on status */
+body.theme-kewr .col-status[data-status="Boarding"] .flap-container::before { background-color: #00e040; }
+body.theme-kewr .col-status[data-status*="GO TO"] .flap-container::before { background-color: #00e040; }
+
+body.theme-kewr .col-status[data-status="Check-in"] .flap-container::before,
+body.theme-kewr .col-status[data-status="Taxiing"] .flap-container::before,
+body.theme-kewr .col-status[data-status="Wait"] .flap-container::before,
+body.theme-kewr .col-status[data-status="Landing"] .flap-container::before,
+body.theme-kewr .col-status[data-status="Landed"] .flap-container::before,
+body.theme-kewr .col-status[data-status="At Gate"] .flap-container::before,
+body.theme-kewr .col-status[data-status="Scheduled"] .flap-container::before {
+    background-color: var(--kewr-yellow);
+}
+
+body.theme-kewr .col-status[data-status="Pushback"] .flap-container::before,
+body.theme-kewr .col-status[data-status="Departing"] .flap-container::before,
+body.theme-kewr .col-status[data-status="Approaching"] .flap-container::before {
+    background-color: #4d9fff;
+}
+
+body.theme-kewr .col-status[data-status*="Delayed"] .flap-container::before,
+body.theme-kewr .col-status[data-status="Cancelled"] .flap-container::before,
+body.theme-kewr .col-status[data-status="CLOSED"] .flap-container::before {
+    background-color: #ff4444;
+}
+
+body.theme-kewr .col-status[data-status="En Route"] .flap-container::before {
+    background-color: #ffffff;
+}
+
+/* Footer & Widgets */
+body.theme-kewr .fids-footer {
+    background-color: var(--kewr-dark);
+    border-top: 2px solid #333333;
+}
+
+body.theme-kewr .footer-group .main-label {
+    color: #ffffff;
+    text-transform: none; /* Ensure Proper case here too */
+}
+
+body.theme-kewr .widget-icon, 
+body.theme-kewr .widget-text {
+    color: #ffffff !important;
+}

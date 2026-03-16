@@ -322,7 +322,7 @@ html, body {
 }
 
 .col-status[data-status*="GO TO"] .flap-container {
-    background-color: #e6007e; 
+    background-color: #00b000;
     color: #ffffff !important;
 }
 
@@ -1531,7 +1531,7 @@ body.theme-eham .tracking-chip {
     font-weight: 700;
 }
 .gate-status-badge[data-status="Boarding"]                      { background:#00b000; color:#fff; }
-.gate-status-badge[data-status*="GO TO"]                        { background:#e6007e; color:#fff; }
+.gate-status-badge[data-status*="GO TO"]                        { background:#00b000; color:#fff; }
 .gate-status-badge[data-status="Check-in"],
 .gate-status-badge[data-status="Taxiing"],
 .gate-status-badge[data-status="Wait"],
@@ -1677,7 +1677,7 @@ body.gate-page {
 .status-pill.enroute   { background-color: transparent; color: #0055b8; border: 2px solid #0055b8; }
 .status-pill.arriving  { background-color: #0055b8; color: #fff; }
 .status-pill.delayed   { background-color: #d60000; color: #fff; }
-.status-pill.goto      { background-color: #e6007e; color: #fff; }
+.status-pill.goto      { background-color: #00b000; color: #fff; }
 .status-pill.default   { background-color: #e5e5e5; color: #555; }
 
 /* Main content: full width, flight number → destination → info row */

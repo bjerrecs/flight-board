@@ -114,6 +114,7 @@ class VatsimFetcher:
             'EGKK': { 'name': 'London Gatwick', 'ceiling': 7000, 'has_stands': True },
             'EGSS': { 'name': 'London Stansted', 'ceiling': 7000, 'has_stands': True },
             'EGCC': { 'name': 'Manchester Airport', 'ceiling': 7000, 'has_stands': True },
+            'KEWR': { 'name': 'New York Newark', 'ceiling': 5000, 'has_stands': True },
             'KJFK': { 'name': 'New York JFK', 'ceiling': 5000, 'has_stands': True },
             'RJTT': { 'name': 'Tokyo Haneda', 'ceiling': 6000, 'has_stands': True  },
             'EHAM': { 'name': 'Amsterdam Schiphol', 'ceiling': 6000, 'has_stands': True },
