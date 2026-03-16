@@ -40,9 +40,23 @@
   const trafficTopAirports        = document.getElementById('trafficTopAirports');
   const trafficSevenDayBody       = document.getElementById('trafficSevenDayBody');
 
+  const refreshAnalyticsBtn   = document.getElementById('refreshAnalyticsBtn');
+  const analyticsLastFetched  = document.getElementById('analyticsLastFetched');
+  const analyticsStaleBadge   = document.getElementById('analyticsStaleBadge');
+  const analyticsError        = document.getElementById('analyticsError');
+  const analyticsLoading      = document.getElementById('analyticsLoading');
+  const analyticsContent      = document.getElementById('analyticsContent');
+  const analyticsSummaryGrid  = document.getElementById('analyticsSummaryGrid');
+  const gaTopPagesBody        = document.getElementById('gaTopPagesBody');
+  const gaAcqBody             = document.getElementById('gaAcqBody');
+  const gaCitiesBody          = document.getElementById('gaCitiesBody');
+
   const statusBar = document.getElementById('statusBar');
 
   let themeOptions = [];
+  let gaChartDaily    = null;
+  let gaChartSessions = null;
+  let analyticsLoaded = false;
 
   // ── Utilities ─────────────────────────────────────────────────────────────
   function setStatus(message, type) {
@@ -63,6 +77,10 @@
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('tab-' + target).classList.add('active');
+      if (target === 'analytics' && !analyticsLoaded) {
+        analyticsLoaded = true;
+        loadAnalytics();
+      }
     });
   });
 
@@ -734,6 +752,155 @@
       .then(() => setStatus('ATIS log refreshed.', 'ok'))
       .catch(e => setStatus(e.message, 'error'))
   );
+
+  // ── Analytics ────────────────────────────────────────────────────────────
+
+  function fmtNum(v) {
+    return Number(v || 0).toLocaleString();
+  }
+
+  function fmtPct(v) {
+    return (parseFloat(v || 0) * 100).toFixed(1) + '%';
+  }
+
+  function fmtSec(v) {
+    const s = Math.round(parseFloat(v || 0));
+    if (s < 60) return s + 's';
+    return Math.floor(s / 60) + 'm ' + (s % 60) + 's';
+  }
+
+  function renderSummaryCards(summary) {
+    const cards = [
+      { label: 'Active users (28d)',   value: fmtNum(summary.activeUsers) },
+      { label: 'New users (28d)',      value: fmtNum(summary.newUsers) },
+      { label: 'Avg session duration', value: fmtSec(summary.averageSessionDuration) },
+      { label: 'Total events (28d)',   value: fmtNum(summary.eventCount) },
+    ];
+    analyticsSummaryGrid.innerHTML = cards.map(c =>
+      `<div class="analytics-card">
+         <div class="analytics-card-label">${c.label}</div>
+         <div class="analytics-card-value">${c.value}</div>
+       </div>`
+    ).join('');
+  }
+
+  function renderTopPages(rows) {
+    gaTopPagesBody.innerHTML = rows.map(r =>
+      `<tr>
+         <td>${r.pageTitle}</td>
+         <td>${fmtNum(r.screenPageViews)}</td>
+         <td>${fmtNum(r.activeUsers)}</td>
+         <td>${fmtNum(r.eventCount)}</td>
+         <td>${fmtPct(r.bounceRate)}</td>
+       </tr>`
+    ).join('');
+  }
+
+  function renderAcquisition(rows) {
+    gaAcqBody.innerHTML = rows.map(r =>
+      `<tr><td>${r.firstUserSourceMedium}</td><td>${fmtNum(r.activeUsers)}</td></tr>`
+    ).join('');
+  }
+
+  function renderCities(rows) {
+    gaCitiesBody.innerHTML = rows.map(r =>
+      `<tr><td>${r.city}</td><td>${r.country}</td><td>${fmtNum(r.activeUsers)}</td></tr>`
+    ).join('');
+  }
+
+  function renderDailyChart(daily) {
+    const labels = daily.map(r => {
+      const d = r.date; // YYYYMMDD
+      return d.slice(4, 6) + '/' + d.slice(6, 8);
+    });
+    const newUsers    = daily.map(r => parseInt(r.newUsers,    10));
+    const activeUsers = daily.map(r => parseInt(r.activeUsers, 10));
+
+    if (gaChartDaily) gaChartDaily.destroy();
+    gaChartDaily = new Chart(document.getElementById('gaChartDaily'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'New',       data: newUsers,    backgroundColor: '#378ADD', borderRadius: 3, borderSkipped: false },
+          { label: 'Returning', data: activeUsers.map((a, i) => Math.max(0, a - newUsers[i])),
+            backgroundColor: '#1D9E75', borderRadius: 3, borderSkipped: false },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#a6b9d3', boxWidth: 12, font: { size: 11 } } } },
+        scales: {
+          x: { stacked: true, ticks: { color: '#a6b9d3', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { stacked: true, ticks: { color: '#a6b9d3', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        },
+      },
+    });
+  }
+
+  function renderSessionsChart(rows) {
+    const COLOURS = ['#3B6D11','#BA7517','#378ADD','#1D9E75','#E24B4A','#888780','#534AB7','#D85A30','#993556','#0F6E56'];
+    const labels = rows.map(r => r.sessionSourceMedium);
+    const data   = rows.map(r => parseInt(r.sessions, 10));
+
+    if (gaChartSessions) gaChartSessions.destroy();
+    gaChartSessions = new Chart(document.getElementById('gaChartSessions'), {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{ data, backgroundColor: COLOURS.slice(0, data.length), borderWidth: 0, hoverOffset: 6 }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { color: '#a6b9d3', boxWidth: 12, font: { size: 11 } } },
+        },
+        cutout: '60%',
+      },
+    });
+  }
+
+  async function loadAnalytics(forceRefresh = false) {
+    analyticsError.hidden   = true;
+    analyticsLoading.hidden = false;
+    analyticsContent.hidden = true;
+
+    const url = forceRefresh ? '/api/admin/analytics?refresh=1' : '/api/admin/analytics';
+
+    try {
+      const resp = await fetch(url);
+      const data = await resp.json();
+
+      if (!resp.ok || data.error) {
+        throw new Error(data.error || 'Unknown error');
+      }
+
+      analyticsStaleBadge.hidden = !data.stale;
+
+      const fetched = new Date(data.fetched_at * 1000);
+      analyticsLastFetched.textContent = 'Last fetched: ' + fetched.toLocaleTimeString();
+
+      renderSummaryCards(data.summary);
+      renderTopPages(data.top_pages);
+      renderAcquisition(data.acquisition);
+      renderCities(data.cities);
+      renderDailyChart(data.daily);
+      renderSessionsChart(data.sessions_by_source);
+
+      analyticsLoading.hidden = true;
+      analyticsContent.hidden = false;
+
+    } catch (err) {
+      analyticsLoading.hidden = true;
+      analyticsError.hidden   = false;
+      analyticsError.textContent = 'GA4 error: ' + err.message;
+    }
+  }
+
+  refreshAnalyticsBtn.addEventListener('click', () => {
+    analyticsLoaded = true;
+    loadAnalytics(true);
+  });
 
   // ── Init ──────────────────────────────────────────────────────────────────
   (async function init() {

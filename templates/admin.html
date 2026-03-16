@@ -37,6 +37,7 @@
       <button class="tab-btn" data-tab="custom-airports">Custom Airports</button>
       <button class="tab-btn" data-tab="navdata">Nav Data</button>
       <button class="tab-btn" data-tab="atis-log">ATIS Log</button>
+      <button class="tab-btn" data-tab="analytics">Analytics</button>
     </nav>
 
     <!-- STANDS PANEL -->
@@ -258,9 +259,86 @@
       </div>
     </section>
 
+    <!-- ANALYTICS PANEL -->
+    <section class="panel tab-panel" id="tab-analytics">
+      <p class="panel-desc">Google Analytics 4 data for the FlightBoard property. Cached for 1 hour — click Refresh to force a reload.</p>
+
+      <div class="toolbar">
+        <button id="refreshAnalyticsBtn" type="button">Refresh</button>
+        <span id="analyticsLastFetched" class="muted-label"></span>
+        <span id="analyticsStaleBadge" class="stale-badge" hidden>Stale data</span>
+      </div>
+
+      <div id="analyticsError" class="status error" hidden></div>
+      <div id="analyticsLoading" class="analytics-loading">Loading…</div>
+
+      <div id="analyticsContent" hidden>
+
+        <!-- Summary cards -->
+        <div class="analytics-grid" id="analyticsSummaryGrid"></div>
+
+        <!-- Charts row -->
+        <div class="analytics-charts-row">
+          <div class="analytics-chart-box">
+            <h3 class="analytics-chart-title">Daily active users — last 7 days</h3>
+            <div style="position:relative;height:200px;">
+              <canvas id="gaChartDaily"></canvas>
+            </div>
+          </div>
+          <div class="analytics-chart-box">
+            <h3 class="analytics-chart-title">Sessions by source — 28 days</h3>
+            <div style="position:relative;height:200px;">
+              <canvas id="gaChartSessions"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top pages table -->
+        <h3 class="analytics-section-heading">Top pages — 28 days</h3>
+        <div class="table-wrap">
+          <table id="gaTopPagesTable">
+            <thead>
+              <tr>
+                <th>Page</th>
+                <th>Views</th>
+                <th>Active users</th>
+                <th>Events</th>
+                <th>Bounce rate</th>
+              </tr>
+            </thead>
+            <tbody id="gaTopPagesBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Acquisition + Cities -->
+        <div class="analytics-two-col">
+          <div>
+            <h3 class="analytics-section-heading">First-user acquisition — 28 days</h3>
+            <div class="table-wrap">
+              <table id="gaAcqTable">
+                <thead><tr><th>Source / medium</th><th>Users</th></tr></thead>
+                <tbody id="gaAcqBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <h3 class="analytics-section-heading">Top cities — 28 days</h3>
+            <div class="table-wrap">
+              <table id="gaCitiesTable">
+                <thead><tr><th>City</th><th>Country</th><th>Users</th></tr></thead>
+                <tbody id="gaCitiesBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /analyticsContent -->
+    </section>
+
     <div id="statusBar" class="status">Ready.</div>
   </main>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <script src="{{ url_for('static', filename='js/admin.js', v=asset_version) }}"></script>
 </body>
 </html>
