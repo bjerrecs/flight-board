@@ -33,9 +33,6 @@ body.theme-kewr .add-airport-btn {
     background: transparent;
 }
 
-body.theme-kewr .airport-selector select {
-    color: var(--kewr-yellow) !important;
-}
 
 body.theme-kewr .gate-icon-box {
     color: var(--kewr-yellow);
@@ -67,20 +64,20 @@ body.theme-kewr .flight-table td {
     border-bottom: 1px solid #1a1a1a;
 }
 
-/* --- GATE STYLING (Terminal Letter Box) --- */
+/* --- GATE STYLING --- */
 body.theme-kewr .col-gate {
     color: #ffffff;
-    display: table-cell; 
+    display: table-cell;
 }
 
-body.theme-kewr .col-gate::first-letter {
+/* --- CHECK-IN STYLING (Terminal Letter Box) --- */
+body.theme-kewr .col-checkin .terminal-letter {
     background-color: var(--kewr-yellow);
     color: #000000;
     border-radius: 4px;
     padding: 2px 6px;
     margin-right: 6px;
     font-weight: 700;
-    text-transform: uppercase;
 }
 
 /* --- STATUS STYLING (Vertical Bar) --- */
@@ -114,7 +111,7 @@ body.theme-kewr .col-status .flap-container::before {
 
 /* Apply colors to the vertical bar based on status */
 body.theme-kewr .col-status[data-status="Boarding"] .flap-container::before { background-color: #00e040; }
-body.theme-kewr .col-status[data-status*="GO TO"] .flap-container::before { background-color: #ff3aaa; }
+body.theme-kewr .col-status[data-status*="GO TO"] .flap-container::before { background-color: #00e040; }
 
 body.theme-kewr .col-status[data-status="Check-in"] .flap-container::before,
 body.theme-kewr .col-status[data-status="Taxiing"] .flap-container::before,

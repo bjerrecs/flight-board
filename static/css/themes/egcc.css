@@ -94,7 +94,7 @@ body.theme-egcc .col-status[data-status="Boarding"] .flap-container {
 }
 
 body.theme-egcc .col-status[data-status*="GO TO"] .flap-container {
-    color: #ff3aaa !important;
+    color: #ffffff !important;
 }
 
 body.theme-egcc .col-status[data-status="Check-in"] .flap-container,

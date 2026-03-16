@@ -871,8 +871,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (type === 'Departures') {
                     row.innerHTML = `
                         ${commonCells}
-                        <td><div class="flap-container" id="${rowId}-checkin"></div></td>
-                        <td class="col-gate"><div class="flap-container" id="${rowId}-gate"></div></td> 
+                        <td class="col-checkin"><div class="flap-container" id="${rowId}-checkin"></div></td>
+                        <td class="col-gate"><div class="flap-container" id="${rowId}-gate"></div></td>
                         <td><div class="flap-container" id="${rowId}-time"></div></td>
                         <td class="col-status"><div class="flap-container" id="${rowId}-status"></div></td>
                     `;
@@ -962,13 +962,17 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const checkinFlap = document.getElementById(`${rowId}-checkin`);
             if (checkinFlap) {
-                updateFlapText(checkinFlap, formatLszhOperationalLabel(flight.checkin || ""));
+                const checkinVal = flight.checkin || "";
+                updateFlapText(checkinFlap, formatLszhOperationalLabel(checkinVal));
+                if (document.body.classList.contains('theme-kewr') && checkinVal && /^[A-C]/i.test(checkinVal) && checkinVal !== 'CLOSED' && checkinVal !== 'TBA') {
+                    checkinFlap.innerHTML = `<span class="terminal-letter">${checkinVal[0].toUpperCase()}</span>${checkinVal.slice(1)}`;
+                }
                 if (flight.checkin === 'CLOSED') {
                     checkinFlap.classList.add('gate-closed');
                 } else {
                     checkinFlap.classList.remove('gate-closed');
                 }
-            } 
+            }
 
             const gateContainer = document.getElementById(`${rowId}-gate`);
             updateFlapText(gateContainer, formatLszhOperationalLabel(gate));

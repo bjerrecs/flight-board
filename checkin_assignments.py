@@ -311,19 +311,19 @@ class CheckinAssignments:
     
     def _newark(self, airline, seed):
         """Newark Liberty (KEWR) check-in assignments"""
-        # Terminal C (Level 2): United Airlines Hub
+        # Terminal C: United Airlines Hub
         if airline in ['UAL', 'UCA', 'BTA']:
             desk = (seed % 40) + 1
-            return f"C-L2-{desk:02d}"
-            
-        # Terminal A (Level 3): Domestic & Air Canada
+            return f"C{desk:02d}"
+
+        # Terminal A: Domestic & Air Canada
         if airline in ['ACA', 'AAL', 'DAL', 'JBU']:
             desk = (seed % 30) + 1
-            return f"A-L3-{desk:02d}"
-            
-        # Terminal B (Level 3): International and all other carriers
+            return f"A{desk:02d}"
+
+        # Terminal B: International and all other carriers
         desk = (seed % 40) + 1
-        return f"B-L3-{desk:02d}"
+        return f"B{desk:02d}"
     
     # ==================== JAPAN ====================
     def _haneda(self, airline, seed):
