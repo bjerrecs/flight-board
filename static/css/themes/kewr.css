@@ -1,7 +1,7 @@
 /* =============================================
    NEWARK (KEWR) THEME
-   Black background, white lowercase text, 
-   yellow terminal boxes, horizontal status bars
+   Black background, white text, 
+   yellow terminal boxes, vertical status bars
    ============================================= */
 
 body.theme-kewr {
@@ -13,11 +13,11 @@ body.theme-kewr {
     color: #ffffff;
 }
 
-/* Force lowercase text across the board */
+/* Allow Proper case / no uppercase forcing */
 body.theme-kewr .flight-table th,
 body.theme-kewr .flight-table td,
 body.theme-kewr .section-divider {
-    text-transform: lowercase;
+    text-transform: none;
 }
 
 /* Header & Dividers */
@@ -44,13 +44,15 @@ body.theme-kewr .section-divider {
     border-bottom: 1px solid #333333;
     padding: 12px 20px;
     font-weight: 700;
+    text-transform: none;
 }
 
 /* Table Styling */
 body.theme-kewr .flight-table th {
     background: var(--kewr-dark);
-    color: #aaaaaa; /* slightly dimmed headers */
+    color: #aaaaaa;
     border-bottom: 1px solid #333333;
+    text-transform: none;
 }
 
 body.theme-kewr .flight-table td {
@@ -60,11 +62,9 @@ body.theme-kewr .flight-table td {
 /* --- GATE STYLING (Terminal Letter Box) --- */
 body.theme-kewr .col-gate {
     color: #ffffff;
-    /* Ensure the cell is treated as a block/inline-block so ::first-letter works properly */
     display: table-cell; 
 }
 
-/* Styles the first letter (Terminal) as a yellow rounded square */
 body.theme-kewr .col-gate::first-letter {
     background-color: var(--kewr-yellow);
     color: #000000;
@@ -72,35 +72,36 @@ body.theme-kewr .col-gate::first-letter {
     padding: 2px 6px;
     margin-right: 6px;
     font-weight: 700;
-    text-transform: uppercase; /* Keep the terminal letter uppercase */
+    text-transform: uppercase;
 }
 
-/* --- STATUS STYLING (Horizontal Bar) --- */
+/* --- STATUS STYLING (Vertical Bar) --- */
 body.theme-kewr .col-status {
     color: #ffffff;
 }
 
 body.theme-kewr .col-status .flap-container {
     background-color: transparent !important;
-    color: #ffffff !important; /* Force text to remain white */
+    color: #ffffff !important;
     position: relative;
-    padding-left: 16px; /* Make room for the horizontal bar */
+    padding-left: 12px; /* Make room for the vertical bar */
     display: inline-block;
+    text-transform: none !important; /* Force Proper case instead of ALL CAPS */
 }
 
-/* Creates the small horizontal bar */
+/* Creates the small vertical bar */
 body.theme-kewr .col-status .flap-container::before {
     content: '';
     position: absolute;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 10px;
-    height: 4px;
+    width: 4px;   /* Narrow width */
+    height: 16px; /* Taller height */
     border-radius: 2px;
 }
 
-/* Apply colors to the horizontal bar based on status */
+/* Apply colors to the vertical bar based on status */
 body.theme-kewr .col-status[data-status="Boarding"] .flap-container::before { background-color: #00e040; }
 body.theme-kewr .col-status[data-status*="GO TO"] .flap-container::before { background-color: #ff3aaa; }
 
@@ -138,7 +139,7 @@ body.theme-kewr .fids-footer {
 
 body.theme-kewr .footer-group .main-label {
     color: #ffffff;
-    text-transform: lowercase;
+    text-transform: none; /* Ensure Proper case here too */
 }
 
 body.theme-kewr .widget-icon, 
