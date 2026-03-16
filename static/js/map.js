@@ -136,6 +136,7 @@
     var runwayGeometries = {};  // "14/32" -> { polyline, bearing, coords, parts, label1, label2 }
     var activeDepRunways = []; // designators of currently active departing runways (local airport)
     var activeArrRunways = []; // designators of currently active landing runways (local airport)
+    var lastActiveRunwaysData = null; // last received active_runways payload — re-applied after OSM loads
 
     var RUNWAY_STYLE_DEFAULT     = { color: '#555', weight: 6, opacity: 0.55 };
     var RUNWAY_STYLE_ACTIVE_ARR  = { color: '#64b5f6', weight: 8, opacity: 0.9 };
@@ -339,6 +340,7 @@
 
     function updateActiveRunways(data) {
         if (!data) return;
+        lastActiveRunwaysData = data;
         var landing = data.landing || [];
         var departing = data.departing || [];
 
@@ -408,6 +410,7 @@
                 var osmStands = processOsmElements(cachedElements, useLocalStands);
                 if (!useLocalStands && osmStands.length) renderStands(osmStands);
                 updateFeatureVisibility();
+                if (lastActiveRunwaysData) updateActiveRunways(lastActiveRunwaysData);
                 return;
             }
 
@@ -419,6 +422,7 @@
                     var osmStands = processOsmElements(elements, useLocalStands);
                     if (!useLocalStands && osmStands.length) renderStands(osmStands);
                     updateFeatureVisibility();
+                    if (lastActiveRunwaysData) updateActiveRunways(lastActiveRunwaysData);
                 })
                 .catch(function (e) { console.warn('All Overpass endpoints failed:', e); });
         });
@@ -2254,6 +2258,7 @@
                 departures: data.flights.filter(function (f) { return f.direction === 'DEP'; }),
                 arrivals: data.flights.filter(function (f) { return f.direction === 'ARR'; }),
                 controllers: data.controllers,
+                active_runways: data.active_runways,
             });
         })
         .catch(function (e) { console.warn('Initial map load failed:', e); });
