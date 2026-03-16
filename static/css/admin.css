@@ -487,6 +487,15 @@ td select {
   padding: 20px 0;
 }
 
+.analytics-error {
+  color: var(--danger);
+  background: #1f0f15;
+  border: 1px solid #6e2a34;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+
 .muted-label {
   color: var(--muted);
   font-size: 0.8rem;
