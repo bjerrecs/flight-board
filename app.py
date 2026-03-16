@@ -98,7 +98,7 @@ def _haversine_km(lat1, lon1, lat2, lon2):
     a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
     return R * 2 * math.asin(math.sqrt(a))
 
-APP_VERSION = '1.3.8'
+APP_VERSION = '1.3.9'
 
 app = Flask(__name__)
 app.config.from_object(Config)
