@@ -43,6 +43,7 @@ static/scandinavian_stands.json
 
 # Runtime data files (not committed)
 data/traffic_stats.json
+data/ga_credentials.json
 data/navdata/
 
 # Personal scripts (contain private webhook URLs or setup details)

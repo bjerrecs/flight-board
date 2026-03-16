@@ -20,6 +20,19 @@ from contextlib import contextmanager
 from datetime import datetime, timezone, timedelta, date as _date
 import requests
 import psycopg2
+try:
+    from google.analytics.data_v1beta import BetaAnalyticsDataClient
+    from google.analytics.data_v1beta.types import (
+        RunReportRequest, DateRange, Metric, Dimension, OrderBy
+    )
+    _GA_AVAILABLE = True
+except ImportError:
+    _GA_AVAILABLE = False
+
+_ga_cache = {'data': None, 'fetched_at': 0}
+GA_CACHE_TTL = 3600
+GA_CREDENTIALS_PATH = os.path.join(os.path.dirname(__file__), 'data', 'ga_credentials.json')
+GA4_PROPERTY_ID = os.environ.get('GA4_PROPERTY_ID', 'properties/REPLACE_WITH_YOUR_ID')
 import zipfile
 import tempfile
 import shutil as _shutil
@@ -626,7 +639,7 @@ def _add_security_headers(response):
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     response.headers.setdefault('Content-Security-Policy', (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' https://cdn.socket.io https://unpkg.com https://www.googletagmanager.com https://www.google-analytics.com; "
+        "script-src 'self' 'unsafe-inline' https://cdn.socket.io https://unpkg.com https://www.googletagmanager.com https://www.google-analytics.com https://cdnjs.cloudflare.com; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data: https:; "
@@ -1115,6 +1128,121 @@ def api_admin_upload_navdata():
 
     route_parser.reload_navdata()
     return jsonify({'ok': True, **_get_navdata_info()})
+
+def _ga_run_report(client, dimensions, metrics, date_ranges, order_bys=None, limit=20):
+    req = RunReportRequest(
+        property=GA4_PROPERTY_ID,
+        dimensions=[Dimension(name=d) for d in dimensions],
+        metrics=[Metric(name=m) for m in metrics],
+        date_ranges=date_ranges,
+        order_bys=order_bys or [],
+        limit=limit,
+    )
+    response = client.run_report(req)
+    rows = []
+    dim_headers = [h.name for h in response.dimension_headers]
+    met_headers = [h.name for h in response.metric_headers]
+    for row in response.rows:
+        record = {}
+        for i, dv in enumerate(row.dimension_values):
+            record[dim_headers[i]] = dv.value
+        for i, mv in enumerate(row.metric_values):
+            record[met_headers[i]] = mv.value
+        rows.append(record)
+    return rows
+
+def _fetch_ga_data():
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GA_CREDENTIALS_PATH
+    client = BetaAnalyticsDataClient()
+
+    last_28 = [DateRange(start_date='28daysAgo', end_date='yesterday')]
+    last_7  = [DateRange(start_date='7daysAgo',  end_date='yesterday')]
+
+    summary_rows = _ga_run_report(
+        client, dimensions=[],
+        metrics=['activeUsers', 'newUsers', 'averageSessionDuration', 'eventCount'],
+        date_ranges=last_28, limit=1,
+    )
+    summary = summary_rows[0] if summary_rows else {}
+
+    top_pages = _ga_run_report(
+        client, dimensions=['pageTitle'],
+        metrics=['screenPageViews', 'activeUsers', 'eventCount', 'bounceRate'],
+        date_ranges=last_28,
+        order_bys=[OrderBy(metric=OrderBy.MetricOrderBy(metric_name='screenPageViews'), desc=True)],
+        limit=25,
+    )
+
+    acquisition = _ga_run_report(
+        client, dimensions=['firstUserSourceMedium'],
+        metrics=['activeUsers'],
+        date_ranges=last_28,
+        order_bys=[OrderBy(metric=OrderBy.MetricOrderBy(metric_name='activeUsers'), desc=True)],
+        limit=10,
+    )
+
+    sessions_by_source = _ga_run_report(
+        client, dimensions=['sessionSourceMedium'],
+        metrics=['sessions'],
+        date_ranges=last_28,
+        order_bys=[OrderBy(metric=OrderBy.MetricOrderBy(metric_name='sessions'), desc=True)],
+        limit=10,
+    )
+
+    daily = _ga_run_report(
+        client, dimensions=['date'],
+        metrics=['activeUsers', 'newUsers'],
+        date_ranges=last_7,
+        order_bys=[OrderBy(dimension=OrderBy.DimensionOrderBy(dimension_name='date'))],
+        limit=7,
+    )
+
+    cities = _ga_run_report(
+        client, dimensions=['city', 'country'],
+        metrics=['activeUsers'],
+        date_ranges=last_28,
+        order_bys=[OrderBy(metric=OrderBy.MetricOrderBy(metric_name='activeUsers'), desc=True)],
+        limit=20,
+    )
+
+    return {
+        'period': '28daysAgo to yesterday',
+        'fetched_at': int(time.time()),
+        'summary': summary,
+        'top_pages': top_pages,
+        'acquisition': acquisition,
+        'sessions_by_source': sessions_by_source,
+        'daily': daily,
+        'cities': cities,
+    }
+
+@app.route('/api/admin/analytics')
+def admin_analytics():
+    if not _is_admin_authenticated():
+        return jsonify({'error': 'Unauthorised'}), 403
+
+    if not _GA_AVAILABLE:
+        return jsonify({'error': 'google-analytics-data package not installed'}), 500
+
+    force = request.args.get('refresh') == '1'
+    now = time.time()
+
+    if not force and _ga_cache['data'] and (now - _ga_cache['fetched_at']) < GA_CACHE_TTL:
+        return jsonify(_ga_cache['data'])
+
+    try:
+        data = _fetch_ga_data()
+        _ga_cache['data'] = data
+        _ga_cache['fetched_at'] = now
+        return jsonify(data)
+    except FileNotFoundError:
+        return jsonify({'error': 'GA credentials file not found at data/ga_credentials.json'}), 500
+    except Exception as e:
+        app.logger.error(f'GA4 fetch error: {e}')
+        if _ga_cache['data']:
+            _ga_cache['data']['stale'] = True
+            return jsonify(_ga_cache['data'])
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/airport_name/<icao>')
 def api_airport_name(icao):
