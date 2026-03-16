@@ -796,6 +796,7 @@ def api_map(icao):
         'airport_name': data.get('airport_name', normalized),
         'flights': flights,
         'controllers': data.get('controllers', []),
+        'active_runways': data.get('active_runways'),
     })
 
 @app.route('/api/controllers')
