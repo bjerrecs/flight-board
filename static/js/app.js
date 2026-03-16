@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
                document.body.classList.contains('theme-egkk') ||
                document.body.classList.contains('theme-eglc') ||
                document.body.classList.contains('theme-essa') ||
-               document.body.classList.contains('theme-eham');
+               document.body.classList.contains('theme-eham') ||
+               document.body.classList.contains('theme-kewr');
     }
 
     function toTitleCase(value) {
@@ -279,6 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
         EGSS: { css: '/static/css/themes/egss.css', class: 'theme-egss' },
         EGCC: { css: '/static/css/themes/egcc.css', class: 'theme-egcc' },
         EHAM: { css: '/static/css/themes/eham.css', class: 'theme-eham' },
+        KEWR: { css: '/static/css/themes/kewr.css', class: 'theme-kewr' },
         KJFK: { css: '/static/css/themes/kjfk.css', class: 'theme-kjfk' },
         RJTT: { css: '/static/css/themes/rjtt.css', class: 'theme-rjtt' },
         ESSA: { css: '/static/css/themes/essa.css', class: 'theme-essa' }
@@ -323,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     "KEWR": "Newark", "KLGA": "New York LaGuardia",
                     "LFPO": "Paris Orly", "LFPG": "Paris CDG", "EDDF": "Frankfurt", "EDDM": "Munich",
                     "OMDB": "Dubai", "VHHH": "Hong Kong", "WSSS": "Singapore",
-                    "KBOS": "Boston", "LLBG": "Tel Aviv", "LSHD": "Zurich Heliport",
+                    "KBOS": "Boston", "KEWR": "Newark", "LLBG": "Tel Aviv", "LSHD": "Zurich Heliport",
                     "LIBG": "Taranto-Grottaglie", "ESSA": "Stockholm Arlanda"
                 };
 

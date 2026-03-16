@@ -155,6 +155,7 @@ DEFAULT_THEME_MAP = {
     'EGSS': {'css': '/static/css/themes/egss.css', 'class': 'theme-egss'},
     'EGCC': {'css': '/static/css/themes/egcc.css', 'class': 'theme-egcc'},
     'EHAM': {'css': '/static/css/themes/eham.css', 'class': 'theme-eham'},
+    'KEWR': {'css': '/static/css/themes/kewr.css', 'class': 'theme-kewr'},
     'KJFK': {'css': '/static/css/themes/kjfk.css', 'class': 'theme-kjfk'},
     'RJTT': {'css': '/static/css/themes/rjtt.css', 'class': 'theme-rjtt'},
     'ESSA': {'css': '/static/css/themes/essa.css', 'class': 'theme-essa'},
