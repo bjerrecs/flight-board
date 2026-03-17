@@ -902,6 +902,182 @@
     loadAnalytics(true);
   });
 
+  // ── Airport Registry ──────────────────────────────────────────────────────
+  const registryTableBody = document.getElementById('registryTableBody');
+  const addRegistryRowBtn = document.getElementById('addRegistryRowBtn');
+  const saveRegistryBtn   = document.getElementById('saveRegistryBtn');
+
+  function createRegistryRow(icao, entry) {
+    const tr = document.createElement('tr');
+    entry = entry || {};
+
+    const icaoInput = document.createElement('input');
+    icaoInput.maxLength = 4;
+    icaoInput.placeholder = 'ICAO';
+    icaoInput.value = normalizeIcao(icao);
+    icaoInput.style.width = '54px';
+    icaoInput.addEventListener('input', () => {
+      const pos = icaoInput.selectionStart;
+      icaoInput.value = icaoInput.value.toUpperCase();
+      icaoInput.setSelectionRange(pos, pos);
+    });
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = 'Display name';
+    nameInput.value = entry.name || '';
+
+    const selectorInput = document.createElement('input');
+    selectorInput.type = 'text';
+    selectorInput.placeholder = 'Dropdown label';
+    selectorInput.value = entry.selector_label || '';
+
+    const ceilingInput = document.createElement('input');
+    ceilingInput.type = 'number';
+    ceilingInput.step = '500';
+    ceilingInput.min = '0';
+    ceilingInput.placeholder = '6000';
+    ceilingInput.value = entry.ceiling != null ? entry.ceiling : 6000;
+    ceilingInput.style.width = '64px';
+
+    const standsSelect = document.createElement('select');
+    ['false', 'true'].forEach(val => {
+      const opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = val === 'true' ? 'Yes' : 'No';
+      standsSelect.appendChild(opt);
+    });
+    standsSelect.value = entry.has_stands ? 'true' : 'false';
+
+    const cssSelect = document.createElement('select');
+    themeOptions.forEach(option => {
+      const el = document.createElement('option');
+      el.value = option.css;
+      el.textContent = option.name;
+      cssSelect.appendChild(el);
+    });
+    cssSelect.value = entry.theme_css || '/static/css/themes/default.css';
+
+    const classInput = document.createElement('input');
+    classInput.placeholder = 'theme-xxxx';
+    classInput.value = entry.theme_class || '';
+
+    const titleCaseSelect = document.createElement('select');
+    ['false', 'true'].forEach(val => {
+      const opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = val === 'true' ? 'Yes' : 'No';
+      titleCaseSelect.appendChild(opt);
+    });
+    titleCaseSelect.value = entry.title_case ? 'true' : 'false';
+
+    // Flags: comma-separated list of ISO codes, or blank
+    const flagsInput = document.createElement('input');
+    flagsInput.type = 'text';
+    flagsInput.placeholder = 'ch,fr';
+    flagsInput.value = Array.isArray(entry.flags) ? entry.flags.join(',') : '';
+    flagsInput.style.width = '80px';
+
+    const flagsPosSelect = document.createElement('select');
+    [['', 'Default'], ['left', 'Left']].forEach(([val, label]) => {
+      const opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = label;
+      flagsPosSelect.appendChild(opt);
+    });
+    flagsPosSelect.value = entry.flags_position || '';
+
+    const gateLabelInput = document.createElement('input');
+    gateLabelInput.type = 'text';
+    gateLabelInput.placeholder = 'e.g. Gates';
+    gateLabelInput.value = entry.gate_label_override || '';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'row-remove';
+    removeBtn.textContent = 'Remove';
+    removeBtn.addEventListener('click', () => tr.remove());
+
+    [icaoInput, nameInput, selectorInput, ceilingInput, standsSelect,
+     cssSelect, classInput, titleCaseSelect, flagsInput, flagsPosSelect,
+     gateLabelInput, removeBtn].forEach(el => {
+      const td = document.createElement('td');
+      td.appendChild(el);
+      tr.appendChild(td);
+    });
+
+    return tr;
+  }
+
+  function collectRegistry() {
+    const registry = {};
+    Array.from(registryTableBody.querySelectorAll('tr')).forEach(row => {
+      const inputs = row.querySelectorAll('input, select');
+      const icao = normalizeIcao(inputs[0].value);
+      if (!icao || icao.length !== 4) return;
+      const flagsRaw = String(inputs[8].value || '').trim();
+      const flags = flagsRaw
+        ? flagsRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+        : null;
+      registry[icao] = {
+        name:                String(inputs[1].value || '').trim(),
+        selector_label:      String(inputs[2].value || '').trim(),
+        ceiling:             parseInt(inputs[3].value, 10) || 6000,
+        has_stands:          inputs[4].value === 'true',
+        theme_css:           String(inputs[5].value || '').trim(),
+        theme_class:         String(inputs[6].value || '').trim(),
+        title_case:          inputs[7].value === 'true',
+        flags:               flags,
+        flags_position:      String(inputs[9].value || '').trim() || null,
+        gate_label_override: String(inputs[10].value || '').trim() || null,
+      };
+    });
+    return registry;
+  }
+
+  async function loadRegistry() {
+    const response = await fetch('/api/admin/airports_registry');
+    if (!response.ok) throw new Error('Failed to load airport registry');
+    const data = await response.json();
+    registryTableBody.innerHTML = '';
+    Object.keys(data).sort().forEach(icao => {
+      registryTableBody.appendChild(createRegistryRow(icao, data[icao]));
+    });
+  }
+
+  async function saveRegistry() {
+    const response = await fetch('/api/admin/airports_registry', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF_TOKEN },
+      body: JSON.stringify({ registry: collectRegistry() })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Save failed');
+    setStatus('Airport registry saved (' + data.count + ' airports). Reload the board to see changes.', 'ok');
+    await loadRegistry();
+  }
+
+  let registryLoaded = false;
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    if (btn.dataset.tab === 'registry') {
+      btn.addEventListener('click', () => {
+        if (!registryLoaded) {
+          registryLoaded = true;
+          loadRegistry().catch(e => setStatus(e.message, 'error'));
+        }
+      });
+    }
+  });
+
+  addRegistryRowBtn.addEventListener('click', () => {
+    const tr = createRegistryRow('', {});
+    registryTableBody.appendChild(tr);
+    tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+  saveRegistryBtn.addEventListener('click', () =>
+    saveRegistry().catch(e => setStatus(e.message, 'error'))
+  );
+
   // ── Init ──────────────────────────────────────────────────────────────────
   (async function init() {
     try {

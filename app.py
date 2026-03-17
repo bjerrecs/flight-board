@@ -98,7 +98,7 @@ def _haversine_km(lat1, lon1, lat2, lon2):
     a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
     return R * 2 * math.asin(math.sqrt(a))
 
-APP_VERSION = '1.3.9'
+APP_VERSION = '1.4.0'
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -1084,6 +1084,65 @@ def admin_custom_airports():
         return jsonify({'success': True, 'count': len(validated)})
     except ValueError as exc:
         return jsonify({'error': str(exc)}), 400
+
+def _validate_airports_registry(raw):
+    """Validate and normalise the airports registry payload."""
+    if not isinstance(raw, dict):
+        raise ValueError('Registry must be an object keyed by ICAO code.')
+
+    cleaned = {}
+    for icao, entry in raw.items():
+        normalized = _normalize_icao(icao)
+        if not normalized:
+            raise ValueError(f'Invalid ICAO code: {icao}')
+        if not isinstance(entry, dict):
+            raise ValueError(f'Entry for {normalized} must be an object.')
+
+        name = str(entry.get('name', '') or '').strip()
+        if not name:
+            raise ValueError(f'Entry for {normalized} must have a name.')
+
+        flags_raw = entry.get('flags')
+        flags = flags_raw if isinstance(flags_raw, list) else None
+
+        cleaned[normalized] = {
+            'name': name,
+            'selector_label': str(entry.get('selector_label', name) or name).strip(),
+            'ceiling': int(entry.get('ceiling', 6000) or 6000),
+            'has_stands': bool(entry.get('has_stands', False)),
+            'theme_css': str(entry.get('theme_css', '/static/css/themes/default.css') or '/static/css/themes/default.css').strip(),
+            'theme_class': str(entry.get('theme_class', '') or '').strip(),
+            'title_case': bool(entry.get('title_case', False)),
+            'flags': flags,
+            'flags_position': str(entry.get('flags_position', '') or '').strip() or None,
+            'footer_country': str(entry.get('footer_country', '') or '').strip() or None,
+            'gate_label_override': str(entry.get('gate_label_override', '') or '').strip() or None,
+        }
+
+    return dict(sorted(cleaned.items()))
+
+
+@app.route('/api/admin/airports_registry', methods=['GET', 'POST'])
+def admin_airports_registry():
+    global _airports_registry, DEFAULT_THEME_MAP
+    if request.method == 'GET':
+        return jsonify(_load_airports_registry())
+
+    payload = request.json or {}
+    incoming = payload.get('registry')
+    if incoming is None:
+        return jsonify({'error': 'Missing registry payload'}), 400
+
+    try:
+        validated = _validate_airports_registry(incoming)
+        _write_json(AIRPORTS_REGISTRY_PATH, validated)
+        _airports_registry = validated
+        DEFAULT_THEME_MAP = _derive_theme_map_from_registry(validated)
+        flight_fetcher.reload_airports_registry()
+        return jsonify({'success': True, 'count': len(validated)})
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+
 
 @app.route('/api/admin/atis_log')
 def api_admin_atis_log():

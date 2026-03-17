@@ -14,7 +14,7 @@ If the flight board adds a little extra joy to your sim experience, a coffee hel
 ### Core Functionality
 * **Universal Airport Support:** Instantly load *any* airport on the VATSIM network by searching for its ICAO code in the UI.
 * **Direct Link Loading:** Open the board directly to an airport using `?icao=XXXX` (or `?airport=XXXX`) in the URL.
-* **Pre-Configured Hubs:** One-click switching between major hubs: LSZH, LSGG, LFSB, EGLC, EGLL, EGKK, EGSS, EGCC, EHAM, EDDF, LFPG, KJFK, and RJTT.
+* **Pre-Configured Hubs:** One-click switching between major hubs: LSZH, LSGG, LFSB, EGLC, EGLL, EGKK, EGSS, EGCC, EHAM, EDDF, LFPG, KJFK, KEWR, RJTT, and ESSA.
 * **Flight Info Modal:** Click any flight row to open a card showing airline logo, callsign, aircraft type, status, gate, time, and a live SVG route arc from origin to destination. A **Track on Live Map** button starts tracking and navigates directly to the radar map.
 * **Real-Time Data:** Automatically fetches and refreshes pilot and flight plan data from the VATSIM Public Data API (v3) every 30 seconds.
 * **Live WebSockets:** Uses Socket.IO to push updates immediately to the client without requiring a page refresh.
@@ -67,7 +67,9 @@ If the flight board adds a little extra joy to your sim experience, a coffee hel
     * **EDDF (Frankfurt):** Authentic Solari split-flap display aesthetic with animated mechanical character flips, Lufthansa Blue footer, and terminal indicators.
     * **LFPG (Paris CDG):** ADP-inspired deep midnight blue with alternating blue rows and sky-blue column headers.
     * **KJFK (New York):** JFK Yellow and Black.
+    * **KEWR (Newark):** Yellow and Black with terminal badges.
     * **RJTT (Tokyo Haneda):** Black header with Green accent lines.
+    * **ESSA (Stockholm Arlanda):** Arlanda Blue with bilingual Swedish/English footer.
 * **Hybrid Display Style:**
     * **Flight Data:** Rendered as clean, high-visibility text.
     * **Status Column:** Rendered as solid, edge-to-edge colored blocks for instant readability.
@@ -127,7 +129,9 @@ If the flight board adds a little extra joy to your sim experience, a coffee hel
 | EDDF | Frankfurt Airport | T1 (A/B/C/Z), T2 (D/E) | 170 | Solari Split-Flap Dark |
 | LFPG | Paris CDG | T1, T2 (A–F), T3 | 508 | ADP Midnight Blue |
 | KJFK | New York JFK | T1, T4, T5, T7, T8 | 205 | JFK Yellow and Black |
+| KEWR | Newark Liberty | A, B, C | 120 | Newark Yellow and Black |
 | RJTT | Tokyo Haneda | T1, T2, T3 | 238 | Haneda Dark |
+| ESSA | Stockholm Arlanda | T2, T3, T4, T5 | 130 | Arlanda Blue |
 
 *Note: Any other airport can be loaded via the "+" button in the UI.*
 

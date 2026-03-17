@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function isLszhThemeActive() {
-        return document.body.classList.contains('theme-lszh');
+        return currentAirport === 'LSZH';
     }
 
     function isTitleCaseThemeActive() {

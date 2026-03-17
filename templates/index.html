@@ -367,6 +367,23 @@
         <div class="help-modal-body">
 
             <section class="help-section">
+                <h3>v1.4.0 — 2026-03-17</h3>
+                <ul>
+                    <li>Airport registry centralised into <code>data/airports.json</code> — adding a new airport now requires a single file edit instead of changes across 7+ files</li>
+                    <li>Admin panel: new Airport Registry tab for editing all airport config (themes, flags, ceiling, title case, gate labels) without touching code</li>
+                    <li>Newark Liberty (KEWR) and Stockholm Arlanda (ESSA) added to the pre-configured airport list</li>
+                    <li>Check-in dispatcher refactored to convention-based method lookup — adding check-in logic for a new airport is now a single method, no dispatcher edit needed</li>
+                </ul>
+            </section>
+
+            <section class="help-section">
+                <h3>v1.3.9 — 2026-03-16</h3>
+                <ul>
+                    <li>Newark Liberty (KEWR): terminal badge on check-in column, FedEx stand names, green GO TO GATE status</li>
+                </ul>
+            </section>
+
+            <section class="help-section">
                 <h3>v1.3.8 — 2026-03-15</h3>
                 <ul>
                     <li>Live Map: ATC Sectors toggle added to map legend — hides/shows sector boundary overlays, preference persisted across sessions; boundaries skipped on load if previously turned off</li>
