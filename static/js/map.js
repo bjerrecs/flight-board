@@ -1729,15 +1729,15 @@
     var conflictToggleBtn = document.getElementById('conflictToggleBtn');
     if (conflictToggleBtn) {
         conflictToggleBtn.classList.toggle('legend-toggle--off', !showConflicts);
-        var conflictKey = document.getElementById('conflictKey');
-        if (conflictKey) conflictKey.style.display = showConflicts ? '' : 'none';
+        var conflictKeyEl = document.getElementById('conflictKey');
+        if (conflictKeyEl) conflictKeyEl.style.display = showConflicts ? '' : 'none';
         conflictToggleBtn.addEventListener('click', function () {
             showConflicts = !showConflicts;
             localStorage.setItem('flightboard.show_conflicts', showConflicts);
             conflictToggleBtn.classList.toggle('legend-toggle--off', !showConflicts);
             var indicator = conflictToggleBtn.querySelector('.legend-toggle-indicator');
             if (indicator) indicator.textContent = showConflicts ? 'ON' : 'OFF';
-            if (conflictKey) conflictKey.style.display = showConflicts ? '' : 'none';
+            if (conflictKeyEl) conflictKeyEl.style.display = showConflicts ? '' : 'none';
             if (!showConflicts) clearAllConflicts();
         });
     }
