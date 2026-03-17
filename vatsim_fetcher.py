@@ -83,6 +83,7 @@ _ATIS_RWY_NUM_IN_USE_RE = re.compile(
 )
 
 CUSTOM_AIRPORTS_PATH = os.path.join('data', 'custom_airports.json')
+AIRPORTS_REGISTRY_PATH = os.path.join(os.path.dirname(__file__), 'data', 'airports.json')
 
 # UKCP Stand API Integration
 try:
@@ -103,24 +104,8 @@ class VatsimFetcher:
         # Load custom airport overrides
         self.custom_airports = self._load_custom_airports()
         
-        # Pre-configured airports
-        self.configured_airports = {
-            'LSZH': { 'name': 'Zurich Airport', 'ceiling': 6000, 'has_stands': True },
-            'LSGG': { 'name': 'Geneva Airport', 'ceiling': 8000, 'has_stands': True },
-            'LFSB': { 'name': 'EuroAirport Basel', 'ceiling': 5000, 'has_stands': True },
-            'LFPG': { 'name': 'Paris CDG', 'ceiling': 7000, 'has_stands': True },
-            'EGLC': { 'name': 'London City', 'ceiling': 5000, 'has_stands': True },
-            'EGLL': { 'name': 'London Heathrow', 'ceiling': 7000, 'has_stands': True },
-            'EGKK': { 'name': 'London Gatwick', 'ceiling': 7000, 'has_stands': True },
-            'EGSS': { 'name': 'London Stansted', 'ceiling': 7000, 'has_stands': True },
-            'EGCC': { 'name': 'Manchester Airport', 'ceiling': 7000, 'has_stands': True },
-            'KEWR': { 'name': 'New York Newark', 'ceiling': 5000, 'has_stands': True },
-            'KJFK': { 'name': 'New York JFK', 'ceiling': 5000, 'has_stands': True },
-            'RJTT': { 'name': 'Tokyo Haneda', 'ceiling': 6000, 'has_stands': True  },
-            'EHAM': { 'name': 'Amsterdam Schiphol', 'ceiling': 6000, 'has_stands': True },
-            'EDDF': { 'name': 'Frankfurt Airport', 'ceiling': 5000, 'has_stands': True },
-            'ESSA': { 'name': 'Stockholm Arlanda', 'ceiling': 7000, 'has_stands': True },
-        }
+        # Pre-configured airports (loaded from central registry)
+        self.configured_airports = self._load_airports_registry()
         
         # Load Geofencing Stands (Coordinate based)
         self.stands = self.load_stands()
@@ -232,7 +217,29 @@ class VatsimFetcher:
 
     def reload_custom_airports(self):
         self.custom_airports = self._load_custom_airports()
-    
+
+    def _load_airports_registry(self):
+        """Load configured airports from data/airports.json registry."""
+        try:
+            with open(AIRPORTS_REGISTRY_PATH, 'r', encoding='utf-8') as f:
+                registry = json.load(f)
+            configured = {}
+            for icao, entry in registry.items():
+                configured[icao.upper()] = {
+                    'name': entry.get('name', icao),
+                    'ceiling': entry.get('ceiling', 6000),
+                    'has_stands': entry.get('has_stands', False),
+                }
+            print(f"Loaded {len(configured)} airports from registry")
+            return configured
+        except Exception as e:
+            print(f"ERROR: Failed to load airports registry: {e}")
+            return {}
+
+    def reload_airports_registry(self):
+        """Reload the airports registry from disk (called by admin panel)."""
+        self.configured_airports = self._load_airports_registry()
+
     def get_airport_info(self, icao):
         icao = icao.upper()
         if icao in self.configured_airports:

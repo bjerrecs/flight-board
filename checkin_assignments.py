@@ -19,60 +19,28 @@ class CheckinAssignments:
     
     def get_checkin_desk(self, callsign, airport_code):
         """
-        Get check-in desk assignment for a flight
-        
-        Args:
-            callsign: Aircraft callsign (e.g., 'SWR123')
-            airport_code: ICAO airport code (e.g., 'LSZH')
-            
-        Returns:
-            str: Check-in desk identifier (e.g., '1', 'T2-85', 'N105')
+        Get check-in desk assignment for a flight.
+
+        Dispatches to _<icao_lowercase>() method if it exists,
+        otherwise falls back to _generic().
         """
         if not callsign:
             return ""
-        
-        # Deterministic seed based on callsign
+
         seed = sum(ord(c) for c in callsign)
         airline = callsign[:3].upper()
-        
-        # Route to airport-specific logic
-        if airport_code == 'LSZH':
-            return self._zurich(airline, seed)
-        elif airport_code == 'LSGG':
-            return self._geneva(airline, seed)
-        elif airport_code == 'LFSB':
-            return self._basel(airline, seed)
-        elif airport_code == 'EGLL':
-            return self._heathrow(airline, seed)
-        elif airport_code == 'EGKK':
-            return self._gatwick(airline, seed)
-        elif airport_code == 'EGSS':
-            return self._stansted(airline, seed)
-        elif airport_code == 'EGCC':
-            return self._manchester(airline, seed)
-        elif airport_code == 'EGLC':
-            return self._london_city(airline, seed)
-        elif airport_code == 'EHAM':
-            return self._schiphol(airline, seed)
-        elif airport_code == 'KEWR':
-            return self._newark(airline, seed)
-        elif airport_code == 'KJFK':
-            return self._jfk(airline, seed)
-        elif airport_code == 'RJTT':
-            return self._haneda(airline, seed)
-        elif airport_code == 'EDDF':
-            return self._frankfurt(airline, seed)
-        elif airport_code == 'LFPG':
-            return self._cdg(airline, seed)
-        elif airport_code == 'ESSA':
-            return self._arlanda(airline, seed)
-        else:
-            # Generic fallback for unknown airports
-            return self._generic(seed)
+
+        # Convention-based dispatch: look for _lszh(), _egll(), etc.
+        method_name = f'_{airport_code.lower()}'
+        method = getattr(self, method_name, None)
+        if method and callable(method):
+            return method(airline, seed)
+
+        return self._generic(seed)
     
     # ==================== SWITZERLAND ====================
     
-    def _zurich(self, airline, seed):
+    def _lszh(self, airline, seed):
         """Zurich Airport (LSZH) check-in assignments"""
         # Desk 1: Star Alliance & Swiss partners (Check-in 1, Check-in 3)
         if airline in ['SWR', 'EDW', 'DLH', 'AUA', 'BEL', 'CTN', 'AEE', 'DLA']:
@@ -85,7 +53,7 @@ class CheckinAssignments:
         # Desk 2: All others
         return "2"
     
-    def _geneva(self, airline, seed):
+    def _lsgg(self, airline, seed):
         """Geneva Airport (LSGG) check-in assignments"""
         # Terminal 2: Winter charters
         if airline in ['EXS', 'TOM', 'TRA', 'JAI']:
@@ -106,7 +74,7 @@ class CheckinAssignments:
         desk = (seed % 30) + 20
         return f"{desk:02d}"
     
-    def _basel(self, airline, seed):
+    def _lfsb(self, airline, seed):
         """EuroAirport Basel (LFSB) check-in assignments"""
         # French Sector
         if airline in ['AFR', 'WZZ', 'RYR', 'ENT']:
@@ -119,7 +87,7 @@ class CheckinAssignments:
     
     # ==================== UNITED KINGDOM ====================
     
-    def _heathrow(self, airline, seed):
+    def _egll(self, airline, seed):
         """London Heathrow (EGLL) check-in assignments"""
         # Terminal 5: British Airways & oneworld
         if airline in ['BAW', 'SHT', 'IBE', 'AAL', 'AER', 'EIN']:
@@ -146,7 +114,7 @@ class CheckinAssignments:
         desk = (seed % 20) + 221
         return f"{desk}"
     
-    def _gatwick(self, airline, seed):
+    def _egkk(self, airline, seed):
         """London Gatwick (EGKK) check-in assignments"""
         # North Terminal: Major carriers
         if airline in ['BAW', 'EZY', 'EZS', 'VIR', 'TOM', 'NAX']:
@@ -157,7 +125,7 @@ class CheckinAssignments:
         desk = (seed % 25) + 201
         return f"S{desk}"
 
-    def _stansted(self, airline, seed):
+    def _egss(self, airline, seed):
         """London Stansted (EGSS) check-in assignments"""
         # Jet2: Dedicated desks 14-28
         if airline in ['EXS']:
@@ -188,7 +156,7 @@ class CheckinAssignments:
         desk = (seed % 20) + 110
         return f"{desk}"
 
-    def _manchester(self, airline, seed):
+    def _egcc(self, airline, seed):
         """Manchester Airport (EGCC) check-in assignments"""
         # Terminal 1: Ryanair, Jet2, TUI, leisure carriers
         if airline in ['RYR', 'RUK']:
@@ -219,7 +187,7 @@ class CheckinAssignments:
         desk = (seed % 20) + 280
         return f"T2-{desk}"
 
-    def _london_city(self, airline, seed):
+    def _eglc(self, airline, seed):
         """London City (EGLC) check-in assignments"""
         # British Airways (CityFlyer) - Dominant carrier
         if airline in ['BAW', 'CFE', 'SHT']:
@@ -242,7 +210,7 @@ class CheckinAssignments:
 
     # ==================== NETHERLANDS ====================
 
-    def _schiphol(self, airline, seed):
+    def _eham(self, airline, seed):
         """Amsterdam Schiphol (EHAM) check-in assignments"""
         # Departure Hall 2: KLM group + core SkyTeam operations
         if airline in [
@@ -266,7 +234,7 @@ class CheckinAssignments:
     
     # ==================== UNITED STATES ====================
     
-    def _jfk(self, airline, seed):
+    def _kjfk(self, airline, seed):
         """New York JFK (KJFK) check-in assignments"""
         # Terminal 1: Star Alliance mix, European long-haul
         if airline in ['DLH', 'LH', 'SWR', 'LX', 'AUA', 'OS', 'BEL', 'SN',
@@ -309,7 +277,7 @@ class CheckinAssignments:
         row = ((seed % 7) + 1)
         return f"T4-{row}"
     
-    def _newark(self, airline, seed):
+    def _kewr(self, airline, seed):
         """Newark Liberty (KEWR) check-in assignments"""
         # Terminal C: United Airlines Hub
         if airline in ['UAL', 'UCA', 'BTA']:
@@ -326,7 +294,7 @@ class CheckinAssignments:
         return f"B{desk:02d}"
     
     # ==================== JAPAN ====================
-    def _haneda(self, airline, seed):
+    def _rjtt(self, airline, seed):
         """Tokyo Haneda (RJTT) check-in assignments"""
         # Terminal 1: JAL Group & Skymark
         if airline in ['JAL', 'JL', 'SKY', 'BC', 'SFJ', '7G']: 
@@ -348,7 +316,7 @@ class CheckinAssignments:
     
     # ==================== GERMANY ====================
 
-    def _frankfurt(self, airline, seed):
+    def _eddf(self, airline, seed):
         """Frankfurt Airport (EDDF) check-in assignments"""
         # Terminal 1, Hall A: Lufthansa group + Star Alliance
         # (A01–A28 in real life)
@@ -386,7 +354,7 @@ class CheckinAssignments:
 
     # ==================== FRANCE ====================
 
-    def _cdg(self, airline, seed):
+    def _lfpg(self, airline, seed):
         """Paris Charles de Gaulle (LFPG) check-in assignments"""
         # Terminal 2E: Air France + SkyTeam core partners
         if airline in ['AFR', 'KLM', 'DAL', 'CES', 'KAL', 'AFL', 'AMX',
@@ -423,7 +391,7 @@ class CheckinAssignments:
 
     # ==================== SWEDEN ====================
 
-    def _arlanda(self, airline, seed):
+    def _essa(self, airline, seed):
         """Stockholm Arlanda (ESSA) check-in assignments
 
         Arlanda uses a flat numbered desk range system displayed as e.g. '01-12'.

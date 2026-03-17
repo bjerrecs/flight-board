@@ -41,21 +41,9 @@
         <header class="fids-header">
     <div class="airport-selector">
         <select id="airportSelect">
-            <option value="LSZH" title="LSZH">Zurich Airport</option>
-            <option value="LSGG" title="LSGG">Geneva Airport</option>
-            <option value="LFSB" title="LFSB">Basel Airport</option>
-            <option value="EDDF" title="EDDF">Frankfurt Airport</option>
-            <option value="LFPG" title="LFPG">Paris Charles de Gaulle Airport</option>
-            <option value="EGLC" title="EGLC">London City Airport</option>
-            <option value="EGLL" title="EGLL">London Heathrow Airport</option>
-            <option value="EGKK" title="EGKK">London Gatwick Airport</option>
-            <option value="EGSS" title="EGSS">London Stansted Airport</option>
-            <option value="EGCC" title="EGCC">Manchester Airport</option>
-            <option value="EHAM" title="EHAM">Amsterdam Schiphol Airport</option>
-            <option value="KJFK" title="KJFK">New York JFK Airport</option>
-            <option value="KEWR" title="KEWR">Newark Liberty Airport</option>
-            <option value="RJTT" title="RJTT">Tokyo Haneda Airport</option>
-            <option value="ESSA" title="ESSA">Stockholm Arlanda Airport</option>
+            {% for icao, cfg in airports_registry.items() %}
+            <option value="{{ icao }}" title="{{ icao }}">{{ cfg.selector_label or cfg.name }}</option>
+            {% endfor %}
         </select>
         
         <button id="addAirportBtn" class="add-airport-btn" title="Add Airport">

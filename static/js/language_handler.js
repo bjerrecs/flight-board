@@ -122,17 +122,9 @@ window.updateFooterText = function(airportCode, country) {
     // If no country provided yet, use fallback based on airport code
     if (!country) {
         console.log('[Language Handler] No country data yet for', airportCode, '- using fallback');
-        // Fallback for hardcoded airports until data arrives
-        const fallbackCountries = {
-            'LSZH': 'Switzerland',
-            'LSGG': 'Switzerland',
-            'LFSB': 'France',
-            'EGLL': 'United Kingdom',
-            'EGKK': 'United Kingdom',
-            'KJFK': 'United States',
-            'RJTT': 'Japan'
-        };
-        country = fallbackCountries[airportCode] || 'United Kingdom';
+        const _reg = window._airportsRegistry || {};
+        const _entry = _reg[airportCode];
+        country = (_entry && _entry.footer_country) ? _entry.footer_country : 'United Kingdom';
     }
     
     // Determine language based on country
@@ -145,8 +137,11 @@ window.updateFooterText = function(airportCode, country) {
     window.currentLanguageCode = languageCode;
     document.dispatchEvent(new CustomEvent('language-change', { detail: { languageCode } }));
     
-    // Per-airport overrides for specific labels
-    const gateLabelOverrides = { 'ESSA': 'Gates' };
+    // Per-airport gate label overrides from registry
+    const _regEntry = (window._airportsRegistry || {})[airportCode];
+    const gateLabelOverrides = _regEntry && _regEntry.gate_label_override
+        ? { [airportCode]: _regEntry.gate_label_override }
+        : {};
 
     if (translation.bilingual) {
         // Bilingual display: Local language with English subtitle

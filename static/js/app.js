@@ -18,16 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function isTitleCaseThemeActive() {
-        return document.body.classList.contains('theme-lszh') ||
-               document.body.classList.contains('theme-lsgg') ||
-               document.body.classList.contains('theme-egcc') ||
-               document.body.classList.contains('theme-egll') ||
-               document.body.classList.contains('theme-egss') ||
-               document.body.classList.contains('theme-egkk') ||
-               document.body.classList.contains('theme-eglc') ||
-               document.body.classList.contains('theme-essa') ||
-               document.body.classList.contains('theme-eham') ||
-               document.body.classList.contains('theme-kewr');
+        const reg = window._airportsRegistry;
+        if (!reg) return false;
+        const entry = reg[currentAirport];
+        if (!entry) return false;
+        return entry.title_case === true;
     }
 
     function toTitleCase(value) {
@@ -268,24 +263,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const airportMapping = {}; 
     const airportJapaneseMapping = {};
     const euMembers = new Set();
-    const defaultThemeMap = {
-        EDDF: { css: '/static/css/themes/eddf.css', class: 'theme-eddf' },
-        LSZH: { css: '/static/css/themes/lszh.css', class: 'theme-lszh' },
-        LSGG: { css: '/static/css/themes/lsgg.css', class: 'theme-lsgg' },
-        LFSB: { css: '/static/css/themes/lfsb.css', class: 'theme-lfsb' },
-        LFPG: { css: '/static/css/themes/lfpg.css', class: 'theme-lfpg' },
-        EGLL: { css: '/static/css/themes/egll.css', class: 'theme-egll' },
-        EGLC: { css: '/static/css/themes/eglc.css', class: 'theme-eglc' },
-        EGKK: { css: '/static/css/themes/egkk.css', class: 'theme-egkk' },
-        EGSS: { css: '/static/css/themes/egss.css', class: 'theme-egss' },
-        EGCC: { css: '/static/css/themes/egcc.css', class: 'theme-egcc' },
-        EHAM: { css: '/static/css/themes/eham.css', class: 'theme-eham' },
-        KEWR: { css: '/static/css/themes/kewr.css', class: 'theme-kewr' },
-        KJFK: { css: '/static/css/themes/kjfk.css', class: 'theme-kjfk' },
-        RJTT: { css: '/static/css/themes/rjtt.css', class: 'theme-rjtt' },
-        ESSA: { css: '/static/css/themes/essa.css', class: 'theme-essa' }
-    };
-    let themeMap = { ...defaultThemeMap };
+    let defaultThemeMap = {};
+    let themeMap = {};
+
+    async function loadAirportsRegistry() {
+        try {
+            const response = await fetch('/api/airports');
+            if (!response.ok) return;
+            const registry = await response.json();
+            for (const [icao, cfg] of Object.entries(registry)) {
+                if (cfg.theme_css) {
+                    defaultThemeMap[icao] = {
+                        css: cfg.theme_css,
+                        class: cfg.theme_class || ''
+                    };
+                }
+            }
+            themeMap = { ...defaultThemeMap };
+            window._airportsRegistry = registry;
+        } catch (e) {
+            console.warn('Airports registry load failed', e);
+        }
+    }
 
     async function loadThemeMap() {
         try {
@@ -319,15 +318,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('https://raw.githubusercontent.com/mwgg/Airports/master/airports.json');
             if (response.ok) {
                 const data = await response.json();
+                // Non-registry airport display name overrides
                 const manualRenames = {
-                    "EGLL": "London Heathrow", "EGKK": "London Gatwick", "EGSS": "London Stansted", "EGCC": "Manchester",
-                    "EGGW": "London Luton", "EGLC": "London City", "KJFK": "New York JFK",
-                    "KEWR": "Newark", "KLGA": "New York LaGuardia",
-                    "LFPO": "Paris Orly", "LFPG": "Paris CDG", "EDDF": "Frankfurt", "EDDM": "Munich",
+                    "EGGW": "London Luton", "KLGA": "New York LaGuardia",
+                    "LFPO": "Paris Orly", "EDDM": "Munich",
                     "OMDB": "Dubai", "VHHH": "Hong Kong", "WSSS": "Singapore",
-                    "KBOS": "Boston", "KEWR": "Newark", "LLBG": "Tel Aviv", "LSHD": "Zurich Heliport",
-                    "LIBG": "Taranto-Grottaglie", "ESSA": "Stockholm Arlanda"
+                    "KBOS": "Boston", "LLBG": "Tel Aviv", "LSHD": "Zurich Heliport",
+                    "LIBG": "Taranto-Grottaglie"
                 };
+                // Merge in registry-derived names (override the above for configured airports)
+                const _reg = window._airportsRegistry || {};
+                for (const [icao, cfg] of Object.entries(_reg)) {
+                    manualRenames[icao] = cfg.name
+                        .replace(/\b(Airport|International|Intl|Field|Airfield)\b/g, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                }
 
                 for (const [icao, details] of Object.entries(data)) {
                     let displayName;
@@ -413,11 +419,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update flags (works for both configured and dynamic airports)
         updateFlags(airportCode);
 
-        // Move flags to left group for EDDF to free up center space
+        // Move flags based on registry flags_position (default: center-left)
         const flagContainer = document.getElementById('flagContainer');
         const footerLeft = document.querySelector('.footer-group.left');
         const footerCenterLeft = document.querySelector('.footer-group.center-left');
-        if (airportCode === 'EDDF') {
+        const _regEntry = (window._airportsRegistry || {})[airportCode];
+        if (_regEntry && _regEntry.flags_position === 'left') {
             if (flagContainer && footerLeft && flagContainer.parentElement !== footerLeft) {
                 footerLeft.appendChild(flagContainer);
             }
@@ -480,22 +487,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return anyEU ? `${flags}${buildFlagImg('EU')}` : flags;
         };
         
-        // Manual overrides for multi-country airports
-        const manualFlags = {
-            'LSGG': ['ch', 'fr'],  // Geneva: Swiss + French
-            'LFSB': ['ch', 'fr']   // Basel: Swiss + French
-        };
-        
-        if (manualFlags[airportCode]) {
-            // Multi-country airport
-            flagContainer.innerHTML = renderMultiCountryWithEU(manualFlags[airportCode]);
+        // Check registry for flag overrides (multi-country airports etc.)
+        const _regEntry = (window._airportsRegistry || {})[airportCode];
+        if (_regEntry && Array.isArray(_regEntry.flags)) {
+            flagContainer.innerHTML = renderMultiCountryWithEU(_regEntry.flags);
         } else {
             // Single country - get from airport database
             const countryCode = airportMapping[airportCode]?.country_code;
             if (countryCode) {
                 flagContainer.innerHTML = renderCountryWithEU(countryCode);
             } else {
-                // No flag data available
                 flagContainer.innerHTML = '';
             }
         }
@@ -570,6 +571,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial theme and footer setup
     (async () => {
+        await loadAirportsRegistry();
         await loadThemeMap();
         await switchAirport(currentAirport, { source: 'init' });
 
