@@ -41,21 +41,9 @@
         <header class="fids-header">
     <div class="airport-selector">
         <select id="airportSelect">
-            <option value="LSZH" title="LSZH">Zurich Airport</option>
-            <option value="LSGG" title="LSGG">Geneva Airport</option>
-            <option value="LFSB" title="LFSB">Basel Airport</option>
-            <option value="EDDF" title="EDDF">Frankfurt Airport</option>
-            <option value="LFPG" title="LFPG">Paris Charles de Gaulle Airport</option>
-            <option value="EGLC" title="EGLC">London City Airport</option>
-            <option value="EGLL" title="EGLL">London Heathrow Airport</option>
-            <option value="EGKK" title="EGKK">London Gatwick Airport</option>
-            <option value="EGSS" title="EGSS">London Stansted Airport</option>
-            <option value="EGCC" title="EGCC">Manchester Airport</option>
-            <option value="EHAM" title="EHAM">Amsterdam Schiphol Airport</option>
-            <option value="KJFK" title="KJFK">New York JFK Airport</option>
-            <option value="KEWR" title="KEWR">Newark Liberty Airport</option>
-            <option value="RJTT" title="RJTT">Tokyo Haneda Airport</option>
-            <option value="ESSA" title="ESSA">Stockholm Arlanda Airport</option>
+            {% for icao, cfg in airports_registry.items() %}
+            <option value="{{ icao }}" title="{{ icao }}">{{ cfg.selector_label or cfg.name }}</option>
+            {% endfor %}
         </select>
         
         <button id="addAirportBtn" class="add-airport-btn" title="Add Airport">
@@ -377,6 +365,23 @@
         <span class="close" id="changelogModalClose">&times;</span>
         <h2>Changelog</h2>
         <div class="help-modal-body">
+
+            <section class="help-section">
+                <h3>v1.4.0 — 2026-03-17</h3>
+                <ul>
+                    <li>Airport registry centralised into <code>data/airports.json</code> — adding a new airport now requires a single file edit instead of changes across 7+ files</li>
+                    <li>Admin panel: new Airport Registry tab for editing all airport config (themes, flags, ceiling, title case, gate labels) without touching code</li>
+                    <li>Newark Liberty (KEWR) and Stockholm Arlanda (ESSA) added to the pre-configured airport list</li>
+                    <li>Check-in dispatcher refactored to convention-based method lookup — adding check-in logic for a new airport is now a single method, no dispatcher edit needed</li>
+                </ul>
+            </section>
+
+            <section class="help-section">
+                <h3>v1.3.9 — 2026-03-16</h3>
+                <ul>
+                    <li>Newark Liberty (KEWR): terminal badge on check-in column, FedEx stand names, green GO TO GATE status</li>
+                </ul>
+            </section>
 
             <section class="help-section">
                 <h3>v1.3.8 — 2026-03-15</h3>

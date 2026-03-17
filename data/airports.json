@@ -1,0 +1,169 @@
+{
+  "LSZH": {
+    "name": "Zurich Airport",
+    "selector_label": "Zurich Airport",
+    "ceiling": 6000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/lszh.css",
+    "theme_class": "theme-lszh",
+    "title_case": true,
+    "flags": null,
+    "footer_country": null
+  },
+  "LSGG": {
+    "name": "Geneva Airport",
+    "selector_label": "Geneva Airport",
+    "ceiling": 8000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/lsgg.css",
+    "theme_class": "theme-lsgg",
+    "title_case": true,
+    "flags": ["ch", "fr"],
+    "footer_country": "Switzerland"
+  },
+  "LFSB": {
+    "name": "EuroAirport Basel",
+    "selector_label": "Basel Airport",
+    "ceiling": 5000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/lfsb.css",
+    "theme_class": "theme-lfsb",
+    "title_case": false,
+    "flags": ["ch", "fr"],
+    "footer_country": "France"
+  },
+  "EDDF": {
+    "name": "Frankfurt Airport",
+    "selector_label": "Frankfurt Airport",
+    "ceiling": 5000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/eddf.css",
+    "theme_class": "theme-eddf",
+    "title_case": false,
+    "flags_position": "left",
+    "flags": null,
+    "footer_country": null
+  },
+  "LFPG": {
+    "name": "Paris CDG",
+    "selector_label": "Paris Charles de Gaulle Airport",
+    "ceiling": 7000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/lfpg.css",
+    "theme_class": "theme-lfpg",
+    "title_case": false,
+    "flags": null,
+    "footer_country": null
+  },
+  "EGLC": {
+    "name": "London City",
+    "selector_label": "London City Airport",
+    "ceiling": 5000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/eglc.css",
+    "theme_class": "theme-eglc",
+    "title_case": true,
+    "flags": null,
+    "footer_country": null
+  },
+  "EGLL": {
+    "name": "London Heathrow",
+    "selector_label": "London Heathrow Airport",
+    "ceiling": 7000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/egll.css",
+    "theme_class": "theme-egll",
+    "title_case": true,
+    "flags": null,
+    "footer_country": null
+  },
+  "EGKK": {
+    "name": "London Gatwick",
+    "selector_label": "London Gatwick Airport",
+    "ceiling": 7000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/egkk.css",
+    "theme_class": "theme-egkk",
+    "title_case": true,
+    "flags": null,
+    "footer_country": null
+  },
+  "EGSS": {
+    "name": "London Stansted",
+    "selector_label": "London Stansted Airport",
+    "ceiling": 7000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/egss.css",
+    "theme_class": "theme-egss",
+    "title_case": true,
+    "flags": null,
+    "footer_country": null
+  },
+  "EGCC": {
+    "name": "Manchester Airport",
+    "selector_label": "Manchester Airport",
+    "ceiling": 7000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/egcc.css",
+    "theme_class": "theme-egcc",
+    "title_case": true,
+    "flags": null,
+    "footer_country": null
+  },
+  "EHAM": {
+    "name": "Amsterdam Schiphol",
+    "selector_label": "Amsterdam Schiphol Airport",
+    "ceiling": 6000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/eham.css",
+    "theme_class": "theme-eham",
+    "title_case": true,
+    "flags": null,
+    "footer_country": null
+  },
+  "KJFK": {
+    "name": "New York JFK",
+    "selector_label": "New York JFK Airport",
+    "ceiling": 5000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/kjfk.css",
+    "theme_class": "theme-kjfk",
+    "title_case": false,
+    "flags": null,
+    "footer_country": null
+  },
+  "KEWR": {
+    "name": "New York Newark",
+    "selector_label": "Newark Liberty Airport",
+    "ceiling": 5000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/kewr.css",
+    "theme_class": "theme-kewr",
+    "title_case": true,
+    "flags": null,
+    "footer_country": null
+  },
+  "RJTT": {
+    "name": "Tokyo Haneda",
+    "selector_label": "Tokyo Haneda Airport",
+    "ceiling": 6000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/rjtt.css",
+    "theme_class": "theme-rjtt",
+    "title_case": false,
+    "flags": null,
+    "footer_country": null
+  },
+  "ESSA": {
+    "name": "Stockholm Arlanda",
+    "selector_label": "Stockholm Arlanda Airport",
+    "ceiling": 7000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/essa.css",
+    "theme_class": "theme-essa",
+    "title_case": true,
+    "gate_label_override": "Gates",
+    "flags": null,
+    "footer_country": null
+  }
+}

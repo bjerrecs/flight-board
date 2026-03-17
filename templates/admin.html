@@ -38,6 +38,7 @@
       <button class="tab-btn" data-tab="navdata">Nav Data</button>
       <button class="tab-btn" data-tab="atis-log">ATIS Log</button>
       <button class="tab-btn" data-tab="analytics">Analytics</button>
+      <button class="tab-btn" data-tab="registry">Airport Registry</button>
     </nav>
 
     <!-- STANDS PANEL -->
@@ -333,6 +334,50 @@
         </div>
 
       </div><!-- /analyticsContent -->
+    </section>
+
+    <!-- AIRPORT REGISTRY PANEL -->
+    <section class="panel tab-panel" id="tab-registry">
+      <p class="panel-desc">Central airport configuration. Each row drives themes, flags, title-case behaviour, and backend geofencing. Changes apply immediately after saving.</p>
+      <div class="toolbar">
+        <button id="addRegistryRowBtn" type="button">Add Airport</button>
+        <button id="saveRegistryBtn" type="button" class="btn-primary">Save Registry</button>
+      </div>
+      <div class="table-wrap">
+        <table id="registryTable">
+          <colgroup>
+            <col style="width:62px">
+            <col style="width:140px">
+            <col style="width:180px">
+            <col style="width:72px">
+            <col style="width:56px">
+            <col>
+            <col style="width:120px">
+            <col style="width:72px">
+            <col style="width:90px">
+            <col style="width:90px">
+            <col style="width:100px">
+            <col style="width:60px">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>ICAO</th>
+              <th>Name</th>
+              <th>Selector Label</th>
+              <th>Ceiling</th>
+              <th>Stands</th>
+              <th>Theme CSS</th>
+              <th>Theme Class</th>
+              <th>Title Case</th>
+              <th>Flags</th>
+              <th>Flag Pos</th>
+              <th>Gate Label</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="registryTableBody"></tbody>
+        </table>
+      </div>
     </section>
 
     <div id="statusBar" class="status">Ready.</div>
