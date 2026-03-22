@@ -46,6 +46,11 @@ body.theme-lsgg .col-status .flap-container {
     text-transform: none;
 }
 
+/* Subtle even row stripe */
+body.theme-lsgg .flight-table tbody tr:nth-child(even) {
+    background-color: #181818;
+}
+
 body.theme-lsgg .event-ticker {
     background-color: var(--geneva-blue);
     border-top: 1px solid rgba(255, 255, 255, 0.15);

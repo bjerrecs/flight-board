@@ -732,11 +732,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         cyclingCells.forEach(cell => {
             const flapContainer = cell.querySelector('.flap-container');
-            const normalStatus = cell.getAttribute('data-status-normal'); 
-            const delayText = cell.getAttribute('data-status-delay');     
+            const normalStatus = cell.getAttribute('data-status-normal');
+            const delayText = cell.getAttribute('data-status-delay');
             const hasDelay = cell.getAttribute('data-has-delay') === 'true';
             const isBoarding = cell.getAttribute('data-is-boarding') === 'true';
             const gate = cell.getAttribute('data-gate');
+
+            // LSGG boarding cells are handled by the LSGG 4-phase interval
+            if (isBoarding && !hasDelay && document.body.classList.contains('theme-lsgg')) return;
 
             let newText, newColorClass;
 
@@ -755,6 +758,59 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Only update if text actually changes
+            if (flapContainer.textContent !== newText) {
+                updateStatusWithFade(flapContainer, cell, newText, newColorClass);
+            }
+        });
+    }, 3000);
+
+    // --- LSGG: French/English status language pulsing ---
+    const LSGG_STATUS_FR = {
+        'Boarding':    'Embarquement',
+        'GO TO GATE':  'Aller à la porte',
+        'Check-in':    'Enregistrement',
+        'Taxiing':     'Roulage',
+        'Wait':        'Attente',
+        'Landing':     'Atterrissage',
+        'Landed':      'Atterri',
+        'At Gate':     'À la porte',
+        'Scheduled':   'Prévu',
+        'Pushback':    'Recul',
+        'Departing':   'Départ',
+        'En Route':    'En vol',
+        'Approaching': 'En approche',
+        'Delayed':     'Retardé',
+        'Cancelled':   'Annulé',
+        'CLOSED':      'FERMÉ',
+    };
+    // Phases: 0 = EN normal, 1 = EN boarding, 2 = FR normal, 3 = FR boarding
+    let lsggPhase = 0;
+    setInterval(() => {
+        if (!document.body.classList.contains('theme-lsgg')) return;
+        lsggPhase = (lsggPhase + 1) % 4;
+        const isFrench = lsggPhase >= 2;
+        const isBoardingPhase = lsggPhase % 2 === 1;
+
+        document.querySelectorAll('.col-status').forEach(cell => {
+            // Delayed cells still handled by the main delay engine
+            if (cell.getAttribute('data-has-delay') === 'true') return;
+            const flapContainer = cell.querySelector('.flap-container');
+            if (!flapContainer) return;
+            const normalStatus = cell.getAttribute('data-status-normal');
+            if (!normalStatus) return;
+            const isBoarding = cell.getAttribute('data-is-boarding') === 'true';
+
+            let newText, newColorClass;
+            if (isBoarding && isBoardingPhase) {
+                newText = isFrench ? 'Aller à la porte' : formatStatusDisplayText('GO TO GATE');
+                newColorClass = 'GO TO GATE';
+            } else {
+                newText = isFrench
+                    ? (LSGG_STATUS_FR[normalStatus] || normalStatus)
+                    : formatStatusDisplayText(normalStatus);
+                newColorClass = normalStatus;
+            }
+
             if (flapContainer.textContent !== newText) {
                 updateStatusWithFade(flapContainer, cell, newText, newColorClass);
             }
