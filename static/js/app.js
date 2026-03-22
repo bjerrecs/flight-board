@@ -777,7 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Scheduled':   'Prévu',
         'Pushback':    'Recul',
         'Departing':   'Départ',
-        'En Route':    'En vol',
+        'En Route':    'En route',
         'Approaching': 'En approche',
         'Delayed':     'Retardé',
         'Cancelled':   'Annulé',
