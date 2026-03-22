@@ -4,14 +4,15 @@
    ============================================= */
 
 body.theme-egkk {
-    --heathrow-yellow: #FDB813;
-    --heathrow-dark: #1a1a1a;
+    --gatwick-yellow: #FDB813;
+    --gatwick-yellow-light: #FFD875;
+    --gatwick-dark: #1a1a1a;
     --font-ui: 'Inter', sans-serif;
     --font-data: 'Inter', sans-serif;
 }
 
 body.theme-egkk .fids-header {
-    background-color: var(--heathrow-yellow);
+    background-color: var(--gatwick-yellow);
     border-bottom: 4px solid #000000;
 }
 
@@ -22,7 +23,7 @@ body.theme-egkk .clock-container {
 }
 
 body.theme-egkk .section-divider {
-    background-color: var(--heathrow-yellow);
+    background-color: var(--gatwick-yellow);
     color: #000000;
     padding: 12px 20px;
     border-bottom: 2px solid #000000;
@@ -40,18 +41,66 @@ body.theme-egkk .col-status .flap-container {
     text-transform: none !important;
 }
 
-/* Yellow destination/origin text */
+/* Alternating row colours */
+body.theme-egkk .flight-table tbody tr:nth-child(odd) {
+    background-color: #111111;
+}
+
+body.theme-egkk .flight-table tbody tr:nth-child(even) {
+    background-color: #2a2a2a;
+}
+
+/* Gate number — lighter yellow, bold */
+body.theme-egkk .col-gate {
+    color: var(--gatwick-yellow-light);
+    font-weight: 700;
+}
+
+/* Status column — text colour only, no background fill */
+body.theme-egkk .col-status .flap-container {
+    background-color: transparent !important;
+}
+
+body.theme-egkk .col-status[data-status="Boarding"] .flap-container,
+body.theme-egkk .col-status[data-status*="GO TO"] .flap-container {
+    color: #00e040 !important;
+}
+
+body.theme-egkk .col-status[data-status="Check-in"] .flap-container,
+body.theme-egkk .col-status[data-status="Taxiing"] .flap-container,
+body.theme-egkk .col-status[data-status="Wait"] .flap-container,
+body.theme-egkk .col-status[data-status="Landing"] .flap-container,
+body.theme-egkk .col-status[data-status="Landed"] .flap-container,
+body.theme-egkk .col-status[data-status="At Gate"] .flap-container,
+body.theme-egkk .col-status[data-status="Scheduled"] .flap-container {
+    color: #FDB813 !important;
+}
+
+body.theme-egkk .col-status[data-status="Pushback"] .flap-container,
+body.theme-egkk .col-status[data-status="Departing"] .flap-container,
+body.theme-egkk .col-status[data-status="En Route"] .flap-container,
+body.theme-egkk .col-status[data-status="Approaching"] .flap-container {
+    color: #4d9fff !important;
+}
+
+body.theme-egkk .col-status[data-status*="Delayed"] .flap-container,
+body.theme-egkk .col-status[data-status="Cancelled"] .flap-container,
+body.theme-egkk .col-status[data-status="CLOSED"] .flap-container {
+    color: #ff4444 !important;
+}
+
+/* Destination/origin text — lighter yellow */
 body.theme-egkk .flap-dest {
-    color: var(--heathrow-yellow) !important;
+    color: var(--gatwick-yellow-light) !important;
 }
 
 body.theme-egkk .fids-footer {
     background-color: #000000;
-    border-top: 4px solid var(--heathrow-yellow);
+    border-top: 4px solid var(--gatwick-yellow);
 }
 
 body.theme-egkk .footer-group .main-label {
-    color: var(--heathrow-yellow);
+    color: var(--gatwick-yellow);
     font-weight: 700;
 }
 
@@ -60,12 +109,12 @@ body.theme-egkk .footer-group .main-label .en {
 }
 
 body.theme-egkk .gate-icon-box {
-    border-color: var(--heathrow-yellow);
-    color: var(--heathrow-yellow);
+    border-color: var(--gatwick-yellow);
+    color: var(--gatwick-yellow);
 }
 
 body.theme-egkk .huge-arrow {
-    color: var(--heathrow-yellow);
+    color: var(--gatwick-yellow);
 }
 
 body.theme-egkk .security-time .label {
@@ -73,7 +122,7 @@ body.theme-egkk .security-time .label {
 }
 
 body.theme-egkk .security-time .time {
-    color: var(--heathrow-yellow);
+    color: var(--gatwick-yellow);
 }
 
 /* Widget Colors: Force BLACK */
