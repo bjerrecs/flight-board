@@ -1091,9 +1091,11 @@
                     m._blendFromLat = cur.lat;
                     m._blendFromLon = cur.lng;
                     m._blendStart   = Date.now();
+                } else if (!isAirborne(f)) {
+                    // Ground aircraft: interpolator skips them, so snap directly to new API position.
+                    m.setLatLng(pos);
                 }
-                // Do NOT call setLatLng here — the interpolator will handle it.
-                // Only update the icon, flight data, and timestamp.
+                // Airborne: do NOT call setLatLng here — the interpolator handles it.
                 markers[f.callsign].setIcon(makeIcon(f, off.dx, off.dy, isTracked));
                 markers[f.callsign]._flightData = f;
                 markers[f.callsign]._lastUpdate = Date.now();
@@ -2125,6 +2127,8 @@
                     nearbyMarkers[f.callsign]._blendFromLat = cur.lat;
                     nearbyMarkers[f.callsign]._blendFromLon = cur.lng;
                     nearbyMarkers[f.callsign]._blendStart   = Date.now();
+                } else if (!isAirborne(f)) {
+                    nearbyMarkers[f.callsign].setLatLng(pos);
                 }
                 nearbyMarkers[f.callsign]._flightData = f;
                 nearbyMarkers[f.callsign]._lastUpdate = Date.now();
