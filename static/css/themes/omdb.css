@@ -1,0 +1,146 @@
+/* =============================================
+   DUBAI AL MAKTOUM (OMDB) THEME
+   Blue header/footer, bright cyan thead,
+   deep-blue alternating rows, white text
+   ============================================= */
+
+body.theme-omdb {
+    --omdb-header:       #0675f9;   /* Header / footer / section divider */
+    --omdb-thead:        #01b2f9;   /* Column header row */
+    --omdb-row-odd:      #0312e8;   /* Odd rows */
+    --omdb-row-even:     #062158;   /* Even rows */
+    --omdb-white:        #ffffff;
+    --font-ui:           'Inter', sans-serif;
+    --font-data:         'Inter', sans-serif;
+}
+
+/* --- HEADER --- */
+body.theme-omdb .fids-header {
+    background-color: var(--omdb-header);
+    border-bottom: 2px solid var(--omdb-white);
+}
+
+body.theme-omdb .airport-selector select,
+body.theme-omdb .clock-container,
+body.theme-omdb .add-airport-btn {
+    color: var(--omdb-white) !important;
+    background: transparent;
+}
+
+body.theme-omdb .airport-selector select option {
+    background-color: var(--omdb-header);
+    color: var(--omdb-white);
+}
+
+body.theme-omdb .widget-icon,
+body.theme-omdb .widget-text {
+    color: var(--omdb-white) !important;
+}
+
+/* --- SECTION DIVIDER --- */
+body.theme-omdb .section-divider {
+    background-color: var(--omdb-header);
+    color: var(--omdb-white);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    text-transform: none !important;
+}
+
+/* --- TABLE BACKGROUND --- */
+body.theme-omdb .page-container,
+body.theme-omdb .table-scroll-area {
+    background-color: var(--omdb-row-odd);
+}
+
+body.theme-omdb .flight-table {
+    border-color: var(--omdb-row-even);
+}
+
+body.theme-omdb .split-panel {
+    border-color: var(--omdb-row-even);
+}
+
+/* --- COLUMN HEADERS --- */
+body.theme-omdb .flight-table thead tr {
+    background-color: var(--omdb-thead);
+}
+
+body.theme-omdb .flight-table th {
+    background-color: var(--omdb-thead);
+    color: var(--omdb-white);
+    border-bottom: 1px solid var(--omdb-thead);
+    text-transform: none !important;
+    font-size: 0.9rem;
+}
+
+/* --- ALTERNATING ROWS --- */
+body.theme-omdb .flight-table tbody tr:nth-child(odd) {
+    background-color: var(--omdb-row-odd);
+}
+
+body.theme-omdb .flight-table tbody tr:nth-child(even) {
+    background-color: var(--omdb-row-even);
+}
+
+body.theme-omdb .flight-table td {
+    border-bottom: 1px solid rgba(1, 178, 249, 0.15);
+    color: var(--omdb-white);
+}
+
+/* --- STATUS: text-colour only, no background fill --- */
+body.theme-omdb .col-status .flap-container {
+    background-color: transparent !important;
+    text-transform: none !important;
+    color: var(--omdb-white) !important;
+}
+
+/* Orange: Check-in open, gate closed */
+body.theme-omdb .col-status[data-status="Check-in"] .flap-container,
+body.theme-omdb .col-status[data-status="CLOSED"] .flap-container {
+    color: #ff9800 !important;
+}
+
+/* Red: Delayed, cancelled */
+body.theme-omdb .col-status[data-status*="Delayed"] .flap-container,
+body.theme-omdb .col-status[data-status="Cancelled"] .flap-container {
+    color: #ff4444 !important;
+}
+
+/* --- FOOTER --- */
+body.theme-omdb .fids-footer {
+    background-color: var(--omdb-header);
+    border-top: 2px solid var(--omdb-white);
+}
+
+body.theme-omdb .footer-group .main-label {
+    color: var(--omdb-white);
+    font-weight: 700;
+}
+
+body.theme-omdb .gate-icon-box {
+    border-color: var(--omdb-white);
+    color: var(--omdb-white);
+}
+
+body.theme-omdb .huge-arrow {
+    color: var(--omdb-white);
+}
+
+body.theme-omdb .security-time .label {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+body.theme-omdb .security-time .time {
+    color: var(--omdb-white);
+}
+
+/* --- FOOTER BUTTONS & DIVIDER --- */
+body.theme-omdb .footer-divider {
+    background: var(--omdb-white);
+}
+
+body.theme-omdb .support-footer-btn,
+body.theme-omdb .help-footer-btn,
+body.theme-omdb .footer-version-btn {
+    border-color: var(--omdb-white) !important;
+    color: var(--omdb-white) !important;
+}

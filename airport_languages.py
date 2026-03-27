@@ -184,6 +184,16 @@ class AirportLanguages:
             'gates': 'Gates',
             'security': 'Předpokládaná čekací doba<br>na bezpečnostní kontrole',
             'bilingual': True
+        },
+        'ar': {
+            'arrivals': 'الوصول',
+            'arrivals_sub': 'Arrivals',
+            'departures': 'المغادرة',
+            'departures_sub': 'Departures',
+            'gate': 'البوابة',
+            'gates': 'Gates',
+            'security': 'وقت الانتظار المتوقع<br>عند نقطة التفتيش',
+            'bilingual': True
         }
     }
     
