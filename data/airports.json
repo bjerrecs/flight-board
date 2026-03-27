@@ -51,7 +51,7 @@
     "has_stands": true,
     "theme_css": "/static/css/themes/lfpg.css",
     "theme_class": "theme-lfpg",
-    "title_case": false,
+    "title_case": true,
     "flags": null,
     "footer_country": null
   },
