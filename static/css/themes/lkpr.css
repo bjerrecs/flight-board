@@ -67,7 +67,6 @@ body.theme-lkpr .flight-table th {
     background-color: var(--lkpr-blue-light);
     color: var(--lkpr-black);
     border-bottom: 1px solid var(--lkpr-blue-light);
-    text-transform: none !important;
     font-size: 0.9rem;
 }
 
@@ -88,7 +87,6 @@ body.theme-lkpr .flight-table td {
 /* --- STATUS: text-colour only, no background fill --- */
 body.theme-lkpr .col-status .flap-container {
     background-color: transparent !important;
-    text-transform: none !important;
 }
 
 body.theme-lkpr .col-status[data-status="Boarding"] .flap-container,
