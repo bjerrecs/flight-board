@@ -176,5 +176,16 @@
     "title_case": true,
     "flags": null,
     "footer_country": "Czech Republic"
+  },
+  "OMDB": {
+    "name": "Dubai International",
+    "selector_label": "Dubai International Airport",
+    "ceiling": 5000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/omdb.css",
+    "theme_class": "theme-omdb",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "United Arab Emirates"
   }
 }
