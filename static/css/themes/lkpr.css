@@ -1,0 +1,148 @@
+/* =============================================
+   PRAGUE VÁCLAV HAVEL (LKPR) THEME
+   Black header/footer, light-blue column titles,
+   bright-blue even rows, black odd rows
+   ============================================= */
+
+body.theme-lkpr {
+    --lkpr-blue:         #0506F7;   /* FIDS row blue — even rows */
+    --lkpr-blue-light:   #6bbdff;   /* Column header text */
+    --lkpr-black:        #000000;
+    --lkpr-white:        #ffffff;
+    --font-ui:           'Inter', sans-serif;
+    --font-data:         'Inter', sans-serif;
+}
+
+/* --- HEADER --- */
+body.theme-lkpr .fids-header {
+    background-color: var(--lkpr-black);
+    border-bottom: 2px solid var(--lkpr-white);
+}
+
+body.theme-lkpr .airport-selector select,
+body.theme-lkpr .clock-container,
+body.theme-lkpr .add-airport-btn {
+    color: var(--lkpr-white) !important;
+    background: transparent;
+}
+
+body.theme-lkpr .airport-selector select option {
+    background-color: #111111;
+    color: var(--lkpr-white);
+}
+
+body.theme-lkpr .widget-icon,
+body.theme-lkpr .widget-text {
+    color: var(--lkpr-white) !important;
+}
+
+/* --- SECTION DIVIDER --- */
+body.theme-lkpr .section-divider {
+    background-color: var(--lkpr-black);
+    color: var(--lkpr-white);
+    border-bottom: 1px solid var(--lkpr-blue);
+    text-transform: none !important;
+}
+
+/* --- TABLE BACKGROUND --- */
+body.theme-lkpr .page-container,
+body.theme-lkpr .table-scroll-area {
+    background-color: var(--lkpr-black);
+}
+
+body.theme-lkpr .flight-table {
+    border-color: var(--lkpr-black);
+}
+
+body.theme-lkpr .split-panel {
+    border-color: var(--lkpr-black);
+}
+
+/* --- COLUMN HEADERS --- */
+body.theme-lkpr .flight-table thead tr {
+    background-color: var(--lkpr-blue-light);
+}
+
+body.theme-lkpr .flight-table th {
+    background-color: var(--lkpr-blue-light);
+    color: var(--lkpr-black);
+    border-bottom: 1px solid var(--lkpr-blue-light);
+    text-transform: none !important;
+    font-size: 0.9rem;
+}
+
+/* --- ALTERNATING ROWS --- */
+body.theme-lkpr .flight-table tbody tr:nth-child(odd) {
+    background-color: var(--lkpr-black);
+}
+
+body.theme-lkpr .flight-table tbody tr:nth-child(even) {
+    background-color: var(--lkpr-blue);
+}
+
+body.theme-lkpr .flight-table td {
+    border-bottom: 1px solid rgba(5, 6, 247, 0.3);
+    color: var(--lkpr-white);
+}
+
+/* --- STATUS: text-colour only, no background fill --- */
+body.theme-lkpr .col-status .flap-container {
+    background-color: transparent !important;
+    text-transform: none !important;
+}
+
+body.theme-lkpr .col-status[data-status="Boarding"] .flap-container,
+body.theme-lkpr .col-status[data-status*="GO TO"] .flap-container {
+    color: #00e040 !important;
+}
+
+body.theme-lkpr .col-status[data-status="Check-in"] .flap-container,
+body.theme-lkpr .col-status[data-status="Taxiing"] .flap-container,
+body.theme-lkpr .col-status[data-status="Wait"] .flap-container,
+body.theme-lkpr .col-status[data-status="Landing"] .flap-container,
+body.theme-lkpr .col-status[data-status="Landed"] .flap-container,
+body.theme-lkpr .col-status[data-status="At Gate"] .flap-container,
+body.theme-lkpr .col-status[data-status="Scheduled"] .flap-container {
+    color: #cccccc !important;
+}
+
+body.theme-lkpr .col-status[data-status="Pushback"] .flap-container,
+body.theme-lkpr .col-status[data-status="Departing"] .flap-container,
+body.theme-lkpr .col-status[data-status="En Route"] .flap-container,
+body.theme-lkpr .col-status[data-status="Approaching"] .flap-container {
+    color: #7ec8ff !important;
+}
+
+body.theme-lkpr .col-status[data-status*="Delayed"] .flap-container,
+body.theme-lkpr .col-status[data-status="Cancelled"] .flap-container,
+body.theme-lkpr .col-status[data-status="CLOSED"] .flap-container {
+    color: #ff4444 !important;
+}
+
+/* --- FOOTER --- */
+body.theme-lkpr .fids-footer {
+    background-color: var(--lkpr-black);
+    border-top: 2px solid var(--lkpr-blue);
+}
+
+body.theme-lkpr .footer-group .main-label {
+    color: var(--lkpr-white);
+    font-weight: 700;
+}
+
+body.theme-lkpr .gate-icon-box {
+    border-color: var(--lkpr-white);
+    color: var(--lkpr-white);
+}
+
+body.theme-lkpr .huge-arrow {
+    color: var(--lkpr-white);
+}
+
+body.theme-lkpr .security-time .label {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+body.theme-lkpr .security-time .time {
+    color: var(--lkpr-white);
+}

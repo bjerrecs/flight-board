@@ -165,5 +165,16 @@
     "gate_label_override": "Gates",
     "flags": null,
     "footer_country": null
+  },
+  "LKPR": {
+    "name": "Prague Airport",
+    "selector_label": "Prague Václav Havel Airport",
+    "ceiling": 5000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/lkpr.css",
+    "theme_class": "theme-lkpr",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "Czech Republic"
   }
 }
