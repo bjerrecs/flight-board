@@ -174,6 +174,16 @@ class AirportLanguages:
             'gates': 'Gates',
             'security': '安检预计<br>等待时间',
             'bilingual': True
+        },
+        'cs': {
+            'arrivals': 'Přílety',
+            'arrivals_sub': 'Arrivals',
+            'departures': 'Odlety',
+            'departures_sub': 'Departures',
+            'gate': 'Gate',
+            'gates': 'Gates',
+            'security': 'Předpokládaná čekací doba<br>na bezpečnostní kontrole',
+            'bilingual': True
         }
     }
     
