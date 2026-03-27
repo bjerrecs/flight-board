@@ -54,7 +54,7 @@ body.theme-lfpg .table-scroll-area {
 body.theme-lfpg .flight-table th {
     background: var(--adp-navy-header);
     color: var(--adp-sky-blue); /* Notice these are blue in the photo */
-    text-transform: capitalize;
+    text-transform: none !important;
     font-weight: 400;
     border-bottom: 1px solid #1a2a44;
 }
@@ -93,7 +93,7 @@ body.theme-lfpg .col-checkin {
 /* Status Column */
 body.theme-lfpg .col-status .flap-container {
     color: var(--adp-white) !important;
-    text-transform: none;
+    text-transform: none !important;
     font-size: 0.9em;
 }
 
