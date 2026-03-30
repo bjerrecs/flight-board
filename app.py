@@ -31,6 +31,10 @@ except ImportError:
 
 _ga_cache = {'data': None, 'fetched_at': 0}
 GA_CACHE_TTL = 3600
+
+OPENAIP_API_KEY = os.environ.get('OPENAIP_API_KEY', '')
+_openaip_cache = {}
+_OPENAIP_CACHE_TTL = 3600  # airspace/navaid data changes infrequently
 GA_CREDENTIALS_PATH = os.path.join(os.path.dirname(__file__), 'data', 'ga_credentials.json')
 GA4_PROPERTY_ID = os.environ.get('GA4_PROPERTY_ID', 'properties/REPLACE_WITH_YOUR_ID')
 import zipfile
@@ -98,7 +102,7 @@ def _haversine_km(lat1, lon1, lat2, lon2):
     a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
     return R * 2 * math.asin(math.sqrt(a))
 
-APP_VERSION = '1.4.2'
+APP_VERSION = '1.4.3'
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -799,6 +803,7 @@ def map_display(airport):
         asset_version=int(time.time()),
         app_version=APP_VERSION,
         owm_api_key=os.environ.get('OWM_API_KEY', ''),
+        openaip_available=bool(OPENAIP_API_KEY),
     ))
     resp.headers['Cache-Control'] = 'no-store'
     return resp
@@ -920,6 +925,59 @@ def api_route(callsign):
         arr_runways=arr_runways,
     )
     return jsonify({'callsign': callsign, 'waypoints': waypoints})
+
+
+@app.route('/api/openaip/<string:dataset>')
+def api_openaip_proxy(dataset):
+    """Proxy for OpenAIP API — keeps the API key server-side and caches responses."""
+    if dataset not in ('airspaces',):
+        return jsonify({'error': 'unknown dataset'}), 404
+    if not OPENAIP_API_KEY:
+        return jsonify({'items': [], 'totalCount': 0}), 200
+
+    bbox = request.args.get('bbox', '')
+    parts = bbox.split(',')
+    if len(parts) != 4:
+        return jsonify({'error': 'bbox must be west,south,east,north'}), 400
+    try:
+        [float(p) for p in parts]
+    except ValueError:
+        return jsonify({'error': 'bbox values must be numeric'}), 400
+
+    cache_key = dataset + ':' + bbox
+    now = time.time()
+    cached = _openaip_cache.get(cache_key)
+    if cached and now - cached[1] < _OPENAIP_CACHE_TTL:
+        return jsonify(cached[0])
+
+    try:
+        resp = requests.get(
+            'https://api.core.openaip.net/api/' + dataset,
+            params={'bbox': bbox, 'limit': 1000},
+            headers={'x-openaip-api-key': OPENAIP_API_KEY, 'Accept': 'application/json'},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        if dataset == 'airspaces':
+            # Drop FIR/UIR (8/9), ADIZ (10), airways (13), MTR (14), and
+            # generic class E/F/G blanket airspace (types 0, 15-25) — keep
+            # only the operationally relevant types: CTR, TMA, TRA, TSA,
+            # Restricted, Danger, Prohibited, ATZ, MATZ.
+            _KEEP_TYPES = {1, 2, 3, 4, 5, 6, 7, 11, 12}
+            items = [i for i in data.get('items', []) if i.get('type') in _KEEP_TYPES]
+            data = {'items': items, 'totalCount': len(items)}
+        _openaip_cache[cache_key] = (data, now)
+        return jsonify(data)
+    except requests.exceptions.Timeout:
+        app.logger.warning('OpenAIP %s timeout', dataset)
+        return jsonify({'items': [], 'totalCount': 0, 'error': 'upstream timeout'}), 504
+    except requests.exceptions.HTTPError as e:
+        app.logger.warning('OpenAIP %s HTTP error: %s', dataset, e)
+        return jsonify({'items': [], 'totalCount': 0, 'error': str(e)}), 502
+    except Exception as e:
+        app.logger.error('OpenAIP %s error: %s', dataset, e)
+        return jsonify({'items': [], 'totalCount': 0, 'error': 'internal error'}), 500
 
 
 @app.route('/gate/<airport>/<callsign>')

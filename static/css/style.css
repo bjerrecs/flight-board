@@ -2944,3 +2944,18 @@ body.theme-egll .simfixr-map-icon {
     image-rendering: auto;
     filter: blur(1px);
 }
+
+/* OpenAIP overlays */
+.map-airspace-tooltip {
+    background: rgba(15, 15, 20, 0.88);
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #ddd;
+    font-family: var(--font-data);
+    font-size: 0.72rem;
+    line-height: 1.5;
+    padding: 5px 8px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.map-airspace-tooltip::before { display: none; }
