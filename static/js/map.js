@@ -1711,6 +1711,112 @@
         boundariesToggleBtn.addEventListener('click', toggleBoundaries);
     }
 
+    /* ── OpenAIP helpers ─────────────────────────────────── */
+    var AIRSPACE_TYPE_NAMES = {
+        0: 'Other', 1: 'Restricted', 2: 'Danger', 3: 'Prohibited',
+        4: 'CTR', 5: 'TMA', 6: 'TRA', 7: 'TSA', 8: 'FIR', 9: 'UIR',
+        10: 'ADIZ', 11: 'ATZ', 12: 'MATZ', 13: 'Airway', 14: 'MTR',
+        15: 'Alert', 16: 'Warning', 19: 'Gliding Sector',
+    };
+    var ICAO_CLASS_NAMES = { 0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G' };
+
+    function formatAlt(limit) {
+        if (!limit) return '?';
+        if (limit.unit === 6) return 'FL' + limit.value;   // flight level
+        var val = limit.value;
+        var ref = limit.referenceDatum === 2 ? ' AGL' : '';
+        if (val === 0) return 'SFC';
+        return val + 'ft' + ref;
+    }
+
+    function computeBbox(lat, lon, deg) {
+        return (lon - deg).toFixed(4) + ',' + (lat - deg).toFixed(4) + ',' +
+               (lon + deg).toFixed(4) + ',' + (lat + deg).toFixed(4);
+    }
+
+    /* ── OpenAIP Airspaces ────────────────────────────────── */
+    var AIRSPACE_STYLES = {
+        type_1:  { color: '#ef5350', fillColor: '#ef5350', fillOpacity: 0.08, weight: 1.5 },  // Restricted
+        type_2:  { color: '#ffa726', fillColor: '#ffa726', fillOpacity: 0.07, weight: 1.5 },  // Danger
+        type_3:  { color: '#e53935', fillColor: '#e53935', fillOpacity: 0.14, weight: 2 },    // Prohibited
+        type_4:  { color: '#4fc3f7', fillColor: '#4fc3f7', fillOpacity: 0.06, weight: 1.5 },  // CTR
+        type_5:  { color: '#81c784', fillColor: '#81c784', fillOpacity: 0.05, weight: 1.2 },  // TMA
+        type_6:  { color: '#ce93d8', fillColor: '#ce93d8', fillOpacity: 0.05, weight: 1 },    // TRA
+        type_7:  { color: '#ce93d8', fillColor: '#ce93d8', fillOpacity: 0.05, weight: 1 },    // TSA
+        type_8:  { color: '#90a4ae', fillColor: '#90a4ae', fillOpacity: 0.02, weight: 1, dashArray: '6 4' }, // FIR
+        type_11: { color: '#4fc3f7', fillColor: '#4fc3f7', fillOpacity: 0.04, weight: 1, dashArray: '4 3' }, // ATZ
+        type_12: { color: '#80cbc4', fillColor: '#80cbc4', fillOpacity: 0.04, weight: 1 },    // MATZ
+        type_19: { color: '#fff176', fillColor: '#fff176', fillOpacity: 0.05, weight: 1, dashArray: '4 4' }, // Gliding Sector
+        default: { color: '#90a4ae', fillColor: '#90a4ae', fillOpacity: 0.03, weight: 1 },
+    };
+
+    var airspacesLayer = null;
+    var airspacesLoaded = false;
+    var showAirspaces = localStorage.getItem('flightboard.show_airspaces') === 'true';
+
+    function fetchAirspaces() {
+        if (!window.OPENAIP_AVAILABLE) return;
+        var bbox = computeBbox(APT_LAT, APT_LON, 2.5);
+        fetch('/api/openaip/airspaces?bbox=' + bbox)
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (airspacesLayer) { map.removeLayer(airspacesLayer); airspacesLayer = null; }
+                var items = data.items || [];
+                var layers = [];
+                items.forEach(function (item) {
+                    var geom = item.geometry;
+                    if (!geom || geom.type !== 'Polygon') return;
+                    var coords = geom.coordinates[0].map(function (c) { return [c[1], c[0]]; });
+                    var style = AIRSPACE_STYLES['type_' + item.type] || AIRSPACE_STYLES.default;
+                    var typeName = AIRSPACE_TYPE_NAMES[item.type] || 'Airspace';
+                    var cls = ICAO_CLASS_NAMES[item.icaoClass];
+                    var clsStr = cls ? ' · Class ' + cls : '';
+                    var low = formatAlt(item.lowerLimit);
+                    var high = formatAlt(item.upperLimit);
+                    var tooltipText = '<strong>' + (item.name || typeName) + '</strong><br>' +
+                                      typeName + clsStr + '<br>' +
+                                      low + ' – ' + high;
+                    var poly = L.polygon(coords, Object.assign({}, style, { interactive: true }));
+                    poly.bindTooltip(tooltipText, { sticky: true, className: 'map-airspace-tooltip' });
+                    layers.push(poly);
+                });
+                airspacesLayer = L.layerGroup(layers);
+                airspacesLoaded = true;
+                if (showAirspaces) airspacesLayer.addTo(map);
+                console.log('[OpenAIP] airspaces loaded:', items.length);
+            })
+            .catch(function (e) { console.warn('[OpenAIP] airspaces error:', e); });
+    }
+
+    function toggleAirspaces() {
+        showAirspaces = !showAirspaces;
+        localStorage.setItem('flightboard.show_airspaces', showAirspaces);
+        var btn = document.getElementById('airspacesToggleBtn');
+        if (btn) {
+            btn.classList.toggle('legend-toggle--off', !showAirspaces);
+            var ind = btn.querySelector('.legend-toggle-indicator');
+            if (ind) ind.textContent = showAirspaces ? 'ON' : 'OFF';
+        }
+        if (showAirspaces) {
+            if (!airspacesLoaded) {
+                fetchAirspaces();
+            } else if (airspacesLayer && !map.hasLayer(airspacesLayer)) {
+                airspacesLayer.addTo(map);
+            }
+        } else {
+            if (airspacesLayer && map.hasLayer(airspacesLayer)) map.removeLayer(airspacesLayer);
+        }
+    }
+
+    var airspacesToggleBtn = document.getElementById('airspacesToggleBtn');
+    if (airspacesToggleBtn) {
+        airspacesToggleBtn.classList.toggle('legend-toggle--off', !showAirspaces);
+        var asInd = airspacesToggleBtn.querySelector('.legend-toggle-indicator');
+        if (asInd) asInd.textContent = showAirspaces ? 'ON' : 'OFF';
+        airspacesToggleBtn.addEventListener('click', toggleAirspaces);
+    }
+    if (showAirspaces) fetchAirspaces();
+
     /* ── Fullscreen ───────────────────────────────────────── */
     var fsBtn = document.getElementById('mapFullscreenBtn');
     if (fsBtn) {

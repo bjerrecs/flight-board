@@ -19,7 +19,8 @@
         window.MAP_AIRPORT_LAT = {{ airport_lat }};
         window.MAP_AIRPORT_LON = {{ airport_lon }};
         window.ASSET_VERSION   = "{{ asset_version }}";
-        window.OWM_API_KEY      = "{{ owm_api_key }}";
+        window.OWM_API_KEY        = "{{ owm_api_key }}";
+        window.OPENAIP_AVAILABLE  = {{ 'true' if openaip_available else 'false' }};
     </script>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -128,6 +129,11 @@
             <button id="boundariesToggleBtn" class="map-legend-toggle" title="Toggle ATC sector boundaries">
                 ATC Sectors <span class="legend-toggle-indicator">ON</span>
             </button>
+
+            <button id="airspacesToggleBtn" class="map-legend-toggle" title="Toggle airspace overlays">
+                Airspaces <span class="legend-toggle-indicator">OFF</span>
+            </button>
+
         </div>
 
         <!-- ATC panel (bottom-left) -->
