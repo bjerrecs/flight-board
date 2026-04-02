@@ -1509,8 +1509,6 @@ def handle_join(data):
     join_room(airport)
     client_airports[request.sid] = airport
     _increment_airport(airport)
-    client_ip = _get_client_ip()
-    print(f"[SOCKET-JOIN] {client_ip} joined {airport} (sid={request.sid})")
     if not _is_tracking_excluded_ip() and data.get('explicit', True):
         _record_airport_join(airport)
     print(f"Client {request.sid} joined {airport}")
