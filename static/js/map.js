@@ -2306,7 +2306,7 @@
     }
 
     /* ── Socket.IO ────────────────────────────────────────── */
-    var socket = io({ transports: ['websocket', 'polling'] });
+    var socket = io({ transports: ['websocket', 'polling'], auth: { token: window._socketToken || '' } });
 
     function handleUpdate(data) {
         var tc = localStorage.getItem('flightboard.tracked_callsign');

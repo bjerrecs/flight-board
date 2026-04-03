@@ -720,8 +720,10 @@ update_flights()
 
 @app.route('/')
 def index():
+    if 'socket_token' not in session:
+        session['socket_token'] = secrets.token_hex(32)
     registry = _load_airports_registry()
-    resp = make_response(render_template('index.html', asset_version=int(time.time()), app_version=APP_VERSION, bmc_url=app.config.get('BUY_ME_A_COFFEE_URL', ''), airports_registry=registry))
+    resp = make_response(render_template('index.html', asset_version=int(time.time()), app_version=APP_VERSION, bmc_url=app.config.get('BUY_ME_A_COFFEE_URL', ''), airports_registry=registry, socket_token=session['socket_token']))
     resp.headers['Cache-Control'] = 'no-store'
     return resp
 
@@ -788,6 +790,8 @@ def admin_logout():
 
 @app.route('/map/<airport>')
 def map_display(airport):
+    if 'socket_token' not in session:
+        session['socket_token'] = secrets.token_hex(32)
     normalized = _normalize_icao(airport)
     if not normalized:
         return redirect('/')
@@ -804,6 +808,7 @@ def map_display(airport):
         app_version=APP_VERSION,
         owm_api_key=os.environ.get('OWM_API_KEY', ''),
         openaip_available=bool(OPENAIP_API_KEY),
+        socket_token=session['socket_token'],
     ))
     resp.headers['Cache-Control'] = 'no-store'
     return resp
@@ -1496,6 +1501,14 @@ def get_events():
         })
 
     return jsonify({'events': relevant})
+
+@socketio.on('connect')
+def handle_connect(auth):
+    token = (auth or {}).get('token', '')
+    expected = session.get('socket_token', '')
+    if not token or not expected or not hmac.compare_digest(token, expected):
+        return False
+
 
 @socketio.on('join_airport')
 def handle_join(data):
