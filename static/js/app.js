@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         trackingChipStop: document.getElementById('trackingChipStop')
     };
 
-    const socket = io();
+    const socket = io({ auth: { token: window._socketToken || '' } });
     let flightTracker = null;
     let lastTouchTrackToggleAt = 0;
 
