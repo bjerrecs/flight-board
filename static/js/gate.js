@@ -275,7 +275,7 @@
     updateClock();
 
     // Socket.IO
-    var socket = io();
+    var socket = io({ auth: { token: window._socketToken || '' } });
     var receivedFirst = false;
 
     socket.on('connect', function () {

@@ -987,6 +987,8 @@ def api_openaip_proxy(dataset):
 
 @app.route('/gate/<airport>/<callsign>')
 def gate_display(airport, callsign):
+    if 'socket_token' not in session:
+        session['socket_token'] = secrets.token_hex(32)
     normalized = _normalize_icao(airport)
     callsign = re.sub(r'[^A-Za-z0-9]', '', str(callsign or ''))[:10].upper()
     if not normalized or not callsign:
@@ -996,6 +998,7 @@ def gate_display(airport, callsign):
         airport=normalized,
         callsign=callsign,
         asset_version=int(time.time()),
+        socket_token=session['socket_token'],
     ))
     resp.headers['Cache-Control'] = 'no-store'
     return resp
