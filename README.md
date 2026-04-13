@@ -14,7 +14,7 @@ If the flight board adds a little extra joy to your sim experience, a coffee hel
 ### Core Functionality
 * **Universal Airport Support:** Instantly load *any* airport on the VATSIM network by searching for its ICAO code in the UI.
 * **Direct Link Loading:** Open the board directly to an airport using `?icao=XXXX` (or `?airport=XXXX`) in the URL.
-* **Pre-Configured Hubs:** One-click switching between major hubs: LSZH, LSGG, LFSB, EGLC, EGLL, EGKK, EGSS, EGCC, EHAM, EDDF, LFPG, KJFK, KEWR, RJTT, and ESSA.
+* **Pre-Configured Hubs:** One-click switching between major hubs across the UK, Scandinavia, Western Europe, North America, the Middle East, and Asia Pacific — grouped in a collapsible dropdown for easy navigation.
 * **Flight Info Modal:** Click any flight row to open a card showing airline logo, callsign, aircraft type, status, gate, time, and a live SVG route arc from origin to destination. A **Track on Live Map** button starts tracking and navigates directly to the radar map.
 * **Real-Time Data:** Automatically fetches and refreshes pilot and flight plan data from the VATSIM Public Data API (v3) every 30 seconds.
 * **Live WebSockets:** Uses Socket.IO to push updates immediately to the client without requiring a page refresh.
@@ -71,6 +71,7 @@ If the flight board adds a little extra joy to your sim experience, a coffee hel
     * **KEWR (Newark):** Yellow and Black with terminal badges.
     * **RJTT (Tokyo Haneda):** Black header with Green accent lines.
     * **ESSA (Stockholm Arlanda):** Arlanda Blue with bilingual Swedish/English footer.
+    * **EKCH (Copenhagen):** and 15 further Scandinavian airports (EKBI, EKYT, EKAH, ENGM, ENBR, ENVA, ENZV, ENTO, ESGG, ESSB, ESPA, ESKN, ESOW, ESSV, ESMS) — all with VATSIM Scandinavia verified stand data.
 * **Hybrid Display Style:**
     * **Flight Data:** Rendered as clean, high-visibility text.
     * **Status Column:** Rendered as solid, edge-to-edge colored blocks for instant readability.
@@ -108,7 +109,8 @@ If the flight board adds a little extra joy to your sim experience, a coffee hel
 * **Data Sources:**
     * VATSIM Data API v3
     * VATSIM Events API (Event ticker)
-    * UKCP API (Stand assignments)
+    * UKCP API (Stand assignments for UK airports)
+    * VATSIM Scandinavia Ground Radar Plugin Data (Stand assignments for Scandinavian airports — used with permission under a non-commercial attribution licence)
     * OpenStreetMap Overpass API (Dynamic stand fallback for unconfigured airports)
     * OpenWeatherMap API (Cloud cover map overlay)
     * GitHub Airline Codes Database (Logo mapping)
@@ -116,23 +118,64 @@ If the flight board adds a little extra joy to your sim experience, a coffee hel
 
 ## Current Configured Airports
 
-| ICAO | Name | Terminals | Stands | Theme |
-|------|------|-----------|--------|-------|
-| LSZH | Zurich Airport | Multiple piers | 153 | White/Black/Yellow |
-| LSGG | Geneva Airport | Main + French | 31 | Geneva Blue |
-| LFSB | EuroAirport Basel | French/Swiss | 68 | EuroAirport Blue |
-| EGLC | London City Airport | Single terminal | 20 | City Blue, White and Grey |
-| EGLL | London Heathrow | T2, T3, T4, T5 | 250 | Heathrow Yellow |
-| EGKK | London Gatwick | North/South | 184 | Gatwick Yellow |
-| EGSS | London Stansted | Main terminal | 144 | Stansted Yellow |
-| EGCC | Manchester Airport | T1, T2, T3 | 117 | Manchester Yellow and Black |
-| EHAM | Amsterdam Schiphol | D, E, F piers | 276 | Schiphol Grey |
-| EDDF | Frankfurt Airport | T1 (A/B/C/Z), T2 (D/E) | 170 | Solari Split-Flap Dark |
-| LFPG | Paris CDG | T1, T2 (A–F), T3 | 508 | ADP Midnight Blue |
-| KJFK | New York JFK | T1, T4, T5, T7, T8 | 205 | JFK Yellow and Black |
-| KEWR | Newark Liberty | A, B, C | 120 | Newark Yellow and Black |
-| RJTT | Tokyo Haneda | T1, T2, T3 | 238 | Haneda Dark |
-| ESSA | Stockholm Arlanda | T2, T3, T4, T5 | 130 | Arlanda Blue |
+### United Kingdom
+| ICAO | Name | Stands | Theme |
+|------|------|--------|-------|
+| EGLC | London City Airport | 20 | City Blue, White and Grey |
+| EGLL | London Heathrow | 250 | Heathrow Yellow |
+| EGKK | London Gatwick | 184 | Gatwick Yellow |
+| EGSS | London Stansted | 144 | Stansted Yellow |
+| EGCC | Manchester Airport | 117 | Manchester Yellow and Black |
+
+### Scandinavia †
+| ICAO | Name | Stands | Theme |
+|------|------|--------|-------|
+| EKCH | Copenhagen Airport | 156 | Default |
+| EKBI | Billund Airport | 18 | Default |
+| EKYT | Aalborg Airport | 14 | Default |
+| EKAH | Aarhus Airport | 12 | Default |
+| ENGM | Oslo Gardermoen | 83 | Default |
+| ENBR | Bergen Airport | 36 | Default |
+| ENVA | Trondheim Airport | 28 | Default |
+| ENZV | Stavanger Airport | 38 | Default |
+| ENTO | Sandefjord Airport | 16 | Default |
+| ESSA | Stockholm Arlanda | 138 | Arlanda Blue |
+| ESGG | Gothenburg Airport | 52 | Default |
+| ESSB | Stockholm Bromma | 22 | Default |
+| ESPA | Luleå Airport | 17 | Default |
+| ESKN | Stockholm Skavsta | 14 | Default |
+| ESOW | Stockholm Västerås | 11 | Default |
+| ESSV | Visby Airport | 10 | Default |
+| ESMS | Malmö Airport | 27 | Default |
+
+† Stand data provided by [VATSIM Scandinavia](https://vatsim-scandinavia.org) under a non-commercial attribution licence. See [docs/scandinavia_integration.md](docs/scandinavia_integration.md).
+
+### Western Europe
+| ICAO | Name | Stands | Theme |
+|------|------|--------|-------|
+| LSZH | Zurich Airport | 153 | White/Black/Yellow |
+| LSGG | Geneva Airport | 31 | Geneva Blue |
+| LFSB | EuroAirport Basel | 68 | EuroAirport Blue |
+| EDDF | Frankfurt Airport | 170 | Solari Split-Flap Dark |
+| LFPG | Paris CDG | 508 | ADP Midnight Blue |
+| EHAM | Amsterdam Schiphol | 276 | Schiphol Grey |
+| LKPR | Prague Airport | — | Default |
+
+### North America
+| ICAO | Name | Stands | Theme |
+|------|------|--------|-------|
+| KJFK | New York JFK | 205 | JFK Yellow and Black |
+| KEWR | Newark Liberty | 120 | Newark Yellow and Black |
+
+### Middle East
+| ICAO | Name | Stands | Theme |
+|------|------|--------|-------|
+| OMDB | Dubai International | — | Default |
+
+### Asia Pacific
+| ICAO | Name | Stands | Theme |
+|------|------|--------|-------|
+| RJTT | Tokyo Haneda | 238 | Haneda Dark |
 
 *Note: Any other airport can be loaded via the "+" button in the UI.*
 
@@ -147,7 +190,9 @@ See [POLICY.md](POLICY.md) for branding, data usage terms, and disclaimers regar
 * **Data:** VATSIM Network & UK Controller Panel (UKCP)
 * **Logos:** Kiwi.com, Kayak, and airline-codes database
 * **Fonts:** Roboto Condensed, JetBrains Mono, and B612 via Google Fonts
-* **Stand Data:** Extracted from airport charts and Google Earth; dynamic stand data provided by [OpenStreetMap](https://www.openstreetmap.org/) contributors via the Overpass API
+* **Stand Data (UK airports):** [VATSIM UK Controller Panel](https://ukcp.vatsim.uk) — live stand assignments via API
+* **Stand Data (Scandinavian airports):** [VATSIM Scandinavia](https://vatsim-scandinavia.org) — Ground Radar Plugin stand coordinates used with permission under a non-commercial attribution licence. Special thanks to **Thor Høgås** for approving the integration. See [docs/scandinavia_integration.md](docs/scandinavia_integration.md) for full licence terms.
+* **Stand Data (other airports):** Extracted from airport charts and Google Earth; dynamic fallback provided by [OpenStreetMap](https://www.openstreetmap.org/) contributors via the Overpass API
 
 ## Roadmap
 

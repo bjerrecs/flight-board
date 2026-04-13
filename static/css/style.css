@@ -134,9 +134,146 @@ html, body {
 }
 
 .airport-selector select option {
-    font-size: 16px;  
-    font-weight: normal; 
+    font-size: 16px;
+    font-weight: normal;
     padding: 4px;
+}
+
+/* ── Custom grouped airport selector ──────────────────────────────── */
+.csd-wrapper {
+    position: relative;
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+.csd-trigger {
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-ui);
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: inherit;
+    outline: none;
+    padding: 0;
+    white-space: nowrap;
+    max-width: clamp(320px, 45vw, 720px);
+    overflow: hidden;
+}
+
+.csd-trigger .csd-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.csd-arrow {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    transition: transform 0.18s ease;
+    opacity: 0.75;
+}
+
+.csd-trigger[aria-expanded="true"] .csd-arrow {
+    transform: rotate(180deg);
+    opacity: 1;
+}
+
+.csd-panel {
+    position: fixed;
+    /* top/left set by JS after portal to <body> */
+    min-width: 270px;
+    max-height: 60vh;
+    overflow-y: auto;
+    background: #0e1118;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+    z-index: 9999;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.2) transparent;
+    font-family: 'Inter', sans-serif;
+}
+
+.csd-group-header {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.45);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 12px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: left;
+    transition: color 0.12s, background 0.12s;
+}
+
+.csd-group:first-child .csd-group-header {
+    border-top: none;
+}
+
+.csd-group-header:hover {
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.75);
+}
+
+.csd-group-header.open {
+    color: rgba(255,255,255,0.8);
+}
+
+.csd-group-arrow {
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+}
+
+.csd-group-header.open .csd-group-arrow {
+    transform: rotate(90deg);
+}
+
+.csd-group-options {
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.csd-option {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    display: block;
+    padding: 7px 14px 7px 22px;
+    font-size: 0.875rem;
+    font-weight: 400;
+    text-align: left;
+    white-space: nowrap;
+    transition: background 0.1s, color 0.1s;
+}
+
+.csd-option:hover {
+    background: rgba(255,255,255,0.09);
+    color: #fff;
+}
+
+.csd-option.csd-selected {
+    color: #fff;
+    font-weight: 600;
+}
+
+.csd-option.csd-selected::before {
+    content: "▸ ";
+    font-size: 0.7em;
 }
 
 .clock-container {
@@ -514,6 +651,9 @@ html, body {
 .footer-logos img.simfixr-logo {
     height: 56px;
 }
+#scandiAttributionLink img {
+    height: 42px;
+}
 
 .sim-disclaimer {
     position: absolute;
@@ -530,6 +670,7 @@ html, body {
 @media (min-height: 1500px), (orientation: portrait) {
     .split-top-row { flex-direction: column; }
     .airport-selector select { font-size: 2rem; }
+    .csd-trigger { font-size: 2rem; }
     :root { --font-size-cell: 1.4rem; --font-size-header: 1.1rem; --row-height: 50px; }
     .flight-table th:nth-child(1) { width: 15%; }
     .flight-table th:nth-child(2) { width: 28%; }
@@ -624,7 +765,10 @@ html, body {
         font-size: 1.8rem;
         max-width: 30vw;
     }
-    
+
+    .csd-trigger { font-size: 1.8rem; }
+    .csd-trigger { max-width: 30vw; }
+
     .airport-selector {
         gap: 8px;
     }
@@ -1209,6 +1353,8 @@ body.theme-eham .tracking-chip {
         max-width: 42vw;
     }
 
+    .csd-trigger { font-size: 1.45rem; max-width: 42vw; }
+
     .clock-container {
         font-size: 1.45rem;
         letter-spacing: 1px;
@@ -1336,6 +1482,10 @@ body.theme-eham .tracking-chip {
 
     .footer-logos img.simfixr-logo {
         height: 36px;
+    }
+
+    #scandiAttributionLink img {
+        height: 28px;
     }
 
     .support-footer-btn {

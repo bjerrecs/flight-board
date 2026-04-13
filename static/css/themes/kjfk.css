@@ -15,6 +15,7 @@ body.theme-kjfk .fids-header {
 }
 
 body.theme-kjfk .airport-selector select,
+body.theme-kjfk .csd-trigger,
 body.theme-kjfk .clock-container {
     color: var(--jfk-yellow);
     background: transparent;

@@ -10,6 +10,7 @@ body.theme-default .fids-header {
 }
 
 body.theme-default .airport-selector select,
+body.theme-default .csd-trigger,
 body.theme-default .clock-container,
 body.theme-default .add-airport-btn {
     color: #000000 !important;

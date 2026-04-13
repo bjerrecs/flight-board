@@ -20,6 +20,7 @@ body.theme-lkpr .fids-header {
 }
 
 body.theme-lkpr .airport-selector select,
+body.theme-lkpr .csd-trigger,
 body.theme-lkpr .clock-container,
 body.theme-lkpr .add-airport-btn {
     color: var(--lkpr-white) !important;

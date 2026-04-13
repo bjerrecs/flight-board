@@ -141,8 +141,28 @@ class AirportLanguages:
             'departures': 'Avgång',
             'departures_sub': 'Departures',
             'gate': 'Gate',
-            'gates': 'Gater',
+            'gates': 'Gates',
             'security': 'Väntetid i<br>säkerhetskontrollen',
+            'bilingual': True
+        },
+        'no': {
+            'arrivals': 'Ankomst',
+            'arrivals_sub': 'Arrivals',
+            'departures': 'Avgang',
+            'departures_sub': 'Departures',
+            'gate': 'Gate',
+            'gates': 'Gates',
+            'security': 'Estimert ventetid<br>ved sikkerhetskontrollen',
+            'bilingual': True
+        },
+        'da': {
+            'arrivals': 'Ankomst',
+            'arrivals_sub': 'Arrivals',
+            'departures': 'Afgang',
+            'departures_sub': 'Departures',
+            'gate': 'Gate',
+            'gates': 'Gates',
+            'security': 'Forventet ventetid<br>ved sikkerhedskontrollen',
             'bilingual': True
         },
         'nl': {

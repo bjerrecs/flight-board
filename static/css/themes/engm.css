@@ -1,0 +1,95 @@
+/* =============================================
+   ENGM THEME
+   Black header/footer, alternating black/navy rows, yellow accents
+   ============================================= */
+
+body.theme-engm {
+    --font-ui: 'Inter', sans-serif;
+    --font-data: 'Inter', sans-serif;
+}
+
+/* HEADER */
+body.theme-engm .fids-header {
+    background: #000000;
+    border-bottom: 2px solid #ffffff;
+    color: #ffffff;
+}
+
+body.theme-engm .airport-selector select,
+body.theme-engm .csd-trigger,
+body.theme-engm .clock-container,
+body.theme-engm .add-airport-btn {
+    color: #ffffff !important;
+    background: transparent;
+}
+
+body.theme-engm .airport-selector select option {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+/* Header ATC / Weather widgets: white (no !important on widget-icon — needed for radar-pulse animation) */
+body.theme-engm .widget-icon {
+    color: #ffffff;
+}
+body.theme-engm .widget-text {
+    color: #ffffff !important;
+}
+
+/* TABLE HEADERS */
+body.theme-engm .section-divider {
+    background: #000000;
+    color: #ffffff;
+    border-bottom: 1px solid #333;
+}
+
+body.theme-engm .flight-table th {
+    background: #000000;
+    color: #ffffff;
+    text-transform: none;
+}
+
+/* Odd rows - Black with White Text */
+body.theme-engm .flight-table tr {
+    background-color: #000000;
+    color: #ffffff;
+}
+body.theme-engm .flight-table tr .flap-container {
+    color: #ffffff;
+}
+
+/* Even rows - Dark Navy Blue with White Text */
+body.theme-engm .flight-table tr:nth-child(even) {
+    background-color: #17243b;
+    color: #ffffff;
+}
+body.theme-engm .flight-table tr:nth-child(even) .flap-container {
+    color: #ffffff;
+}
+
+/* Status: lowercase */
+body.theme-engm .col-status .flap-container {
+    text-transform: none;
+}
+
+/* FOOTER */
+body.theme-engm .fids-footer {
+    background-color: #000000;
+    border-top: 2px solid #ffffff;
+}
+
+body.theme-engm .footer-group .main-label,
+body.theme-engm .security-time .time,
+body.theme-engm .security-time .label {
+    color: #ffffff;
+}
+
+/* YELLOW ACCENTS — footer gate icon and direction arrow */
+body.theme-engm .gate-icon-box {
+    border-color: #ffd700;
+    color: #ffd700;
+}
+
+body.theme-engm .huge-arrow {
+    color: #ffd700;
+}

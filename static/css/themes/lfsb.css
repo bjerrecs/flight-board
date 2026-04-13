@@ -19,6 +19,7 @@ body.theme-lfsb .fids-header {
 }
 
 body.theme-lfsb .airport-selector select,
+body.theme-lfsb .csd-trigger,
 body.theme-lfsb .clock-container {
     color: #ffffff !important;
     background: transparent;

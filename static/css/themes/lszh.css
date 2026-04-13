@@ -18,6 +18,7 @@ body.theme-lszh .fids-header {
 }
 
 body.theme-lszh .airport-selector select,
+body.theme-lszh .csd-trigger,
 body.theme-lszh .clock-container {
     color: #000000;
 }

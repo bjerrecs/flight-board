@@ -102,7 +102,7 @@ def _haversine_km(lat1, lon1, lat2, lon2):
     a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
     return R * 2 * math.asin(math.sqrt(a))
 
-APP_VERSION = '1.4.3'
+APP_VERSION = '1.5.0'
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -723,7 +723,7 @@ def index():
     if 'socket_token' not in session:
         session['socket_token'] = secrets.token_hex(32)
     registry = _load_airports_registry()
-    resp = make_response(render_template('index.html', asset_version=int(time.time()), app_version=APP_VERSION, bmc_url=app.config.get('BUY_ME_A_COFFEE_URL', ''), airports_registry=registry, socket_token=session['socket_token']))
+    resp = make_response(render_template('index.html', asset_version=int(time.time()), app_version=APP_VERSION, bmc_url=app.config.get('BUY_ME_A_COFFEE_URL', ''), airports_registry=registry, grouped_airports=_build_grouped_airports(registry), socket_token=session['socket_token']))
     resp.headers['Cache-Control'] = 'no-store'
     return resp
 
@@ -1183,9 +1183,38 @@ def _validate_airports_registry(raw):
             'flags_position': str(entry.get('flags_position', '') or '').strip() or None,
             'footer_country': str(entry.get('footer_country', '') or '').strip() or None,
             'gate_label_override': str(entry.get('gate_label_override', '') or '').strip() or None,
+            'group': str(entry.get('group', '') or '').strip() or None,
         }
 
     return dict(sorted(cleaned.items()))
+
+
+# Ordered group list — controls display order in the selector dropdown.
+_SELECTOR_GROUP_ORDER = [
+    'United Kingdom',
+    'Scandinavia',
+    'Western Europe',
+    'North America',
+    'Middle East',
+    'Asia Pacific',
+]
+
+def _build_grouped_airports(registry):
+    """Return airports as an ordered list of (group_label, [(icao, cfg), ...])."""
+    from collections import defaultdict
+    buckets = defaultdict(list)
+    for icao, cfg in registry.items():
+        buckets[cfg.get('group') or 'Other'].append((icao, cfg))
+
+    result = []
+    for group in _SELECTOR_GROUP_ORDER:
+        if group in buckets:
+            result.append((group, sorted(buckets[group], key=lambda x: x[1]['selector_label'])))
+    # Anything not in the canonical order goes at the end
+    for group in sorted(buckets):
+        if group not in _SELECTOR_GROUP_ORDER:
+            result.append((group, sorted(buckets[group], key=lambda x: x[1]['selector_label'])))
+    return result
 
 
 @app.route('/api/admin/airports_registry', methods=['GET', 'POST'])

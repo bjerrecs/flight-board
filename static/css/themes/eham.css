@@ -26,7 +26,8 @@ body.theme-eham .fids-header {
 }
 
 /* Safari on iOS/iPadOS doesn't inherit color onto <select> — set it explicitly */
-body.theme-eham .airport-selector select {
+body.theme-eham .airport-selector select,
+body.theme-eham .csd-trigger {
     color: #000000;
 }
 

@@ -21,6 +21,7 @@ body.theme-omdb .fids-header {
 }
 
 body.theme-omdb .airport-selector select,
+body.theme-omdb .csd-trigger,
 body.theme-omdb .clock-container,
 body.theme-omdb .add-airport-btn {
     color: var(--omdb-white) !important;

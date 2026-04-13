@@ -43,12 +43,40 @@
     <div class="monitor-frame">
         <header class="fids-header">
     <div class="airport-selector">
-        <select id="airportSelect">
-            {% for icao, cfg in airports_registry.items() %}
-            <option value="{{ icao }}" title="{{ icao }}">{{ cfg.selector_label or cfg.name }}</option>
+        <!-- Native select kept hidden — all existing JS reads/writes this -->
+        <select id="airportSelect" style="display:none;" aria-hidden="true">
+            {% for group_label, airports in grouped_airports %}
+            <optgroup label="{{ group_label }}">
+                {% for icao, cfg in airports %}
+                <option value="{{ icao }}" title="{{ icao }}">{{ cfg.selector_label or cfg.name }}</option>
+                {% endfor %}
+            </optgroup>
             {% endfor %}
         </select>
-        
+
+        <!-- Custom grouped dropdown -->
+        <div class="csd-wrapper" id="csdWrapper">
+            <button class="csd-trigger" id="csdTrigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span class="csd-label" id="csdLabel">Select Airport</span>
+                <span class="material-icons csd-arrow">expand_more</span>
+            </button>
+            <div class="csd-panel" id="csdPanel" role="listbox" style="display:none;">
+                {% for group_label, airports in grouped_airports %}
+                <div class="csd-group" data-group="{{ group_label }}">
+                    <button class="csd-group-header" type="button">
+                        <span class="csd-group-label">{{ group_label }}</span>
+                        <span class="material-icons csd-group-arrow">chevron_right</span>
+                    </button>
+                    <div class="csd-group-options" style="display:none;">
+                        {% for icao, cfg in airports %}
+                        <button class="csd-option" data-value="{{ icao }}" type="button" role="option">{{ cfg.selector_label or cfg.name }}</button>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
         <button id="addAirportBtn" class="add-airport-btn" title="Add Airport">
             <span class="material-icons">add_circle</span>
         </button>
@@ -169,8 +197,16 @@
                     <img src="{{ url_for('static', filename='vatsim_logos/VATSIM_Logo_White.png') }}" alt="VATSIM">
                 </a>
             </div>
-            <a href="https://www.vatsim.uk/" target="_blank" rel="noopener">
+            <a id="vatsimukAttributionLink" href="https://www.vatsim.uk/" target="_blank" rel="noopener"
+               style="display:none;" title="VATSIM UK">
                 <img src="{{ url_for('static', filename='vatsim_logos/vatsimuk_white.png') }}" alt="VATSIM UK">
+            </a>
+            <a id="scandiAttributionLink" href="https://vatsim-scandinavia.org" target="_blank" rel="noopener"
+               style="display:none;" title="Stand data provided by VATSIM Scandinavia">
+                <img id="scandiAttributionLogo" src="{{ url_for('static', filename='vatsim_logos/vatsim_scandinavia_white.png') }}"
+                     alt="VATSIM Scandinavia"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                <span id="scandiAttributionText" style="display:none; color:white; font-size:0.75rem; white-space:nowrap;">VATSIM Scandinavia</span>
             </a>
             <a href="https://simfixr.com/" target="_blank" rel="noopener">
                 <img class="simfixr-logo" src="/static/simfixr_logos/simfixr_logo_small.png" alt="SimFixr">
@@ -369,6 +405,17 @@
         <span class="close" id="changelogModalClose">&times;</span>
         <h2>Changelog</h2>
         <div class="help-modal-body">
+
+            <section class="help-section">
+                <h3>v1.5.0 — 2026-04-13</h3>
+                <ul>
+                    <li>17 Scandinavian airports added with VATSIM Scandinavia verified stand data: Copenhagen (EKCH), Billund (EKBI), Aalborg (EKYT), Aarhus (EKAH), Oslo Gardermoen (ENGM), Bergen (ENBR), Trondheim (ENVA), Stavanger (ENZV), Sandefjord (ENTO), Gothenburg (ESGG), Stockholm Bromma (ESSB), Luleå (ESPA), Stockholm Skavsta (ESKN), Västerås (ESOW), Visby (ESSV), and Malmö (ESMS) — 732 stands across 32 airports integrated from ENOR, EKDK and ESAA division sector files (licensed with attribution)</li>
+                    <li>Airport selector redesigned as a collapsible grouped dropdown — airports organised into regional groups (United Kingdom, Scandinavia, Western Europe, North America, Middle East, Asia Pacific)</li>
+                    <li>VATSIM Scandinavia attribution logo shown in the footer when any Scandinavian airport (except ESSA) is active; VATSIM UK logo likewise shown only for UK airports</li>
+                    <li>Danish (da) and Norwegian (no) footer translations added — bilingual Ankomst/Arrivals and Afgang/Avgang labels, localised security waiting time text</li>
+                    <li>All Scandinavian airport themes (EKCH and 16 others) updated: Inter font, lowercase table headers and status text, white header ATC/weather widgets, yellow footer accents</li>
+                </ul>
+            </section>
 
             <section class="help-section">
                 <h3>v1.4.3 — 2026-03-30</h3>

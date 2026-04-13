@@ -1,0 +1,95 @@
+/* =============================================
+   ESSV THEME
+   Black header/footer, alternating black/navy rows, yellow accents
+   ============================================= */
+
+body.theme-essv {
+    --font-ui: 'Inter', sans-serif;
+    --font-data: 'Inter', sans-serif;
+}
+
+/* HEADER */
+body.theme-essv .fids-header {
+    background: #000000;
+    border-bottom: 2px solid #ffffff;
+    color: #ffffff;
+}
+
+body.theme-essv .airport-selector select,
+body.theme-essv .csd-trigger,
+body.theme-essv .clock-container,
+body.theme-essv .add-airport-btn {
+    color: #ffffff !important;
+    background: transparent;
+}
+
+body.theme-essv .airport-selector select option {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+/* Header ATC / Weather widgets: white (no !important on widget-icon — needed for radar-pulse animation) */
+body.theme-essv .widget-icon {
+    color: #ffffff;
+}
+body.theme-essv .widget-text {
+    color: #ffffff !important;
+}
+
+/* TABLE HEADERS */
+body.theme-essv .section-divider {
+    background: #000000;
+    color: #ffffff;
+    border-bottom: 1px solid #333;
+}
+
+body.theme-essv .flight-table th {
+    background: #000000;
+    color: #ffffff;
+    text-transform: none;
+}
+
+/* Odd rows - Black with White Text */
+body.theme-essv .flight-table tr {
+    background-color: #000000;
+    color: #ffffff;
+}
+body.theme-essv .flight-table tr .flap-container {
+    color: #ffffff;
+}
+
+/* Even rows - Dark Navy Blue with White Text */
+body.theme-essv .flight-table tr:nth-child(even) {
+    background-color: #17243b;
+    color: #ffffff;
+}
+body.theme-essv .flight-table tr:nth-child(even) .flap-container {
+    color: #ffffff;
+}
+
+/* Status: lowercase */
+body.theme-essv .col-status .flap-container {
+    text-transform: none;
+}
+
+/* FOOTER */
+body.theme-essv .fids-footer {
+    background-color: #000000;
+    border-top: 2px solid #ffffff;
+}
+
+body.theme-essv .footer-group .main-label,
+body.theme-essv .security-time .time,
+body.theme-essv .security-time .label {
+    color: #ffffff;
+}
+
+/* YELLOW ACCENTS — footer gate icon and direction arrow */
+body.theme-essv .gate-icon-box {
+    border-color: #ffd700;
+    color: #ffd700;
+}
+
+body.theme-essv .huge-arrow {
+    color: #ffd700;
+}

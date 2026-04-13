@@ -31,6 +31,7 @@ body.theme-rjtt .fids-header {
 
 /* Header Text (Clock, Airport Name) */
 body.theme-rjtt .airport-selector select,
+body.theme-rjtt .csd-trigger,
 body.theme-rjtt .clock-container {
     color: var(--haneda-text) !important;
     font-family: 'JetBrains Mono', 'Noto Sans Mono CJK JP', 'Noto Sans Mono CJK', monospace; /* NEW */
