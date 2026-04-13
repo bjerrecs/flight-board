@@ -16,7 +16,8 @@ body.theme-lfpg .fids-header {
 }
 
 /* Airport title */
-body.theme-lfpg .airport-selector select {
+body.theme-lfpg .airport-selector select,
+body.theme-lfpg .csd-trigger {
     color: var(--adp-white);
 }
 

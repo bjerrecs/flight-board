@@ -8,7 +8,8 @@
     "theme_class": "theme-lszh",
     "title_case": true,
     "flags": null,
-    "footer_country": null
+    "footer_country": null,
+    "group": "Western Europe"
   },
   "LSGG": {
     "name": "Geneva Airport",
@@ -19,7 +20,8 @@
     "theme_class": "theme-lsgg",
     "title_case": true,
     "flags": ["ch", "fr"],
-    "footer_country": "Switzerland"
+    "footer_country": "Switzerland",
+    "group": "Western Europe"
   },
   "LFSB": {
     "name": "EuroAirport Basel",
@@ -30,7 +32,8 @@
     "theme_class": "theme-lfsb",
     "title_case": false,
     "flags": ["ch", "fr"],
-    "footer_country": "France"
+    "footer_country": "France",
+    "group": "Western Europe"
   },
   "EDDF": {
     "name": "Frankfurt Airport",
@@ -42,7 +45,8 @@
     "title_case": false,
     "flags_position": "left",
     "flags": null,
-    "footer_country": null
+    "footer_country": null,
+    "group": "Western Europe"
   },
   "LFPG": {
     "name": "Paris CDG",
@@ -53,7 +57,8 @@
     "theme_class": "theme-lfpg",
     "title_case": true,
     "flags": null,
-    "footer_country": null
+    "footer_country": null,
+    "group": "Western Europe"
   },
   "EGLC": {
     "name": "London City",
@@ -64,7 +69,8 @@
     "theme_class": "theme-eglc",
     "title_case": true,
     "flags": null,
-    "footer_country": null
+    "footer_country": null,
+    "group": "United Kingdom"
   },
   "EGLL": {
     "name": "London Heathrow",
@@ -75,7 +81,8 @@
     "theme_class": "theme-egll",
     "title_case": true,
     "flags": null,
-    "footer_country": null
+    "footer_country": null,
+    "group": "United Kingdom"
   },
   "EGKK": {
     "name": "London Gatwick",
@@ -86,7 +93,8 @@
     "theme_class": "theme-egkk",
     "title_case": true,
     "flags": null,
-    "footer_country": null
+    "footer_country": null,
+    "group": "United Kingdom"
   },
   "EGSS": {
     "name": "London Stansted",
@@ -97,7 +105,8 @@
     "theme_class": "theme-egss",
     "title_case": true,
     "flags": null,
-    "footer_country": null
+    "footer_country": null,
+    "group": "United Kingdom"
   },
   "EGCC": {
     "name": "Manchester Airport",
@@ -108,7 +117,8 @@
     "theme_class": "theme-egcc",
     "title_case": true,
     "flags": null,
-    "footer_country": null
+    "footer_country": null,
+    "group": "United Kingdom"
   },
   "EHAM": {
     "name": "Amsterdam Schiphol",
@@ -119,7 +129,8 @@
     "theme_class": "theme-eham",
     "title_case": true,
     "flags": null,
-    "footer_country": null
+    "footer_country": null,
+    "group": "Western Europe"
   },
   "KJFK": {
     "name": "New York JFK",
@@ -130,7 +141,8 @@
     "theme_class": "theme-kjfk",
     "title_case": false,
     "flags": null,
-    "footer_country": null
+    "footer_country": null,
+    "group": "North America"
   },
   "KEWR": {
     "name": "New York Newark",
@@ -141,7 +153,8 @@
     "theme_class": "theme-kewr",
     "title_case": true,
     "flags": null,
-    "footer_country": null
+    "footer_country": null,
+    "group": "North America"
   },
   "RJTT": {
     "name": "Tokyo Haneda",
@@ -152,7 +165,8 @@
     "theme_class": "theme-rjtt",
     "title_case": false,
     "flags": null,
-    "footer_country": null
+    "footer_country": null,
+    "group": "Asia Pacific"
   },
   "ESSA": {
     "name": "Stockholm Arlanda",
@@ -164,7 +178,8 @@
     "title_case": true,
     "gate_label_override": "Gates",
     "flags": null,
-    "footer_country": null
+    "footer_country": null,
+    "group": "Scandinavia"
   },
   "LKPR": {
     "name": "Prague Airport",
@@ -175,7 +190,8 @@
     "theme_class": "theme-lkpr",
     "title_case": true,
     "flags": null,
-    "footer_country": "Czech Republic"
+    "footer_country": "Czech Republic",
+    "group": "Western Europe"
   },
   "OMDB": {
     "name": "Dubai International",
@@ -186,6 +202,202 @@
     "theme_class": "theme-omdb",
     "title_case": true,
     "flags": null,
-    "footer_country": "United Arab Emirates"
+    "footer_country": "United Arab Emirates",
+    "group": "Middle East"
+  },
+  "EKCH": {
+    "name": "Copenhagen Airport",
+    "selector_label": "Copenhagen Kastrup Airport",
+    "ceiling": 7000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/ekch.css",
+    "theme_class": "theme-ekch",
+    "title_case": true,
+    "gate_label_override": "Gates",
+    "flags": null,
+    "footer_country": "Denmark",
+    "group": "Scandinavia"
+  },
+  "EKBI": {
+    "name": "Billund Airport",
+    "selector_label": "Billund Airport",
+    "ceiling": 6000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/ekbi.css",
+    "theme_class": "theme-ekbi",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "Denmark",
+    "group": "Scandinavia"
+  },
+  "EKYT": {
+    "name": "Aalborg Airport",
+    "selector_label": "Aalborg Airport",
+    "ceiling": 6000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/ekyt.css",
+    "theme_class": "theme-ekyt",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "Denmark",
+    "group": "Scandinavia"
+  },
+  "EKAH": {
+    "name": "Aarhus Airport",
+    "selector_label": "Aarhus Airport",
+    "ceiling": 6000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/ekah.css",
+    "theme_class": "theme-ekah",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "Denmark",
+    "group": "Scandinavia"
+  },
+  "ENGM": {
+    "name": "Oslo Gardermoen",
+    "selector_label": "Oslo Gardermoen Airport",
+    "ceiling": 7000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/engm.css",
+    "theme_class": "theme-engm",
+    "title_case": true,
+    "gate_label_override": "Gates",
+    "flags": null,
+    "footer_country": "Norway",
+    "group": "Scandinavia"
+  },
+  "ENBR": {
+    "name": "Bergen Airport",
+    "selector_label": "Bergen Flesland Airport",
+    "ceiling": 7000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/enbr.css",
+    "theme_class": "theme-enbr",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "Norway",
+    "group": "Scandinavia"
+  },
+  "ENVA": {
+    "name": "Trondheim Airport",
+    "selector_label": "Trondheim Vaernes Airport",
+    "ceiling": 7000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/enva.css",
+    "theme_class": "theme-enva",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "Norway",
+    "group": "Scandinavia"
+  },
+  "ENZV": {
+    "name": "Stavanger Airport",
+    "selector_label": "Stavanger Sola Airport",
+    "ceiling": 7000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/enzv.css",
+    "theme_class": "theme-enzv",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "Norway",
+    "group": "Scandinavia"
+  },
+  "ENTO": {
+    "name": "Sandefjord Airport",
+    "selector_label": "Sandefjord Torp Airport",
+    "ceiling": 6000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/ento.css",
+    "theme_class": "theme-ento",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "Norway",
+    "group": "Scandinavia"
+  },
+  "ESGG": {
+    "name": "Gothenburg Airport",
+    "selector_label": "Gothenburg Landvetter Airport",
+    "ceiling": 7000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/esgg.css",
+    "theme_class": "theme-esgg",
+    "title_case": true,
+    "gate_label_override": "Gates",
+    "flags": null,
+    "footer_country": "Sweden",
+    "group": "Scandinavia"
+  },
+  "ESSB": {
+    "name": "Stockholm Bromma",
+    "selector_label": "Stockholm Bromma Airport",
+    "ceiling": 5000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/essb.css",
+    "theme_class": "theme-essb",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "Sweden",
+    "group": "Scandinavia"
+  },
+  "ESPA": {
+    "name": "Luleå Airport",
+    "selector_label": "Luleå Airport",
+    "ceiling": 6000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/espa.css",
+    "theme_class": "theme-espa",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "Sweden",
+    "group": "Scandinavia"
+  },
+  "ESKN": {
+    "name": "Stockholm Skavsta",
+    "selector_label": "Stockholm Skavsta Airport",
+    "ceiling": 6000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/eskn.css",
+    "theme_class": "theme-eskn",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "Sweden",
+    "group": "Scandinavia"
+  },
+  "ESOW": {
+    "name": "Stockholm Västerås",
+    "selector_label": "Stockholm Västerås Airport",
+    "ceiling": 6000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/esow.css",
+    "theme_class": "theme-esow",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "Sweden",
+    "group": "Scandinavia"
+  },
+  "ESSV": {
+    "name": "Visby Airport",
+    "selector_label": "Visby Airport",
+    "ceiling": 5000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/essv.css",
+    "theme_class": "theme-essv",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "Sweden",
+    "group": "Scandinavia"
+  },
+  "ESMS": {
+    "name": "Malmö Airport",
+    "selector_label": "Malmö Airport",
+    "ceiling": 6000,
+    "has_stands": true,
+    "theme_css": "/static/css/themes/esms.css",
+    "theme_class": "theme-esms",
+    "title_case": true,
+    "flags": null,
+    "footer_country": "Sweden",
+    "group": "Scandinavia"
   }
 }

@@ -1,0 +1,95 @@
+/* =============================================
+   ESTA THEME
+   Black header/footer, alternating black/navy rows, yellow accents
+   ============================================= */
+
+body.theme-esta {
+    --font-ui: 'Inter', sans-serif;
+    --font-data: 'Inter', sans-serif;
+}
+
+/* HEADER */
+body.theme-esta .fids-header {
+    background: #000000;
+    border-bottom: 2px solid #ffffff;
+    color: #ffffff;
+}
+
+body.theme-esta .airport-selector select,
+body.theme-esta .csd-trigger,
+body.theme-esta .clock-container,
+body.theme-esta .add-airport-btn {
+    color: #ffffff !important;
+    background: transparent;
+}
+
+body.theme-esta .airport-selector select option {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+/* Header ATC / Weather widgets: white (no !important on widget-icon — needed for radar-pulse animation) */
+body.theme-esta .widget-icon {
+    color: #ffffff;
+}
+body.theme-esta .widget-text {
+    color: #ffffff !important;
+}
+
+/* TABLE HEADERS */
+body.theme-esta .section-divider {
+    background: #000000;
+    color: #ffffff;
+    border-bottom: 1px solid #333;
+}
+
+body.theme-esta .flight-table th {
+    background: #000000;
+    color: #ffffff;
+    text-transform: none;
+}
+
+/* Odd rows - Black with White Text */
+body.theme-esta .flight-table tr {
+    background-color: #000000;
+    color: #ffffff;
+}
+body.theme-esta .flight-table tr .flap-container {
+    color: #ffffff;
+}
+
+/* Even rows - Dark Navy Blue with White Text */
+body.theme-esta .flight-table tr:nth-child(even) {
+    background-color: #17243b;
+    color: #ffffff;
+}
+body.theme-esta .flight-table tr:nth-child(even) .flap-container {
+    color: #ffffff;
+}
+
+/* Status: lowercase */
+body.theme-esta .col-status .flap-container {
+    text-transform: none;
+}
+
+/* FOOTER */
+body.theme-esta .fids-footer {
+    background-color: #000000;
+    border-top: 2px solid #ffffff;
+}
+
+body.theme-esta .footer-group .main-label,
+body.theme-esta .security-time .time,
+body.theme-esta .security-time .label {
+    color: #ffffff;
+}
+
+/* YELLOW ACCENTS — footer gate icon and direction arrow */
+body.theme-esta .gate-icon-box {
+    border-color: #ffd700;
+    color: #ffd700;
+}
+
+body.theme-esta .huge-arrow {
+    color: #ffd700;
+}

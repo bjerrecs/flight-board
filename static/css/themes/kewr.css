@@ -27,6 +27,7 @@ body.theme-kewr .fids-header {
 }
 
 body.theme-kewr .airport-selector select,
+body.theme-kewr .csd-trigger,
 body.theme-kewr .clock-container,
 body.theme-kewr .add-airport-btn {
     color: #ffffff !important;

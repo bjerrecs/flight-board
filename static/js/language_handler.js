@@ -47,7 +47,7 @@ const COUNTRY_CODE_TO_LANGUAGE = {
     'CL': 'es', 'PE': 'es', 'VE': 'es',
     
     // Other European
-    'IT': 'it', 'PT': 'pt', 'BR': 'pt', 'NL': 'nl', 'SE': 'sv', 'CZ': 'cs',
+    'IT': 'it', 'PT': 'pt', 'BR': 'pt', 'NL': 'nl', 'SE': 'sv', 'NO': 'no', 'DK': 'da', 'CZ': 'cs',
     
     // Middle Eastern
     'AE': 'ar', 'SA': 'ar', 'QA': 'ar',
@@ -93,6 +93,8 @@ const COUNTRY_TO_LANGUAGE = {
     'Brazil': 'pt',
     'Netherlands': 'nl',
     'Sweden': 'sv',
+    'Norway': 'no',
+    'Denmark': 'da',
     'Czech Republic': 'cs',
     'United Arab Emirates': 'ar',
     'Saudi Arabia': 'ar',

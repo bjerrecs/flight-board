@@ -21,6 +21,7 @@ body.theme-essa .fids-header {
 }
 
 body.theme-essa .airport-selector select,
+body.theme-essa .csd-trigger,
 body.theme-essa .clock-container,
 body.theme-essa .add-airport-btn {
     color: var(--essa-white) !important;

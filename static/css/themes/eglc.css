@@ -17,6 +17,7 @@ body.theme-eglc .fids-header {
 }
 
 body.theme-eglc .airport-selector select,
+body.theme-eglc .csd-trigger,
 body.theme-eglc .clock-container {
     color: #ffffff !important;
     background: transparent;

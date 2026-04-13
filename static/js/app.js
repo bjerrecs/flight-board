@@ -164,8 +164,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (elements.airportSelect) elements.airportSelect.value = currentAirport;
+        updateCustomSelectLabel(currentAirport);
         updateTheme(currentAirport);
         window.updateFooterText(currentAirport, options.country || '');
+        updateUKAttribution(currentAirport);
+        updateScandiAttribution(currentAirport);
 
         // Keep map link in sync
         const mapLink = document.getElementById('mapLink');
@@ -440,6 +443,198 @@ document.addEventListener('DOMContentLoaded', () => {
 
     }
 
+    // ── Custom grouped airport selector ──────────────────────────────────────
+
+    function csdGetPanel()   { return document.getElementById('csdPanel'); }
+    function csdGetTrigger() { return document.getElementById('csdTrigger'); }
+
+    function csdOpenGroup(groupEl) {
+        if (!groupEl) return;
+        const opts = groupEl.querySelector('.csd-group-options');
+        const hdr  = groupEl.querySelector('.csd-group-header');
+        if (opts) opts.style.display = 'block';
+        if (hdr)  hdr.classList.add('open');
+    }
+
+    function csdCloseAllGroups() {
+        const panel = csdGetPanel();
+        if (!panel) return;
+        panel.querySelectorAll('.csd-group-options').forEach(o => o.style.display = 'none');
+        panel.querySelectorAll('.csd-group-header').forEach(h => h.classList.remove('open'));
+    }
+
+    function csdMarkSelected(icao) {
+        const panel = csdGetPanel();
+        if (!panel) return;
+        panel.querySelectorAll('.csd-option').forEach(btn => {
+            btn.classList.toggle('csd-selected', btn.dataset.value === icao);
+        });
+    }
+
+    function updateCustomSelectLabel(icao) {
+        const labelEl = document.getElementById('csdLabel');
+        if (!labelEl) return;
+        const opt = elements.airportSelect
+            ? Array.from(elements.airportSelect.options).find(o => o.value === icao)
+            : null;
+        labelEl.textContent = opt ? opt.textContent : icao;
+        csdMarkSelected(icao);
+    }
+
+    function csdOpenPanelForAirport(icao) {
+        const panel = csdGetPanel();
+        if (!panel) return;
+        csdCloseAllGroups();
+        const btn = panel.querySelector(`.csd-option[data-value="${icao}"]`);
+        if (btn) {
+            csdOpenGroup(btn.closest('.csd-group'));
+            // Scroll the option into view within the panel
+            setTimeout(() => btn.scrollIntoView({ block: 'nearest' }), 50);
+        }
+    }
+
+    function addAirportToCustomSelect(icao, label) {
+        const panel = csdGetPanel();
+        if (!panel) return;
+        // Already present?
+        if (panel.querySelector(`.csd-option[data-value="${icao}"]`)) return;
+        // Find or create "Other" group
+        let grpEl = Array.from(panel.querySelectorAll('.csd-group'))
+            .find(g => g.dataset.group === 'Other');
+        if (!grpEl) {
+            grpEl = document.createElement('div');
+            grpEl.className = 'csd-group';
+            grpEl.dataset.group = 'Other';
+            grpEl.innerHTML =
+                '<button class="csd-group-header" type="button">' +
+                  '<span class="csd-group-label">Other</span>' +
+                  '<span class="material-icons csd-group-arrow">chevron_right</span>' +
+                '</button>' +
+                '<div class="csd-group-options" style="display:none;"></div>';
+            panel.appendChild(grpEl);
+        }
+        const btn = document.createElement('button');
+        btn.className = 'csd-option';
+        btn.dataset.value = icao;
+        btn.type = 'button';
+        btn.role = 'option';
+        btn.textContent = label;
+        grpEl.querySelector('.csd-group-options').appendChild(btn);
+    }
+
+    function csdPositionPanel() {
+        const trigger = csdGetTrigger();
+        const panel   = csdGetPanel();
+        if (!trigger || !panel) return;
+        const rect = trigger.getBoundingClientRect();
+        panel.style.top  = (rect.bottom + 6) + 'px';
+        panel.style.left = rect.left + 'px';
+        // Prevent going off right edge
+        const panelW = panel.offsetWidth || 270;
+        const maxLeft = window.innerWidth - panelW - 8;
+        if (rect.left > maxLeft) panel.style.left = maxLeft + 'px';
+    }
+
+    function initCustomAirportSelect() {
+        const wrapper = document.getElementById('csdWrapper');
+        const trigger = csdGetTrigger();
+        const panel   = csdGetPanel();
+        if (!wrapper || !trigger || !panel) return;
+
+        // Portal the panel to <body> so it's never clipped by overflow:hidden ancestors
+        document.body.appendChild(panel);
+
+        function openPanel() {
+            panel.style.display = 'block';
+            trigger.setAttribute('aria-expanded', 'true');
+            csdPositionPanel();
+            csdOpenPanelForAirport(
+                elements.airportSelect ? elements.airportSelect.value : ''
+            );
+        }
+
+        function closePanel() {
+            panel.style.display = 'none';
+            trigger.setAttribute('aria-expanded', 'false');
+        }
+
+        // Toggle panel on trigger click
+        trigger.addEventListener('click', e => {
+            e.stopPropagation();
+            panel.style.display !== 'none' ? closePanel() : openPanel();
+        });
+
+        // Click inside panel: toggle group OR select option
+        panel.addEventListener('click', e => {
+            const hdr = e.target.closest('.csd-group-header');
+            if (hdr) {
+                const grp    = hdr.closest('.csd-group');
+                const opts   = grp.querySelector('.csd-group-options');
+                const isOpen = opts.style.display !== 'none';
+                csdCloseAllGroups();
+                if (!isOpen) csdOpenGroup(grp);
+                return;
+            }
+            const opt = e.target.closest('.csd-option');
+            if (opt) {
+                closePanel();
+                if (elements.airportSelect) {
+                    elements.airportSelect.value = opt.dataset.value;
+                    elements.airportSelect.dispatchEvent(new Event('change'));
+                }
+            }
+        });
+
+        // Close when clicking outside both trigger and panel
+        document.addEventListener('click', e => {
+            if (!wrapper.contains(e.target) && !panel.contains(e.target)) {
+                closePanel();
+            }
+        });
+
+        // Reposition on scroll / resize
+        window.addEventListener('resize', () => { if (panel.style.display !== 'none') csdPositionPanel(); });
+        window.addEventListener('scroll', () => { if (panel.style.display !== 'none') csdPositionPanel(); }, true);
+
+        // Set initial label
+        if (elements.airportSelect) {
+            updateCustomSelectLabel(elements.airportSelect.value);
+        }
+    }
+
+    // VATSIM UK attribution — shown when a UK airport is active
+    const UK_ICAO_PREFIX = 'EG';
+
+    function updateUKAttribution(airportCode) {
+        const link = document.getElementById('vatsimukAttributionLink');
+        if (!link) return;
+        link.style.display = airportCode.startsWith(UK_ICAO_PREFIX) ? '' : 'none';
+    }
+
+    // VATSIM Scandinavia attribution — shown when a Scandi airport is active
+    const SCANDI_ICAO_SET = new Set([
+        'EKCH','EKBI','EKYT','EKAH','EKRN',
+        'ENGM','ENBR','ENVA','ENZV','ENTO',
+        'ESSA','ESGG','ESSB','ESPA','ESKN','ESOW','ESSV','ESMS',
+        'ESCF','ESCM','ESDF','ESIB','ESSL','ESNN','ESNQ','ESNU','ESNX','ESNZ','ESTA','ESGT','ESKS','ESMQ','ESNS'
+    ]);
+
+    function updateScandiAttribution(airportCode) {
+        const link = document.getElementById('scandiAttributionLink');
+        if (!link) return;
+        link.style.display = SCANDI_ICAO_SET.has(airportCode) ? '' : 'none';
+    }
+
+    function getOrCreateOptgroup(select, label) {
+        let grp = Array.from(select.querySelectorAll('optgroup')).find(g => g.label === label);
+        if (!grp) {
+            grp = document.createElement('optgroup');
+            grp.label = label;
+            select.appendChild(grp);
+        }
+        return grp;
+    }
+
     async function ensureAirportInSelect(icao) {
         if (!elements.airportSelect) return false;
         const exists = Array.from(elements.airportSelect.options).some(opt => opt.value === icao);
@@ -450,7 +645,8 @@ document.addEventListener('DOMContentLoaded', () => {
         option.value = icao;
         option.textContent = airportMapping[icao]?.name || icao;
         option.title = icao;
-        elements.airportSelect.appendChild(option);
+        getOrCreateOptgroup(elements.airportSelect, 'Other').appendChild(option);
+        addAirportToCustomSelect(icao, option.textContent);
 
         // Fetch proper name + trigger OSM stand data in the background
         fetch('/api/search_airport', {
@@ -458,7 +654,12 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ icao })
         }).then(r => r.json()).then(data => {
-            if (data.name) option.textContent = data.name;
+            if (data.name) {
+                option.textContent = data.name;
+                // Sync label in custom dropdown too
+                const csdBtn = document.querySelector(`.csd-option[data-value="${icao}"]`);
+                if (csdBtn) csdBtn.textContent = data.name;
+            }
         }).catch(e => console.warn('Failed to preload dynamic airport:', icao, e));
 
         return true;
@@ -571,6 +772,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial theme and footer setup
     (async () => {
+        initCustomAirportSelect();
         await loadAirportsRegistry();
         await loadThemeMap();
         await switchAirport(currentAirport, { source: 'init' });
@@ -1562,7 +1764,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         option.value = icao;
                         option.textContent = `${data.name}`;
                         option.title = icao;
-                        airportSelect.appendChild(option);
+                        getOrCreateOptgroup(airportSelect, 'Other').appendChild(option);
+                        addAirportToCustomSelect(icao, data.name);
                     }
                     
                     // Switch to the new airport
