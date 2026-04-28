@@ -51,3 +51,6 @@ scripts/discord_stats.py
 scripts/setup_navdata.sh
 data/navdata/CIFP/
 data/flightboard-490414-73ead644545a.json
+
+# AI
+.claude

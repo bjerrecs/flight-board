@@ -722,6 +722,25 @@ update_flights()
 def index():
     if 'socket_token' not in session:
         session['socket_token'] = secrets.token_hex(32)
+
+    if request.args.get('simplified') == 'true':
+        icao = _normalize_icao(request.args.get('icao') or request.args.get('airport', ''))
+        if icao:
+            try:
+                airport_info = flight_fetcher.get_airport_info(icao)
+                airport_name = airport_info.get('name', icao) if airport_info else icao
+            except Exception:
+                airport_name = icao
+            resp = make_response(render_template(
+                'board.html',
+                airport=icao,
+                airport_name=airport_name,
+                asset_version=int(time.time()),
+                socket_token=session['socket_token']
+            ))
+            resp.headers['Cache-Control'] = 'no-store'
+            return resp
+
     registry = _load_airports_registry()
     resp = make_response(render_template('index.html', asset_version=int(time.time()), app_version=APP_VERSION, bmc_url=app.config.get('BUY_ME_A_COFFEE_URL', ''), airports_registry=registry, grouped_airports=_build_grouped_airports(registry), socket_token=session['socket_token']))
     resp.headers['Cache-Control'] = 'no-store'

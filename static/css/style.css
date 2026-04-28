@@ -3109,3 +3109,88 @@ body.theme-egll .simfixr-map-icon {
     box-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 .map-airspace-tooltip::before { display: none; }
+
+/* ===== Simplified Board Display (streamer / OBS page — ?simplified=true) ===== */
+body.board-page {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.board-frame {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 20px 8px;
+}
+
+.board-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-dim);
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+    gap: 12px;
+}
+
+.board-airport-name {
+    font-family: var(--font-ui);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-white);
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.board-main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.board-split {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    gap: 30px;
+}
+
+.board-footer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--border-dim);
+    padding-top: 6px;
+    margin-top: 8px;
+    gap: 12px;
+}
+
+.board-footer-disclaimer {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.board-simfixr-logo {
+    height: 18px;
+    opacity: 0.6;
+    filter: brightness(0) invert(1);
+}
+
+@media (orientation: portrait) {
+    .board-split { flex-direction: column; }
+}
+
+@media (max-width: 600px) {
+    .board-frame { padding: 8px 10px 6px; }
+    .board-name  { display: none; }
+}

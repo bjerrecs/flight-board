@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Board — {{ airport }}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=JetBrains+Mono:wght@500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=asset_version) }}">
+
+    <script>
+        window.BOARD_AIRPORT = "{{ airport }}";
+        window.ASSET_VERSION = "{{ asset_version }}";
+        window._socketToken  = "{{ socket_token }}";
+    </script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-E6XCNXZ540"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-E6XCNXZ540');
+    </script>
+</head>
+<body class="board-page">
+
+    <div class="board-frame">
+
+        <header class="board-header">
+            <span class="board-airport-name" id="boardAirportName">{{ airport_name }}</span>
+            <div class="clock-container">
+                <span id="boardClock">--:--:--</span> <span class="utc-label">Z</span>
+            </div>
+        </header>
+
+        <main class="board-main">
+            <div class="board-split">
+
+                <div class="split-panel">
+                    <div class="section-divider">
+                        Departures <span id="depPageInd" class="page-ind"></span>
+                    </div>
+                    <div class="table-scroll-area">
+                        <table class="flight-table">
+                            <colgroup>
+                                <col style="width: 13%">
+                                <col style="width: 23%">
+                                <col style="width: 11%">
+                                <col style="width: 10%">
+                                <col style="width: 8%">
+                                <col style="width: 10%">
+                                <col style="width: 25%">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>Flight</th>
+                                    <th>Destination</th>
+                                    <th>Aircraft</th>
+                                    <th>Check-In</th>
+                                    <th>Gate</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="departureList"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="split-panel">
+                    <div class="section-divider">
+                        Arrivals <span id="arrPageInd" class="page-ind"></span>
+                    </div>
+                    <div class="table-scroll-area">
+                        <table class="flight-table">
+                            <colgroup>
+                                <col style="width: 13%">
+                                <col style="width: 23%">
+                                <col style="width: 11%">
+                                <col style="width: 10%">
+                                <col style="width: 8%">
+                                <col style="width: 10%">
+                                <col style="width: 25%">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>Flight</th>
+                                    <th>Origin</th>
+                                    <th>Aircraft</th>
+                                    <th></th>
+                                    <th>Gate</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="arrivalList"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <footer class="board-footer">
+            <span class="board-footer-disclaimer">For Flight Simulation Use Only</span>
+            <a href="https://simfixr.com/" target="_blank" rel="noopener">
+                <img class="board-simfixr-logo" src="{{ url_for('static', filename='simfixr_logos/simfixr_logo_small.png') }}" alt="SimFixr">
+            </a>
+        </footer>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='js/board.js', v=asset_version) }}"></script>
+</body>
+</html>
